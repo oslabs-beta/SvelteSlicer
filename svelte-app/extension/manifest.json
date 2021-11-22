@@ -4,5 +4,21 @@
     "version": "1.0",
     "minimum_chrome_version": "10.0",
     "description": "Browser devtools extension for time traveling and visualizing Svelte applications.",
-    "devtools_page": "devtools/index.html"
+    "devtools_page": "devtools/index.html",
+    "permissions": [
+      "activeTab",
+      "scripting"
+    ],
+    "host_permissions": [
+      "http://*/*",
+      "https://*/*"
+    ],
+    "externally_connectable": {
+      "matches": [
+        "*/localhost:*"
+      ]
+    },
+    "background": {
+      "service_worker": "devtools/background.js"
+    }
   }

@@ -3,7 +3,7 @@
     import { onMount } from 'svelte';
 
     let svelteFiles = []
-    let astArray = []
+    let parsedArray = []
     
     onMount(async () => {
         await chrome.devtools.inspectedWindow.getResources(resources => {
@@ -15,8 +15,12 @@
                     console.log(file.url)
                     console.log(ast)
                     const parsedAST = parseAST(ast)
-                    const astObj = {name: file.url, astData: parsedAST}
-                    astArray = [...astArray, astObj]      
+                    const bigObj = {
+                        name: file.url, 
+                        ast: ast, 
+                        astData: parsedAST,
+                        source: source}
+                    parsedArray = [...parsedArray, bigObj]      
                 })
             })
         })
@@ -70,34 +74,36 @@
 
         return astData
     }
+
+
 </script>
 
 <div>
     <ul>
-        {#each astArray as ast}
-            <li>{ast.name}</li>
+        {#each parsedArray as data}
+            <li>{data.name}</li>
             <ul>
-                {#if ast.astData.children.length}
+                {#if data.astData.children.length}
                 <li>Children</li>
                 <ul>
-                    {#each ast.astData.children as child}
+                    {#each data.astData.children as child}
                         <li>{child}</li>
                     {/each}
                 </ul>
                 {/if}
             </ul>
             <ul>
-                {#if ast.astData.state.length}
+                {#if data.astData.state.length}
                 <li>State Variables</li>
                 <ul>
-                    {#each ast.astData.state as element}
+                    {#each data.astData.state as element}
                         <li>{element}</li>
                     {/each}
                 </ul>
                 {/if}
             </ul>
             <ul>
-                {#if ast.astData.store.length}
+                {#if data.astData.store.length}
                 <li>Store Variables</li>
                 <ul>
                     {#each ast.astData.store as element}
@@ -107,7 +113,7 @@
                 {/if}
             </ul>
             <ul>
-                {#if ast.astData.props.length}
+                {#if data.astData.props.length}
                 <li>Props</li>
                 <ul>
                     {#each ast.astData.props as prop}
@@ -116,10 +122,10 @@
                 </ul>
                 {/if}
             </ul> <ul>
-                {#if ast.astData.reactives.length}
+                {#if data.astData.reactives.length}
                 <li>Reactive Variables</li>
                 <ul>
-                    {#each ast.astData.reactives as element}
+                    {#each data.astData.reactives as element}
                         <li>{element}</li>
                     {/each}
                 </ul>
