@@ -13,12 +13,17 @@
       "http://*/*",
       "https://*/*"
     ],
-    "externally_connectable": {
-      "matches": [
-        "*/localhost:*"
-      ]
-    },
     "background": {
       "service_worker": "devtools/background.js"
-    }
+    },
+    "content_scripts": [
+      {
+        "matches": [
+          "http://*/*",
+          "https://*/*"
+        ],
+        "js": ["devtools/listener.js"],
+        "run_at": "document_start"
+      }
+    ]
   }

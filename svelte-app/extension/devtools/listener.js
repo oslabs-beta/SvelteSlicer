@@ -1,60 +1,17 @@
-function setup(root) {
-  root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent)
-  root.addEventListener('SvelteRegisterBlock', svelteRegisterBlock)
-  root.addEventListener('SvelteDOMInsert', svelteDOMInsert)
-  root.addEventListener('SvelteDOMRemove', svelteDOMRemove)
-  root.addEventListener('SvelteDOMSetData', svelteDOMSetData)
-  root.addEventListener('SvelteDOMSetProperty', svelteDOMSetProperty)
-  root.addEventListener('SvelteDOMSetAttribute', svelteDOMSetAttribute)
-  root.addEventListener('SvelteDOMRemoveAttribute', svelteDOMRemoveAttribute)
-}
+window.addEventListener('message', function(event) {
+  // Only accept messages from the same frame
+  if (event.source !== window) {
+    return;
+  }
 
-function svelteRegisterComponent (e) {
-  console.log('SRC Fired!!!');
-  console.log(e);
-}
+  // Only accept messages that we know are ours
+  if (typeof event.data !== 'object' || event.data === null ||
+      !event.data.source === 'panel.js') {
+    return;
+  }
 
-function svelteRegisterBlock (e) {
-  console.log('SRB Fired!!!');
-  console.log(e);
-}
+  var message = JSON.stringify(event.data.data);
 
-function svelteDOMInsert(e) {
-    console.log('SDI Fired!!!');
-    console.log(e.detail);
-}
-
-function svelteDOMRemove(e) {
-    console.log('SDR Fired!!!');
-    console.log(e);
-}
-
-function svelteDOMSetData(e) {
-    console.log('SDSD Fired!!!');
-    console.log(e);
-}
-
-function svelteDOMSetProperty(e) {
-    console.log('SDSP Fired!!!');
-    console.log(e);
-}
-
-function svelteDOMSetAttribute(e) {
-    console.log('SDSA Fired!!!');
-    console.log(e);
-}
-
-function svelteDOMRemoveAttribute(e) {
-    console.log('SDRA Fired!!!');
-    console.log(e);
-}
-
-setup(window.document);
-
-for (let i = 0; i < window.frames.length; i++) {
-  const frame = window.frames[i]
-  const root = frame.document
-  setup(root)
-}
-
+  chrome.runtime.sendMessage(message);
+});
 
