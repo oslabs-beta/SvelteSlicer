@@ -1,9 +1,12 @@
 <script>
-	import Component from './Component.svelte'
+import {components} from './stores.js';
+
+console.log($components);
+	
 </script>
 
 <main>
-	<Component/>
+	<p>Hello World</p>
 </main>
 
 <style>

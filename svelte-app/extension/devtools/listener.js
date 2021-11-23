@@ -10,8 +10,8 @@ window.addEventListener('message', function(event) {
     return;
   }
 
-  var message = JSON.stringify(event.data.data);
+  const data = event.data;
 
-  chrome.runtime.sendMessage(message);
+  chrome.runtime.sendMessage(JSON.stringify(data));
 });
 
