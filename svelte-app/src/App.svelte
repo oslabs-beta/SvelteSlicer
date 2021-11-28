@@ -7,6 +7,13 @@ console.log($components);
 
 <main>
 	<p>Hello World</p>
+	<ul>
+	{#each $components as component} 
+		<li>{component.tagName}</li>
+	{/each}
+	</ul>
+	
+
 </main>
 
 <style>

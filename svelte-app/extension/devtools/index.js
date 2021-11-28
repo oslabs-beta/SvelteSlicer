@@ -8,50 +8,91 @@ chrome.devtools.panels.create(
                 {injectedScript:
                     `
                     const components = [];
-                    const blocks = [];
         
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
+                        root.addEventListener('SvelteRegisterBlock', svelteRegisterBlock);
+                        root.addEventListener('SvelteDOMSetData', svelteDOMSetData);
                         root.addEventListener('SvelteDOMSetAttribute', svelteDOMSetAttribute);
+                        root.addEventListener('SvelteDOMSetProperty', svelteDOMSetProperty)
+                        root.addEventListener('SvelteDOMRemoveAttribute', svelteDOMRemoveAttribute)
                         root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
+                        root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
+                        root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener);
+                        root.addEventListener('SvelteDOMRemoveEventListener', svelteDOMRemoveEventListener);
                     }
                   
-                    function svelteRegisterComponent (e) {
+                    function svelteRegisterComponent (e) {                        
                         const { tagName, version, id, component } = e.detail;
-                        
-                        console.log(component.$$)
-                        const ctxObj = {};
+
+                        // grab instance variables that are not function definitions
+                        const ctx = {};
                         component.$$.ctx.forEach((element, index) => {
                             if (typeof element !== "function") {
-                                ctxObj[index] = element;
+                                ctx[index] = element;
+                            } else {
+                                ctx[index] = element.name;
                             }
                         })
 
-                        const stateArray = [];
-                        let stateString = component.$capture_state.toString().slice(8, -2);
-                        stateString = stateString.replace(/\\n|\\t\\t/g, ""); 
-                        const tempArray = stateString.split(', ');
-                        tempArray.forEach(string => {
-                            stateArray.push(string.trim());
-                        })
+                        // parse out elements of $capture_state
+                        const stateString = component.$capture_state.toString().slice(8, -2);
+                        const stateArray = stateString.split(',').map(string => string.trim());
 
                         data = {
                             version,
                             id,
+                            ctx,
                             props: component.$$.props,
-                            ctx: ctxObj,
-                            tagName,
-                            state: stateArray
+                            state: stateArray,
+                            tagName
                         }
                         components.push(data);
                     }
                   
+                    function svelteRegisterBlock(e) {
+                        console.log("RegisterBlock");
+                        console.log(e);
+                    }
+
+                    function svelteDOMSetData(e) {
+                        console.log("DOMSetData");
+                        console.log(e);
+                    }
+                    
                     function svelteDOMSetAttribute(e) {
-                        console.log(e.detail);
+                        console.log("DOMSetAttribute");
+                        console.log(e);
+                    }
+
+                    function svelteDOMSetProperty(e) {
+                        console.log("DOMSetProperty");
+                        console.log(e);
+                    }
+
+                    function svelteDOMRemoveAttribute(e) {
+                        console.log("DOMRemoveAttribute");
+                        console.log(e);
+                    }
+
+                    function svelteDOMRemove(e) {
+                        console.log("DOMRemove");
+                        console.log(e);
                     }
 
                     function svelteDOMInsert(e) {
-                        console.log(e.detail)
+                        console.log("DOMInsert");
+                        console.log(e);
+                    }
+
+                    function svelteDOMAddEventListener(e) {
+                        console.log("DOMAddEventListener");
+                        console.log(e);
+                    }
+
+                    function svelteDOMRemoveEventListener(e) {
+                        console.log("DOMRemoveEventListener");
+                        console.log(e);
                     }
 
                     setup(window.document);
@@ -65,11 +106,11 @@ chrome.devtools.panels.create(
                     window.onload = () => {
                         window.postMessage({
                             source: 'panel.js',
-                            type: 'components',
+                            type: 'component',
                             data: components
                         });
-                        
-                    }  
+                        components.splice(0, components.length);
+                    }   
                     `
                 }
             ); 

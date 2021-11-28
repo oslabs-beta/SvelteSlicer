@@ -14,7 +14,7 @@ backgroundPageConnection.postMessage({
 chrome.runtime.onMessage.addListener((msg) => {
     const parsedMessage = JSON.parse(msg);
 
-	const {data, type } = parsedMessage;
+	const { data, type } = parsedMessage;
 
 	if (type === 'component') {
 		if (data && Array.isArray(data)) {
