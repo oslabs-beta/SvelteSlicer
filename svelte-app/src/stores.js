@@ -88,8 +88,8 @@ function buildFirstSnapshot(data) {
 		// assign to listenerData object
 		listeners[listener.id] = listenerData;
 
-		// assign by reference to associated node in nodes
-		nodes[listener.node].listeners[listener.id] = listeners[listener.id];
+		// assign to associated node in nodes
+		nodes[listener.node].listeners[listener.id] = listenerData;
 	});
 
 	// build components and assign nodes, variables and listeners
@@ -149,7 +149,7 @@ function buildFirstSnapshot(data) {
 			}
 		})
 
-		// identify the target node for the component
+		// identify the top-level parent node for the component
 		const parentNode = (targets.includes("body")) ? "body" : Math.min(...targets);
 		data.parentNode = parentNode;
 		data.targets = targets;
@@ -158,7 +158,7 @@ function buildFirstSnapshot(data) {
 			if (data.nodes.hasOwnProperty(listener.node)) {
 				// update listener object to include full component id with instance number
 				listeners[listener.id].component = id;
-				// assign by reference to component 
+				// assign to component 
 				data.listeners[listener.id] = listeners[listener.id];
 			}
 		})
@@ -210,24 +210,6 @@ function buildNewSnapshot(data) {
 		}
 	})
 
-	// build listeners object and assign listeners to nodes
-	addedEventListeners.forEach(listener => {
-		const listenerData = {
-			node: listener.node,
-			event: listener.event,
-			name: listener.handlerName,
-			string: listener.handlerString,
-			component: listener.component,
-			id: listener.id
-		}
-		// assign to listenerData object
-		listeners[listener.id] = listenerData;
-
-		console.log(nodes[listener.node].listeners);
-		// assign by reference to associated node in nodes
-		nodes[listener.node].listeners[listener.id] = listeners[listener.id];
-	});
-
 	// add new components
 	components.forEach(component => {
 		const { ctx, injectState, captureState, tagName } = component;
@@ -266,7 +248,7 @@ function buildNewSnapshot(data) {
 			listeners: {}
 		};
 		
-		/*// create object with all associated nodes
+		// create object with all associated nodes
 		const targets = [];
 		const nodeLocations = {}; // store nodes by code location and parent to ensure they get assigned to correct component
 		insertedNodes.forEach((node, i) => {
@@ -280,42 +262,67 @@ function buildNewSnapshot(data) {
 				nodeLocations[node.loc] = node.target;
 				// remove node from insertedNodes array so it can't be assigned to another component
 				delete insertedNodes[i];
-				// push node target to targetArray for later reference
+				// push node target and node to targetArray for later reference
 				targets.push(node.target);
+				targets.push(node.id);
 			}
 		})
 
 		// identify the target node for the component
 		const parentNode = (targets.includes("body")) ? "body" : Math.min(...targets);
 		data.parentNode = parentNode;
-		data.targets = targets;
+		data.targets = [targets];
 
 		componentData[id] = data;
 	})
 
-	// determine and assign parents for new components
-	components.forEach(component => {
-		const { parentNode } = component;
-		componentData[component].parent = (parentNode === "body") ? "App" : nodes[parentNode].component;
-	})
+	// determine and assign the parent component
+	for (let component in componentData) {
+		const { parentNode } = componentData[component];
+		componentData[component].parent = (parentNode === "body") ? "App" : ((nodes.hasOwnProperty(parentNode)) ? nodes[parentNode].component : null);
+	}
 
 	// assign any remaining inserted Nodes that didn't go to new components
 	insertedNodes.forEach(node => {
 		// loop through components in case there are multiple instances
-		for (let [component, data] in componentData) {
-			if (data.tagName === node.component && data.targets.includes(node.target)) {
+		for (let component in componentData) {
+			if (componentData[component].tagName === node.component && componentData[component].targets.includes(node.target)) {
 				// update node component to include full component id with instance number
-				nodes[node.id].component = data.id;
+				nodes[node.id].component = componentData[component].id;
 				// assign node by reference to component data
-				data.nodes[node.id] = nodes[node.id];
-				// push node target to targetArray for later reference
-				data.targets.push(node.target);
+				componentData[component].nodes[node.id] = nodes[node.id];
+				// push node target and node id to targetArray for later reference
+				componentData[component].targets.push(node.target);
+				componentData[component].targets.push(node.id);
 			}
 		}
-		*/
 	})
 
-	const newSnapshot = JSON.parse(JSON.stringify(componentData))
+	// update listeners object and assign listeners to nodes and components
+	addedEventListeners.forEach(listener => {
+		const { component } = nodes[listener.node]
+		const listenerData = {
+			node: listener.node,
+			event: listener.event,
+			name: listener.handlerName,
+			string: listener.handlerString,
+			component: component,
+			id: listener.id
+		}
+		// assign to listenerData object
+		listeners[listener.id] = listenerData;
+
+		// assign to associated node in nodes
+		nodes[listener.node].listeners[listener.id] = listenerData;
+
+		// assign to associated component
+		componentData[component].listeners[listener.id] = listenerData;
+		componentData[component].nodes[listener.node].listeners[listener.id] = listeners[listener.id];
+
+
+	});
+
+	const newSnapshot = JSON.parse(JSON.stringify(componentData)) // deep copy to "freeze" state
 
 	console.log('Updated State');
 	console.log(newSnapshot);

@@ -1,12 +1,16 @@
 <script>
 import {snapshots} from './stores.js';
 
-let currentI;
+$: runningState = $snapshots.length - 1;
+
+$: selectedState = -1;
+
+$: currentI = (selectedState >= 0 && selectedState < runningState) ? selectedState : runningState;
 
 $: components = $snapshots[currentI];
 
-function setCurrentState(index) {
-	currentI = index;
+function selectState(index) {
+	selectedState = index;
 	console.log('State ' + currentI)
 	console.log($snapshots[currentI]);
 }
@@ -15,14 +19,17 @@ function setCurrentState(index) {
 <main>
 	<p>Hello World</p>
 	{#each $snapshots as snapshot, i}
-	<button on:click={() => setCurrentState(i)}>State {i+1}</button>
+	<button on:click={() => selectState(i)}>State {i+1}</button>
 	{/each}
 	<hr>
 	{#if components}
-	<h2>Components</h2>
+	<h2>State {currentI + 1}</h2>
+	<h3>Components</h3>
 	<ul>
 		{#each Object.keys(components) as component}
-		<li>{components[component].tagName}</li>
+			{#if Object.keys(components[component].nodes).length}
+				<li>{components[component].tagName}</li>
+			{/if}
 		{/each}
 	</ul>
 	{/if}
