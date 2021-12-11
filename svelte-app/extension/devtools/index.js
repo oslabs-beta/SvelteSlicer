@@ -124,7 +124,8 @@ chrome.devtools.panels.create(
                             event,
                             handlerName: e.detail.handler.name,
                             handlerString: e.detail.handler.toString(),
-                            component: nodeData.component
+                            component: nodeData.component,
+                            id: nodeData.id + event
                         })
                     }
 
@@ -140,7 +141,8 @@ chrome.devtools.panels.create(
                         deletedEventListeners.push({
                             node: nodeData.id,
                             event: event,
-                            component: nodeData.component
+                            component: nodeData.component,
+                            id: nodeData.id + event
                         })
                     }
 
@@ -157,49 +159,6 @@ chrome.devtools.panels.create(
                                 event
                             }
                         });
-                    }
-
-                    function parseComponents() {
-                        componentQueue.forEach(component => {
-                            // get state variables and ctx indices from $inject_state
-                            const injectState = {};
-                            let string = component.$inject_state.toString();
-                            while (string.includes('$$invalidate')) {
-                                const varIndexStart = string.indexOf('$$invalidate') + 13;
-                                const varIndexEnd = string.indexOf(',', varIndexStart);
-                                const varIndex = (string.slice(varIndexStart, varIndexEnd));
-                            
-                                const varNameStart = varIndexEnd + 1;
-                                const varNameEnd = string.indexOf('=', varNameStart);
-                                const varName = string.slice(varNameStart, varNameEnd).trim();
-
-                                injectState[varName] = varIndex;
-
-                                string = string.slice(varNameEnd);
-                            }
-
-                            // change function definitions into strings
-                            const ctx = {};
-                            component.$$.ctx.forEach((element, index) => {
-                                if (typeof element !== "function") {
-                                    ctx[index] = {type: 'value', value: element};
-                                } else {
-                                    ctx[index] = {type: 'function', name: element.name, string: element.toString()};
-                                }
-                            })
-
-                            // parse out elements of $capture_state
-                            const captureStateString = component.$capture_state.toString().slice(8, -2);
-                            const captureState = captureStateString.split(',').map(string => string.trim());
-
-                            data = {
-                                ctx,
-                                injectState,
-                                tagName,
-                                captureState
-                            }
-                            components.push(data);
-                        })
                     }
 
                     setup(window.document);
@@ -243,17 +202,20 @@ chrome.devtools.panels.create(
 
                     // capture subsequent DOM changes to update snapshots
                     window.document.addEventListener('dom-changed', (e) => {
-                        window.postMessage({
-                            source: 'panel.js',
-                            type: 'update',
-                            data: {
-                                components,
-                                insertedNodes,
-                                deletedNodes,
-                                addedEventListeners,
-                                deletedEventListeners
-                            }
-                        });
+                        // only send message if something changed in SvelteDOM
+                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
+                            window.postMessage({
+                                source: 'panel.js',
+                                type: 'update',
+                                data: {
+                                    components,
+                                    insertedNodes,
+                                    deletedNodes,
+                                    addedEventListeners,
+                                    deletedEventListeners
+                                }
+                            });
+                        }
 
                         // reset arrays
                         components.splice(0, components.length);

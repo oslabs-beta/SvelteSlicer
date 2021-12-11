@@ -1,14 +1,18 @@
-import { writable, get } from 'svelte/store';
+import { writable } from 'svelte/store';
 import { compile } from "svelte/compiler";
 
 export const snapshots = writable([]);
 
 // store counts for component instances
 const componentCounts = {};
+// store updateable objects for current component state
+const componentData = {}
+// store ALL nodes and listeners
+const nodes = {};
+const listeners = {};
 
 // store AST info for each file
 const astArray = [];
-const nodeChildren = {};
 
 // set up background page Connection
 var backgroundPageConnection = chrome.runtime.connect({
@@ -26,13 +30,12 @@ chrome.runtime.onMessage.addListener((msg) => {
 
 	const { data, type } = parsedMessage;
 
-	console.log(data);
-
 	if (type === "firstLoad") {
 		const snapshot = buildFirstSnapshot(data);
 		snapshots.update(array => [...array, snapshot]);
 	}
 	else if (type === "update") {
+		console.log(data);
 		const newSnapshot = buildNewSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
 	}
@@ -54,17 +57,42 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 });
 
 function buildFirstSnapshot(data) {
-	const { components, insertedNodes, deletedNodes, addedEventListeners, deletedEventListeners } = data;
-
+	const { components, insertedNodes, addedEventListeners, deletedEventListeners } = data;
+	
+	// build nodes object
 	insertedNodes.forEach(node => {
-		nodeChildren[node.id] = [];
+		nodes[node.id] = {
+			children: [],
+			id: node.id,
+			component: node.component, 
+			target: node.target,
+			loc: node.loc,
+			listeners: {}
+		}
+		// add as a child to target node
 		if (node.target !== "body") {
-			nodeChildren[node.target].push(node.id);
+			nodes[node.target].children.push({id: node.id});
 		}
 	})
 
-	const componentData = {};
+	// build listeners object and assign listeners to nodes
+	addedEventListeners.forEach(listener => {
+		const listenerData = {
+			node: listener.node,
+			event: listener.event,
+			name: listener.handlerName,
+			string: listener.handlerString,
+			component: listener.component,
+			id: listener.id
+		}
+		// assign to listenerData object
+		listeners[listener.id] = listenerData;
 
+		// assign by reference to associated node in nodes
+		nodes[listener.node].listeners[listener.id] = listeners[listener.id];
+	});
+
+	// build components and assign nodes, variables and listeners
 	components.forEach(component => {
 		const { ctx, injectState, captureState, tagName } = component;
 		
@@ -91,39 +119,6 @@ function buildFirstSnapshot(data) {
 			variables[variable] = varObj;
 		})
 
-		// create object with all associated nodes
-		const nodes = {};
-		const nodeLocations = {};
-		insertedNodes.forEach((node, i) => {
-			// make sure node belongs to this component
-			if (node.component === tagName && !nodeLocations.hasOwnProperty(node.loc)) {
-				const listeners = {};
-				addedEventListeners.forEach(listener => {
-					if (listener.node === node.id) {
-						listeners[listener.event] = {
-							node: node.id,
-							event: listener.event,
-							name: listener.handlerName,
-							string: listener.handlerString,
-							component: listener.component
-						}
-					}
-				})
-
-				nodes[node.id] = {
-					id: node.id,
-					component: component.tagName,
-					target: node.target,
-					children: nodeChildren[node.id],
-					listeners
-				};
-				// mark the node location as taken for this component
-				nodeLocations[node.loc] = true;
-				// remove node from array so it can't be assigned to another component
-				insertedNodes.splice(i, 1);
-			}
-		})
-
 		const id = tagName + instance;
 
 		const data = {
@@ -131,15 +126,55 @@ function buildFirstSnapshot(data) {
 			instance,
 			id,
 			variables,
-			nodes
+			nodes: {},
+			listeners: {}
 		};
+
+		const targets = [];
+		// create object with all associated nodes
+		const nodeLocations = {}; // store nodes by code location and parent to ensure they get assigned to correct component
+		insertedNodes.forEach((node, i) => {
+			// make sure node belongs to this component - component name should match, should be only node in component from that location OR if same location, must share a target
+			if (node.component === tagName && (!nodeLocations.hasOwnProperty(node.loc) || nodeLocations[node.loc] === node.target)) {
+				// update node component to include full component id with instance number
+				nodes[node.id].component = id;
+				// assign node by reference to component data
+				data.nodes[node.id] = nodes[node.id];
+				// mark the node location as taken for this component and store target node
+				nodeLocations[node.loc] = node.target;
+				// remove node from insertedNodes array so it can't be assigned to another component
+				delete insertedNodes[i];
+				// push node target to targetArray for later reference
+				targets.push(node.target);
+			}
+		})
+
+		// identify the target node for the component
+		const parentNode = (targets.includes("body")) ? "body" : Math.min(...targets);
+		data.parentNode = parentNode;
+		data.targets = targets;
+
+		addedEventListeners.forEach(listener => {
+			if (data.nodes.hasOwnProperty(listener.node)) {
+				// update listener object to include full component id with instance number
+				listeners[listener.id].component = id;
+				// assign by reference to component 
+				data.listeners[listener.id] = listeners[listener.id];
+			}
+		})
 
 		componentData[id] = data;
 	});
 
-	const snapshot = componentData;
+	// determine and assign the parent component
+	for (let component in componentData) {
+		const { parentNode } = componentData[component];
+		componentData[component].parent = (parentNode === "body") ? "App" : ((nodes.hasOwnProperty(parentNode)) ? nodes[parentNode].component : null);
+	}
 
-	console.log('First snapshot:');
+	const snapshot = JSON.parse(JSON.stringify(componentData)) // deep copy to "freeze" state
+
+	console.log('First snapshot');
 	console.log(snapshot);
 
 	return snapshot;
@@ -147,33 +182,56 @@ function buildFirstSnapshot(data) {
 
 function buildNewSnapshot(data) {
 	const { components, insertedNodes, deletedNodes, addedEventListeners, deletedEventListeners } = data;
-	const snaps = get(snapshots);
-	const snapshot = snaps[snaps.length - 1];
 
 	// delete event listeners
 	deletedEventListeners.forEach(listener => {
-		// loops through components in case there are multiple instances
-		for (let component in snapshot) {
-			if (snapshot[component].nodes.hasOwnProperty(listener.node)) {
-				delete (snapshot[component].nodes[listener.node].listeners[listener.event]);
-			}
-		}
+		const { component } = listeners[listener.id];
+		delete componentData[component].listeners[listener.id];
+		delete componentData[component].nodes[listener.node].listeners[listener.id];
 	})
 
 	// delete nodes and descendents
 	deletedNodes.forEach(node => {
-		// loops through components in case there are multiple instances
-		for (let component in snapshot) {
-			if (snapshot[component].nodes.hasOwnProperty(node.id)) {
-				deleteNode(snapshot[component].nodes[node.id], component);
-			}
+		deleteNode(node.id);
+	})
+
+	insertedNodes.forEach(node => {
+		nodes[node.id] = {
+			children: [],
+			id: node.id,
+			component: node.component, 
+			target: node.target,
+			loc: node.loc,
+			listeners: {}
+		}
+		// add as a child to target node
+		if (node.target !== "body") {
+			nodes[node.target].children.push({id: node.id});
 		}
 	})
+
+	// build listeners object and assign listeners to nodes
+	addedEventListeners.forEach(listener => {
+		const listenerData = {
+			node: listener.node,
+			event: listener.event,
+			name: listener.handlerName,
+			string: listener.handlerString,
+			component: listener.component,
+			id: listener.id
+		}
+		// assign to listenerData object
+		listeners[listener.id] = listenerData;
+
+		console.log(nodes[listener.node].listeners);
+		// assign by reference to associated node in nodes
+		nodes[listener.node].listeners[listener.id] = listeners[listener.id];
+	});
 
 	// add new components
 	components.forEach(component => {
 		const { ctx, injectState, captureState, tagName } = component;
-		
+	
 		// assign sequential instance value
 		let instance = 0;
 		if (componentCounts.hasOwnProperty(tagName)) {
@@ -204,56 +262,74 @@ function buildNewSnapshot(data) {
 			instance,
 			id,
 			variables,
-			nodes: {}
-		};
-
-		snapshot[id] = data;
-	});
-
-	// add new nodes to children mapping
-	insertedNodes.forEach(node => {
-		nodeChildren[node.id] = [];
-		if (node.target !== "body") {
-			nodeChildren[node.target].push(node.id);
-		}
-	})
-
-	insertedNodes.forEach(node => {
-		const nodeData = {
-			component: node.component,
-			target: node.target,
-			children: nodeChildren[node.id],
+			nodes: {},
 			listeners: {}
 		};
-		snapshot[node.component].nodes[node.id] = nodeData;
-	});
-
-	addedEventListeners.forEach(listener => {
-		const listenerData = {
-			node: listener.node,
-			event: listener.event,
-			name: listener.handlerName,
-			string: listener.handlerString,
-			component: listener.component
-		};
-		for (let component in snapshot) {
-			if (snapshot[component].nodes.hasOwnProperty(node.id)) {
-				snapshot[component].nodes[listener.node].listeners[listener.event] = listenerData;
+		
+		/*// create object with all associated nodes
+		const targets = [];
+		const nodeLocations = {}; // store nodes by code location and parent to ensure they get assigned to correct component
+		insertedNodes.forEach((node, i) => {
+		// make sure node belongs to this component - component name should match, should be only node in component from that location OR if same location, must share a target
+			if (node.component === tagName && (!nodeLocations.hasOwnProperty(node.loc) || nodeLocations[node.loc] === node.target)) {
+				// update node component to include full component id with instance number
+				nodes[node.id].component = id;
+				// assign node by reference to component data
+				data.nodes[node.id] = nodes[node.id];
+				// mark the node location as taken for this component and store target node
+				nodeLocations[node.loc] = node.target;
+				// remove node from insertedNodes array so it can't be assigned to another component
+				delete insertedNodes[i];
+				// push node target to targetArray for later reference
+				targets.push(node.target);
 			}
-		}
+		})
+
+		// identify the target node for the component
+		const parentNode = (targets.includes("body")) ? "body" : Math.min(...targets);
+		data.parentNode = parentNode;
+		data.targets = targets;
+
+		componentData[id] = data;
 	})
 
-	console.log("Updated snapshot");
-	console.log(snapshot);
-	return snapshot;
+	// determine and assign parents for new components
+	components.forEach(component => {
+		const { parentNode } = component;
+		componentData[component].parent = (parentNode === "body") ? "App" : nodes[parentNode].component;
+	})
+
+	// assign any remaining inserted Nodes that didn't go to new components
+	insertedNodes.forEach(node => {
+		// loop through components in case there are multiple instances
+		for (let [component, data] in componentData) {
+			if (data.tagName === node.component && data.targets.includes(node.target)) {
+				// update node component to include full component id with instance number
+				nodes[node.id].component = data.id;
+				// assign node by reference to component data
+				data.nodes[node.id] = nodes[node.id];
+				// push node target to targetArray for later reference
+				data.targets.push(node.target);
+			}
+		}
+		*/
+	})
+
+	const newSnapshot = JSON.parse(JSON.stringify(componentData))
+
+	console.log('Updated State');
+	console.log(newSnapshot);
+
+	return newSnapshot;
 
 	// recursively delete node and all descendents
-	function deleteNode (nodeData, component) {
-		if (nodeData.children.length) {
-			nodeData.children.forEach(child => {
-				deleteNode(snapshot[component].nodes[child], component)
+	function deleteNode (nodeId) {
+		const { children, component, id } = nodes[nodeId];
+		if (children.length) {
+			children.forEach(child => {
+				deleteNode(child.id);
 			})
 		}
-		delete snapshot[component].nodes[nodeData.id];
+		delete componentData[component].nodes[id];
 	}
 }

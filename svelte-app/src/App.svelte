@@ -1,13 +1,14 @@
 <script>
 import {snapshots} from './stores.js';
 
-let currentI = $snapshots.length - 1;
+let currentI;
 
 $: components = $snapshots[currentI];
 
 function setCurrentState(index) {
-	console.log(index);
 	currentI = index;
+	console.log('State ' + currentI)
+	console.log($snapshots[currentI]);
 }
 </script>
 
