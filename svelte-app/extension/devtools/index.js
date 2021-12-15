@@ -50,10 +50,14 @@ chrome.devtools.panels.create(
                         // change function definitions into strings
                         const ctx = {};
                         component.$$.ctx.forEach((element, index) => {
-                            if (typeof element !== "function") {
-                                ctx[index] = {type: 'value', value: element};
-                            } else {
+                            if (typeof element === "function") {
                                 ctx[index] = {type: 'function', name: element.name, string: element.toString()};
+                            }
+                            else if (typeof element === "object") {
+                                ctx[index] = {type: 'object'};
+                            }
+                            else {
+                                ctx[index] = {type: 'value', value: element};
                             }
                         })
 

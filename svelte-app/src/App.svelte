@@ -1,18 +1,25 @@
 <script>
 import {snapshots} from './stores.js';
+import Component from './Component.svelte';
+
+$: snapshot = $snapshots[CurrentI];
+let CurrentI;
 
 function selectState(index) {
-	console.log('State ' + index)
-	console.log($snapshots[index]);
+	CurrentI = index;
+	console.log(CurrentI);
 }
 </script>
 
 <main>
-	<p>Hello World</p>
+	<p>Svelte Slicer</p>
 	{#each $snapshots as snapshot, i}
 	<button on:click={() => selectState(i)}>State {i}</button>
 	{/each}
 	<hr>
+	{#if snapshot} 
+		<Component component={snapshot}></Component>
+	{/if}
 </main>
 
 <style>
