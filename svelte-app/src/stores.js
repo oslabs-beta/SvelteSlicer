@@ -2,6 +2,7 @@ import { writable } from 'svelte/store';
 import { compile } from "svelte/compiler";
 
 export const snapshots = writable([]);
+export const fileTree = writable({});
 
 // store counts for component instances
 const componentCounts = {};
@@ -13,6 +14,7 @@ const listeners = {};
 
 // store AST info for each file
 const astInfo = {};
+const componentTree = {};
 
 // for debugging, store any AST variables not caught by switch statements
 const uncaughtVariables = [];
@@ -54,7 +56,8 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 			if (source) {
 				const { ast, vars } = compile(source, {varsReport: 'full'});
 				const componentName = svelteFile.url.slice((svelteFile.url.lastIndexOf('/') + 1), -7);
-				const varObj = {};		// hold parsed data
+				const variables = {};
+				const components = {};		
 				if (ast.instance) {
 					const astVariables = ast.instance.content.body;
 					astVariables.forEach(variable => {
@@ -86,6 +89,7 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 								}
 								if (variable.source.value.includes('.svelte')) {
 									data.type = "component"
+									components[data.name] = data;
 								}
 								else if (variable.source.value.endsWith('.js') && variable.source.value.includes('/store')) {
 									data.type = "store"
@@ -169,7 +173,7 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 								uncaughtVariables.push(variable);
 								break;
 						}
-						varObj[data.name] = data
+						variables[data.name] = data
 					})
 				}
 				
@@ -179,12 +183,16 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 						variable.name = variable.name.slice(1);
 					}
 					// mark ctx variables (must be prop OR referenced and mutated or assigned);
-					if (varObj.hasOwnProperty(variable.name) && ((variable.referenced && (variable.reassigned || variable.mutated)) || varObj[variable.name].type === "prop")) {
-						varObj[variable.name].ctxVariable = true;
+					if (variables.hasOwnProperty(variable.name) && ((variable.referenced && (variable.reassigned || variable.mutated)) || variables[variable.name].type === "prop")) {
+						variables[variable.name].ctxVariable = true;
 					}
 				})
 
-				astInfo[componentName] = varObj;
+				astInfo[componentName] = {variables, components};
+				componentTree[componentName] = {
+					id: componentName,
+					children: []
+				}
 			}	
 	  	});
 	});
@@ -353,9 +361,27 @@ function buildFirstSnapshot(data) {
 		}
 	}
 
-	const snapshot = JSON.parse(JSON.stringify(componentData.App0)) // deep copy to "freeze" state
+	for (let file in astInfo) {
+		for (let childFile in astInfo[file].components) {
+			componentTree[file].children.push(componentTree[childFile]);
+		}
+	}
+	
+	fileTree.set(componentTree.App);
 
-	return snapshot;
+	const snapshot = {};
+	
+	for (let component in componentData) {
+		if (componentData[component].active) {
+			snapshot[component] = {
+				id: componentData[component].id,
+				children: componentData[component].children,
+				variables: componentData[component].variables
+			}
+		}
+	}
+
+	return JSON.parse(JSON.stringify(snapshot.App0)); // deep clone to "freeze" state
 }
 
 function buildNewSnapshot(data) {
@@ -518,9 +544,19 @@ function buildNewSnapshot(data) {
 		}
 	}
 
-	const newSnapshot = JSON.parse(JSON.stringify(componentData.App0)) // deep copy to "freeze" state
+	const newSnapshot = {};
+	
+	for (let component in componentData) {
+		if (componentData[component].active) {
+			newSnapshot[component] = {
+				id: componentData[component].id,
+				children: componentData[component].children,
+				variables: componentData[component].variables
+			}
+		}
+	}
 
-	return newSnapshot;
+	return JSON.parse(JSON.stringify(newSnapshot.App0))  // deep copy to "freeze" state
 
 	// recursively delete node and all descendents
 	function deleteNode (nodeId) {

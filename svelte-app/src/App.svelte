@@ -1,24 +1,37 @@
 <script>
-import {snapshots} from './stores.js';
+import {snapshots, fileTree} from './stores.js';
 import Component from './Component.svelte';
 
 $: snapshot = $snapshots[CurrentI];
 let CurrentI;
 
+$: view = selection;
+let selection;
+
 function selectState(index) {
 	CurrentI = index;
-	console.log(CurrentI);
 }
+
+function selectView(view) {
+	selection = view;
+}
+
 </script>
 
 <main>
 	<p>Svelte Slicer</p>
-	{#each $snapshots as snapshot, i}
-	<button on:click={() => selectState(i)}>State {i}</button>
-	{/each}
+	<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button>
 	<hr>
-	{#if snapshot} 
-		<Component component={snapshot}></Component>
+	{#if view === "componentTree"} 
+		<Component component={$fileTree}/>
+	{:else if view === "state"}
+		{#each $snapshots as snapshot, i}
+			<button on:click={() => selectState(i)}>Snapshot {i}</button>
+		{/each}
+		<hr>
+		{#if snapshot} 
+			<Component component={snapshot}></Component>
+		{/if}
 	{/if}
 </main>
 
