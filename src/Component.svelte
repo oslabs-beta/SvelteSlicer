@@ -1,7 +1,5 @@
 <script>
     export let component;
-
-    console.log(component.children);
 </script>
 
 <main>
@@ -9,9 +7,11 @@
     {#if component.children.length} 
     <ul>
         {#each component.children as child}
-            <li>
-                <svelte:self component={child}/>
-            </li>
+            {#if child.active}
+                <li>
+                    <svelte:self component={child}/>
+                </li>
+            {/if}        
         {/each}
         </ul>
     {/if}

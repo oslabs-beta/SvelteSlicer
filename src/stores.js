@@ -15,6 +15,8 @@ const listeners = {};
 // store AST info for each file
 const astInfo = {};
 const componentTree = {};
+let parentComponent;
+let domParent;
 
 // for debugging, store any AST variables not caught by switch statements
 const uncaughtVariables = [];
@@ -57,6 +59,7 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 				const { ast, vars } = compile(source, {varsReport: 'full'});
 				const componentName = svelteFile.url.slice((svelteFile.url.lastIndexOf('/') + 1), -7);
 				const variables = {};
+				const functions = {};
 				const components = {};		
 				if (ast.instance) {
 					const astVariables = ast.instance.content.body;
@@ -71,6 +74,7 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 										type: "prop",
 										ctxVariable: false
 									}
+									variables[data.name] = data;
 								}
 								else {
 									data = {
@@ -79,6 +83,7 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 										type: "function",
 										ctxVariable: false
 									}
+									functions[data.name] = data;
 								}
 								break;
 							case "ImportDeclaration":
@@ -89,16 +94,19 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 								}
 								if (variable.source.value.includes('.svelte')) {
 									data.type = "component"
+									data.parent = componentName;
 									components[data.name] = data;
 								}
 								else if (variable.source.value.endsWith('.js') && variable.source.value.includes('/store')) {
 									data.type = "store"
+									variables[data.name] = data;
 								}
 								else if (variable.source.value.endsWith('.js') && variable.source.value.includes('/action')) {
 									data.type = "action"
+									functions[data.name] = data;
 								}
 								else {
-									data.type = "packageImport"
+									uncaughtVariables.push(variable);
 								}
 								break;
 							case "VariableDeclaration":
@@ -110,20 +118,20 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 								if (!declaration.init) {
 									data.value = null;
 									data.type = "stateVariable"
+									variables[data.name] = data;
 								}
 								else if (declaration.init.type === "Literal") {
 									data.value = declaration.init.value;
 									data.type = "stateVariable";
-								}
-								else if (declaration.init.type === "CallExpression") {
-									data.type = "functionCall";
+									variables[data.name] = data;
 								}
 								else if (declaration.init.type === "ArrowFunctionExpression") {
 									data.type = "function";
+									functions[data.name] = data;
 								}
 								else if (declaration.init.type === "MemberExpression") {
 									data.type = "stateVariable";
-									data.value = declaration.init.object.name + "." + declaration.init.property.name;
+									variables[data.name] = data;
 								}
 								else {
 									uncaughtVariables.push(variable);
@@ -135,45 +143,25 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 									type: "function",
 									ctxVariable: false
 								}
+								functions[data.name] = data;
 								break;
 							case "LabeledStatement":
-								if (variable.body.type !== "ExpressionStatement") {
-									data = {
-										name: null,
-										type: "reactiveStatement",
-										ctxVariable: false
-									}
-								}
-								else if (variable.body.expression.type === "AssignmentExpression") {
+								if (variable.body.expression && variable.body.expression.type === "AssignmentExpression") {
 									data = {
 										name: variable.body.expression.left.name,
 										type: "reactiveVariable",
 										ctxVariable: false
 									}
-								}
-								else if (variable.body.expression.type === "CallExpression") {
-									data = {
-										name: null,
-										type: "reactiveFunction",
-										ctxVariable: false
-									}
+									variables[data.name] = data;
 								}
 								else {
 									uncaughtVariables.push(variable);
-								}
-								break;
-							case "ExpressionStatement":
-								data = {
-									name: variable.expression.callee.name,
-									type: "functionCall",
-									ctxVariable: false
 								}
 								break;
 							default:
 								uncaughtVariables.push(variable);
 								break;
 						}
-						variables[data.name] = data
 					})
 				}
 				
@@ -188,9 +176,9 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 					}
 				})
 
-				astInfo[componentName] = {variables, components};
+				astInfo[componentName] = {variables, components, functions};
 				componentTree[componentName] = {
-					id: componentName,
+					label: componentName,
 					children: []
 				}
 			}	
@@ -308,7 +296,7 @@ function buildFirstSnapshot(data) {
 		})
 
 		// assign variables to components using AST data and ctx
-		const astVariables = astInfo[tagName];
+		const astVariables = astInfo[tagName].variables;
 		const unclaimedVariables = [];
 		for (let i in astVariables) {
 			const astVariable = astVariables[i];
@@ -352,36 +340,35 @@ function buildFirstSnapshot(data) {
 		componentData[component].children = [];
 	}
 
-	// assign children to components (can't happen until all components know their parents)
+	// assign DOM children to components (can't happen until all components know their parents)
 	for (let i in componentData) {
 		const component = componentData[i];
 		const parent = component.parent;
 		if (parent) {
 			componentData[parent].children.push(component);
 		}
+		else {
+			domParent = component.id;
+		}
 	}
 
+	// assign component children and determine top-level parent component
 	for (let file in astInfo) {
 		for (let childFile in astInfo[file].components) {
 			componentTree[file].children.push(componentTree[childFile]);
 		}
-	}
-	
-	fileTree.set(componentTree.App);
-
-	const snapshot = {};
-	
-	for (let component in componentData) {
-		if (componentData[component].active) {
-			snapshot[component] = {
-				id: componentData[component].id,
-				children: componentData[component].children,
-				variables: componentData[component].variables
-			}
+		if (!componentTree[file].parent) {
+			parentComponent = file;
 		}
 	}
+	
+	console.log(uncaughtVariables);
+	console.log(componentData);
+	console.log(astInfo);
 
-	return JSON.parse(JSON.stringify(snapshot.App0)); // deep clone to "freeze" state
+	fileTree.set(componentTree[parentComponent]);
+
+	return JSON.parse(JSON.stringify(componentData[domParent])); // deep clone to "freeze" state
 }
 
 function buildNewSnapshot(data) {
@@ -544,19 +531,7 @@ function buildNewSnapshot(data) {
 		}
 	}
 
-	const newSnapshot = {};
-	
-	for (let component in componentData) {
-		if (componentData[component].active) {
-			newSnapshot[component] = {
-				id: componentData[component].id,
-				children: componentData[component].children,
-				variables: componentData[component].variables
-			}
-		}
-	}
-
-	return JSON.parse(JSON.stringify(newSnapshot.App0))  // deep copy to "freeze" state
+	return JSON.parse(JSON.stringify(componentData[domParent]))  // deep copy to "freeze" state
 
 	// recursively delete node and all descendents
 	function deleteNode (nodeId) {

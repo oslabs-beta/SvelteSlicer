@@ -1,5 +1,6 @@
 <script>
 import {snapshots, fileTree} from './stores.js';
+import ComponentTree from './ComponentTree.svelte';
 import Component from './Component.svelte';
 
 $: snapshot = $snapshots[CurrentI];
@@ -10,6 +11,7 @@ let selection;
 
 function selectState(index) {
 	CurrentI = index;
+	console.log($snapshots[CurrentI]);
 }
 
 function selectView(view) {
@@ -19,18 +21,18 @@ function selectView(view) {
 </script>
 
 <main>
-	<p>Svelte Slicer</p>
+	<h2>Svelte Slicer</h2>
 	<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button>
 	<hr>
 	{#if view === "componentTree"} 
-		<Component component={$fileTree}/>
+		<ComponentTree testing={$fileTree}/>
 	{:else if view === "state"}
 		{#each $snapshots as snapshot, i}
 			<button on:click={() => selectState(i)}>Snapshot {i}</button>
 		{/each}
 		<hr>
 		{#if snapshot} 
-			<Component component={snapshot}></Component>
+			<Component component={snapshot}/>
 		{/if}
 	{/if}
 </main>
