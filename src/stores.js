@@ -224,7 +224,7 @@ function buildFirstSnapshot(data) {
 
 	// build components and assign nodes, variables and listeners
 	components.forEach(component => {
-		const { ctx, injectState, captureState, tagName } = component;
+		const { ctx, injectState, tagName } = component;
 		
 		// assign sequential instance value
 		let instance = 0;
@@ -333,7 +333,7 @@ function buildFirstSnapshot(data) {
 		componentData[id] = data;
 	});
 
-	// determine and assign the parent component (can't happen until all components are built and have nodes assigned)
+	// determine and assign the DOM parent (can't happen until all components are built and have nodes assigned)
 	for (let component in componentData) {
 		const { parentNode } = componentData[component];
 		componentData[component].parent = (nodes.hasOwnProperty(parentNode)) ? nodes[parentNode].component : ((componentData[component].tagName === "App") ? null : "App0");
@@ -361,10 +361,6 @@ function buildFirstSnapshot(data) {
 			parentComponent = file;
 		}
 	}
-	
-	console.log(uncaughtVariables);
-	console.log(componentData);
-	console.log(astInfo);
 
 	fileTree.set(componentTree[parentComponent]);
 

@@ -50,15 +50,7 @@ chrome.devtools.panels.create(
                         // change function definitions into strings
                         const ctx = {};
                         component.$$.ctx.forEach((element, index) => {
-                            if (typeof element === "function") {
-                                ctx[index] = {type: 'function', name: element.name, string: element.toString()};
-                            }
-                            else if (typeof element === "object") {
-                                ctx[index] = {type: 'object'};
-                            }
-                            else {
-                                ctx[index] = {type: 'value', value: element};
-                            }
+                            ctx[index] = parseCtx(element);
                         })
 
                         // parse out elements of $capture_state
@@ -74,6 +66,30 @@ chrome.devtools.panels.create(
                         components.push(data);
                     }
                   
+                    function parseCtx(element, name = null) {
+                        if (typeof element === "function") {
+                            return {
+                                type: 'function', 
+                                name: element.name, 
+                                string: element.toString()
+                            };
+                        }
+                        else if (typeof element === "object") {
+                            const value = {};
+                            for (let i in element) {
+                                value[i] = parseCtx(element[i], i);
+                            }
+                            return {type: 'value', value, name};
+                        }
+                        else {
+                            return {
+                                type: 'value', 
+                                value: element,
+                                name
+                            };
+                        }
+                    }
+
                     function svelteRegisterBlock(e) {
                         console.log("RegisterBlock");
                         console.log(e.detail);
