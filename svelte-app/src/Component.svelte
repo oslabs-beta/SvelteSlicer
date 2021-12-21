@@ -1,7 +1,8 @@
 <script>
     export let component;
 
-    console.log(component.children);
+    console.log("line 4",component.children);
+    console.log('line 5',component)
 </script>
 
 <main>
