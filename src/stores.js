@@ -4,8 +4,6 @@ import { compile } from "svelte/compiler";
 export const snapshots = writable([]);
 export const fileTree = writable({});
 
-// store counts for component instances
-const componentCounts = {};
 // store updateable objects for current component state
 const componentData = {}
 // store ALL nodes and listeners
@@ -44,9 +42,6 @@ chrome.runtime.onMessage.addListener((msg) => {
 	else if (type === "update") {
 		const newSnapshot = buildNewSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
-	}
-	else if (type === "event") {
-		//do something
 	}
 });
 
@@ -224,36 +219,10 @@ function buildFirstSnapshot(data) {
 
 	// build components and assign nodes, variables and listeners
 	components.forEach(component => {
-		const { ctx, injectState, tagName } = component;
-		
-		// assign sequential instance value
-		let instance = 0;
-		if (componentCounts.hasOwnProperty(tagName)) {
-			instance = ++componentCounts[tagName];
-		}
-		componentCounts[tagName] = instance;
-
-		// create object with all associated variables
-		/*const variables = {};
-		captureState.forEach(variable => {
-			const varObj = {
-				name: variable
-			}
-
-			for (let variableName in injectState) {
-				if (variableName === variable) {
-					varObj.index = injectState[variableName];
-					varObj.value = ctx[injectState[variableName]].value;
-				}
-			}
-			variables[variable] = varObj;
-		})*/
-
-		const id = tagName + instance;
+		const { ctx, injectState, tagName, id } = component;
 
 		const data = {
 			tagName,
-			instance,
 			id,
 			nodes: {},
 			listeners: {},
@@ -368,7 +337,7 @@ function buildFirstSnapshot(data) {
 }
 
 function buildNewSnapshot(data) {
-	const { components, insertedNodes, deletedNodes, addedEventListeners, deletedEventListeners } = data;
+	const { components, insertedNodes, deletedNodes, addedEventListeners, deletedEventListeners, ctxObject } = data;
 
 	// delete event listeners
 	deletedEventListeners.forEach(listener => {
@@ -382,6 +351,7 @@ function buildNewSnapshot(data) {
 		deleteNode(node.id);
 	})
 
+	// insert nodes into nodeTree
 	insertedNodes.forEach(node => {
 		nodes[node.id] = {
 			children: [],
@@ -399,14 +369,7 @@ function buildNewSnapshot(data) {
 
 	// add new components
 	components.forEach(component => {
-		const { ctx, injectState, captureState, tagName } = component;
-	
-		// assign sequential instance value
-		let instance = 0;
-		if (componentCounts.hasOwnProperty(tagName)) {
-			instance = ++componentCounts[tagName];
-		}
-		componentCounts[tagName] = instance;
+		const { ctx, injectState, captureState, tagName, id } = component;
 
 		// create object with all associated variables
 		const variables = {};
@@ -424,11 +387,8 @@ function buildNewSnapshot(data) {
 			variables[variable] = varObj;
 		})
 
-		const id = tagName + instance;
-
 		const data = {
 			tagName,
-			instance,
 			id,
 			variables,
 			nodes: {},
@@ -507,8 +467,6 @@ function buildNewSnapshot(data) {
 		// assign to associated component
 		componentData[component].listeners[listener.id] = listenerData;
 		componentData[component].nodes[listener.node].listeners[listener.id] = listeners[listener.id];
-
-
 	});
 
 	// re-assign children to components and determine if component is active in the DOM
@@ -524,6 +482,17 @@ function buildNewSnapshot(data) {
 		}
 		else {
 			component.active = true;
+		}
+	}
+
+	// update ctx variables
+	const diff = [];
+	for (let component in componentData) {
+		for(let i in componentData[component].variables) {
+			const variable = componentData[component].variables[i];
+			if (variable.ctxIndex) {
+				variable.value = ctxObject[component][variable.ctxIndex].value;
+			}
 		}
 	}
 

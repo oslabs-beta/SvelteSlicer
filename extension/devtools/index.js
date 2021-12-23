@@ -13,6 +13,8 @@ chrome.devtools.panels.create(
                     const addedEventListeners = [];
                     const deletedEventListeners = [];
                     const nodes = new Map();
+                    const ctxObject = {};
+                    const componentCounts = {};
                     let node_id = 0;
         
                     function setup(root) {
@@ -29,6 +31,14 @@ chrome.devtools.panels.create(
                         console.log(e.detail);
 
                         const { component, tagName } = e.detail;
+
+                        // assign sequential instance value
+		                let instance = 0;
+		                if (componentCounts.hasOwnProperty(tagName)) {
+			                instance = ++componentCounts[tagName];
+		                }
+		                componentCounts[tagName] = instance;
+                        const id = tagName + instance;
                                                 
                         // get state variables and ctx indices from $inject_state
                         const injectState = {};
@@ -47,7 +57,9 @@ chrome.devtools.panels.create(
                             string = string.slice(varNameEnd);
                         }
 
-                        // change function definitions into strings
+                        ctxObject[id] = component.$$.ctx;
+
+                        // parse ctx for messaging purposes
                         const ctx = {};
                         component.$$.ctx.forEach((element, index) => {
                             ctx[index] = parseCtx(element);
@@ -58,6 +70,7 @@ chrome.devtools.panels.create(
                         const captureState = captureStateString.split(',').map(string => string.trim());
 
                         data = {
+                            id,
                             ctx,
                             injectState,
                             tagName,
@@ -73,6 +86,16 @@ chrome.devtools.panels.create(
                                 name: element.name, 
                                 string: element.toString()
                             };
+                        }
+                        else if (element instanceof Element) {
+                            let value = 'DOM Element';
+                            if (nodes.has(element)) {
+                                value = nodes.get(element);
+                            }
+                            return {
+                                type: 'DOM Element',
+                                value
+                            }
                         }
                         else if (typeof element === "object") {
                             const value = {};
@@ -224,10 +247,23 @@ chrome.devtools.panels.create(
                     window.document.addEventListener('dom-changed', (e) => {
                         // only send message if something changed in SvelteDOM
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
+                            // parse the ctxObject for messaging purposes
+                            parsedCtx = {};
+                            for (let component in ctxObject) {
+                                const ctxData = {};
+                                ctxObject[component].forEach((element, index) => {
+                                    console.log(component);
+                                    console.log(element);
+                                    ctxData[index] = parseCtx(element);
+                                })
+                                parsedCtx[component] = ctxData;
+                            }
+                            
                             window.postMessage({
                                 source: 'panel.js',
                                 type: 'update',
                                 data: {
+                                    ctxObject: parsedCtx,
                                     components,
                                     insertedNodes,
                                     deletedNodes,

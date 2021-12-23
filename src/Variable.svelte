@@ -1,7 +1,5 @@
 <script>
     export let variable;
-
-    console.log(variable);
 </script>
 
 <main>

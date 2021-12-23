@@ -8,7 +8,7 @@
     {#if Object.keys(component.variables).length}
         <h5>Variables</h5>
         {#each Object.keys(component.variables) as variable}
-            <Variable variable={component.variables[variable]}/>
+                <Variable variable={component.variables[variable]}/>
         {/each}
     {/if}
     {#if component.children.length} 
