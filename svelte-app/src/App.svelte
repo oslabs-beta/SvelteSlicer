@@ -1,6 +1,8 @@
 <script>
 import {snapshots, fileTree} from './stores.js';
 import Component from './Component.svelte';
+import TidyTree from './TidyTree.svelte';
+import * as d3 from 'd3';
 
 $: snapshot = $snapshots[CurrentI];
 let CurrentI;
@@ -24,6 +26,7 @@ function selectView(view) {
 	<hr>
 	{#if view === "componentTree"} 
 		<Component component={$fileTree}/>
+		<TidyTree treeData={$fileTree}/>
 	{:else if view === "state"}
 		{#each $snapshots as snapshot, i}
 			<button on:click={() => selectState(i)}>Snapshot {i}</button>
@@ -33,6 +36,8 @@ function selectView(view) {
 			<Component component={snapshot}></Component>
 		{/if}
 	{/if}
+
+	
 </main>
 
 <style>

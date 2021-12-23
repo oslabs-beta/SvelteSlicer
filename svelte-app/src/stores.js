@@ -192,6 +192,7 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 				componentTree[componentName] = {
 					id: componentName,
 					children: []
+					
 				}
 			}	
 	  	});
@@ -350,6 +351,8 @@ function buildFirstSnapshot(data) {
 		const { parentNode } = componentData[component];
 		componentData[component].parent = (nodes.hasOwnProperty(parentNode)) ? nodes[parentNode].component : ((componentData[component].tagName === "App") ? null : "App0");
 		componentData[component].children = [];
+	
+
 	}
 
 	// assign children to components (can't happen until all components know their parents)
@@ -358,6 +361,7 @@ function buildFirstSnapshot(data) {
 		const parent = component.parent;
 		if (parent) {
 			componentData[parent].children.push(component);
+			
 		}
 	}
 

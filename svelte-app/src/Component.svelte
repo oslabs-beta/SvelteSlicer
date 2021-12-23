@@ -1,8 +1,8 @@
 <script>
     export let component;
-
+    
     console.log("line 4",component.children);
-    console.log('line 5',component)
+    console.log('hierarchical data for tidy tree',component)
 </script>
 
 <main>
@@ -16,4 +16,5 @@
         {/each}
         </ul>
     {/if}
+
 </main>
