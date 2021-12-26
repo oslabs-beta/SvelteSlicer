@@ -1,34 +1,20 @@
 <script>
 
 import * as d3 from 'd3';
-import { style } from 'd3';
+
 export let treeData;
 
 console.log('treeData in TidyTree',treeData)
-
-// d3.select("body")
-//   .append('div')
-//   .attr('class','container')
-//   .append("svg")
-//   .attr("width", 50)
-//   .attr("height", 50)
-//   .append("circle")
-//   .attr("cx", 25)
-//   .attr("cy", 25)
-//   .attr("r", 25)
-//   .style("fill", "purple");
 
 
 let margin = {top:20,right:90,bottom:20,left:90}
     let width = 960 - margin.left - margin.right;
     let height = 500 - margin.top -margin.bottom;
      
-     let svg=
-    
-    d3.select("body")
-  .append('div')
-  .attr('class','container')
-  .append("svg")
+     let svg = d3.select("body")
+       .append('div')
+       .attr('class','container')
+       .append("svg")
        .attr('width',width + margin.right + margin.left)
        .attr('height',height+ margin.top + margin.bottom)
        .append('g')
@@ -36,7 +22,9 @@ let margin = {top:20,right:90,bottom:20,left:90}
        let i = 0;
        let duration = 750;
        let root;
+       //d3.tree() is tidy tree layout module
        let treemap = d3.tree().size([height,width]);
+       //construct root node
        root = d3.hierarchy(treeData, function(d){
            return d.children;
        });
@@ -178,6 +166,7 @@ let margin = {top:20,right:90,bottom:20,left:90}
        }
        }
 
+      
        
 </script>
 
@@ -186,9 +175,10 @@ let margin = {top:20,right:90,bottom:20,left:90}
 <div class="tidy" on:click> TidyTree {treeData.id}
    
 </div>
+<!-- <p class="test">Test CSS</p> -->
 
 <style>
-    .xAxis path,
+    /* .xAxis path,
     .xAxis line {
         stroke:teal;
         shape-rendering: crispEdges;
@@ -213,7 +203,13 @@ let margin = {top:20,right:90,bottom:20,left:90}
         fill:none;
         stroke:rgb(153, 5, 5);
         stroke-width: 2px;
-    }
+    } */
+
+
+/* .test{
+    color: tomato;
+    font:100px;
+} */
 </style>
 
 

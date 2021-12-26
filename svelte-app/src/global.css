@@ -61,3 +61,31 @@ button:not(:disabled):active {
 button:focus {
 	border-color: #666;
 }
+
+.xAxis path,
+.xAxis line {
+  stroke: teal;
+  shape-rendering: crispEdges;
+}
+.xAxis text {
+  font-family: Optima, Futura, sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  fill: teal;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 3px;
+}
+
+.node text {
+  font: 12px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}

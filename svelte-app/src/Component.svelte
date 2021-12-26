@@ -1,7 +1,7 @@
 <script>
     export let component;
     
-    console.log("line 4",component.children);
+    console.log("component.children",component.children);
     console.log('hierarchical data for tidy tree',component)
 </script>
 

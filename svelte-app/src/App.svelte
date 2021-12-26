@@ -2,7 +2,7 @@
 import {snapshots, fileTree} from './stores.js';
 import Component from './Component.svelte';
 import TidyTree from './TidyTree.svelte';
-import * as d3 from 'd3';
+
 
 $: snapshot = $snapshots[CurrentI];
 let CurrentI;
@@ -42,7 +42,7 @@ function selectView(view) {
 
 <style>
 	main {
-		text-align: center;
+		/* text-align: center; */
 		padding: 1em;
 		max-width: 240px;
 		margin: 0 auto;
