@@ -2,6 +2,7 @@
 	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
 	import TidyTree from './TidyTree.svelte';
+	import State from './State.svelte';
 	
 	
 	$: snapshot = $snapshots[CurrentI];
@@ -33,7 +34,7 @@
 			{/each}
 			<hr>
 			{#if snapshot} 
-				<Component component={snapshot}></Component>
+				<State component={snapshot}></State>
 			{/if}
 		{/if}
 	

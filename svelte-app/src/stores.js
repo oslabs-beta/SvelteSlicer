@@ -173,7 +173,7 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 
 				astInfo[componentName] = {variables, components, functions};
 				componentTree[componentName] = {
-					label: componentName,
+					id: componentName,
 					children: []
 				}
 			}	

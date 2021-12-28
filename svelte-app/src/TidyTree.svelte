@@ -4,9 +4,6 @@
     
     export let treeData;
     
-    console.log('treeData in TidyTree',treeData)
-    
-    
     let margin = {top:20,right:90,bottom:20,left:90}
         let width = 960 - margin.left - margin.right;
         let height = 500 - margin.top -margin.bottom;
@@ -30,7 +27,6 @@
            });
            root.x0 = height/2;
            root.y0 = 0;
-           console.log('root ',root);
     
            update(root);
            function update(src){
@@ -118,7 +114,6 @@
                  
                 let links = treeData.descendants().slice(1);
                 let link = svg.selectAll('path.link').data(links, function(d){
-                    console.log('130',d,d.id)
                     return d.id;
                 })
     
