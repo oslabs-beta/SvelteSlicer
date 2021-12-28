@@ -13,6 +13,8 @@ chrome.devtools.panels.create(
                     const addedEventListeners = [];
                     const deletedEventListeners = [];
                     const nodes = new Map();
+                    const ctxObject = {};
+                    const componentCounts = {};
                     let node_id = 0;
         
                     function setup(root) {
@@ -29,6 +31,14 @@ chrome.devtools.panels.create(
                         console.log(e.detail);
 
                         const { component, tagName } = e.detail;
+
+                        // assign sequential instance value
+		                let instance = 0;
+		                if (componentCounts.hasOwnProperty(tagName)) {
+			                instance = ++componentCounts[tagName];
+		                }
+		                componentCounts[tagName] = instance;
+                        const id = tagName + instance;
                                                 
                         // get state variables and ctx indices from $inject_state
                         const injectState = {};
@@ -47,18 +57,12 @@ chrome.devtools.panels.create(
                             string = string.slice(varNameEnd);
                         }
 
-                        // change function definitions into strings
+                        ctxObject[id] = component.$$.ctx;
+
+                        // parse ctx for messaging purposes
                         const ctx = {};
                         component.$$.ctx.forEach((element, index) => {
-                            if (typeof element === "function") {
-                                ctx[index] = {type: 'function', name: element.name, string: element.toString()};
-                            }
-                            else if (typeof element === "object") {
-                                ctx[index] = {type: 'object'};
-                            }
-                            else {
-                                ctx[index] = {type: 'value', value: element};
-                            }
+                            ctx[index] = parseCtx(element);
                         })
 
                         // parse out elements of $capture_state
@@ -66,6 +70,7 @@ chrome.devtools.panels.create(
                         const captureState = captureStateString.split(',').map(string => string.trim());
 
                         data = {
+                            id,
                             ctx,
                             injectState,
                             tagName,
@@ -74,6 +79,40 @@ chrome.devtools.panels.create(
                         components.push(data);
                     }
                   
+                    function parseCtx(element, name = null) {
+                        if (typeof element === "function") {
+                            return {
+                                type: 'function', 
+                                name: element.name, 
+                                string: element.toString()
+                            };
+                        }
+                        else if (element instanceof Element) {
+                            let value = 'DOM Element';
+                            if (nodes.has(element)) {
+                                value = nodes.get(element);
+                            }
+                            return {
+                                type: 'DOM Element',
+                                value
+                            }
+                        }
+                        else if (typeof element === "object") {
+                            const value = {};
+                            for (let i in element) {
+                                value[i] = parseCtx(element[i], i);
+                            }
+                            return {type: 'value', value, name};
+                        }
+                        else {
+                            return {
+                                type: 'value', 
+                                value: element,
+                                name
+                            };
+                        }
+                    }
+
                     function svelteRegisterBlock(e) {
                         console.log("RegisterBlock");
                         console.log(e.detail);
@@ -208,10 +247,23 @@ chrome.devtools.panels.create(
                     window.document.addEventListener('dom-changed', (e) => {
                         // only send message if something changed in SvelteDOM
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
+                            // parse the ctxObject for messaging purposes
+                            parsedCtx = {};
+                            for (let component in ctxObject) {
+                                const ctxData = {};
+                                ctxObject[component].forEach((element, index) => {
+                                    console.log(component);
+                                    console.log(element);
+                                    ctxData[index] = parseCtx(element);
+                                })
+                                parsedCtx[component] = ctxData;
+                            }
+                            
                             window.postMessage({
                                 source: 'panel.js',
                                 type: 'update',
                                 data: {
+                                    ctxObject: parsedCtx,
                                     components,
                                     insertedNodes,
                                     deletedNodes,
