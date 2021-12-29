@@ -4,12 +4,14 @@
 	import TidyTree from './TidyTree.svelte';
 	import State from './State.svelte';
 	
+	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree
 	
 	$: snapshot = $snapshots[CurrentI];
 	let CurrentI;
 	
 	$: view = selection;
 	let selection;
+	
 	
 	function selectState(index) {
 		CurrentI = index;
@@ -18,16 +20,26 @@
 	function selectView(view) {
 		selection = view;
 	}
+
+	function selectTree(view){
+        selection = view;
+		//when button is clicked (function is called)
+		count+=1
+	}
+
 	
 	</script>
 	
 	<main>
 		<p>Svelte Slicer</p>
-		<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button>
+		<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Tidy Tree</button>
 		<hr>
 		{#if view === "componentTree"} 
-			<Component component={$fileTree}/>
-			<TidyTree treeData={$fileTree}/>
+			<Component component={$fileTree} />
+		 	
+		{:else if view === "tidyTree"}
+		 <TidyTree treeData={$fileTree} {count}/>
+
 		{:else if view === "state"}
 			{#each $snapshots as snapshot, i}
 				<button on:click={() => selectState(i)}>Snapshot {i}</button>

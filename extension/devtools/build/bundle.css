@@ -90,4 +90,12 @@ button:focus {
   stroke-width: 2px;
 }
 
+ul {
+	margin: 0;
+	list-style: none;
+	padding-left: 1.2rem; 
+	user-select: none;
+}
+.no-arrow { padding-left: 1.0rem; }
+
 main.svelte-19y1iwt{padding:1em;max-width:240px;margin:0 auto}@media(min-width: 640px){main.svelte-19y1iwt{max-width:none}}
