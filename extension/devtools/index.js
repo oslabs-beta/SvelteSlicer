@@ -27,10 +27,8 @@ chrome.devtools.panels.create(
                     }
                   
                     function svelteRegisterComponent (e) {                        
-                        console.log("RegisterComponent");
-                        console.log(e.detail);
 
-                        const { component, tagName } = e.detail;
+                        const { component, tagName, options } = e.detail;
 
                         // assign sequential instance value
 		                let instance = 0;
@@ -74,7 +72,8 @@ chrome.devtools.panels.create(
                             ctx,
                             injectState,
                             tagName,
-                            captureState
+                            captureState,
+                            target: (options.target) ? options.target.nodeName + options.target.id : null
                         }
                         components.push(data);
                     }
@@ -114,13 +113,10 @@ chrome.devtools.panels.create(
                     }
 
                     function svelteRegisterBlock(e) {
-                        console.log("RegisterBlock");
-                        console.log(e.detail);
+                        
                     }
 
                     function svelteDOMRemove(e) {
-                        console.log("DOMRemove");
-                        console.log(e.detail);
                         
                         const { node } = e.detail;
                         const nodeData = nodes.get(node);
@@ -133,8 +129,6 @@ chrome.devtools.panels.create(
                     }
 
                     function svelteDOMInsert(e) {
-                        console.log("DOMInsert");
-                        console.log(e.detail);
                         
                         const { node, target } = e.detail;
                         if (node.__svelte_meta) {
@@ -145,7 +139,7 @@ chrome.devtools.panels.create(
                                 nodes.set(node, {id, componentName});
                             }
                             insertedNodes.push({
-                                target: (target.nodeName === "BODY") ? "body" : nodes.get(target).id,
+                                target: ((nodes.get(target)) ? nodes.get(target).id : target.nodeName + target.id),
                                 id,
                                 component: componentName, 
                                 loc: node.__svelte_meta.loc.char
@@ -154,8 +148,6 @@ chrome.devtools.panels.create(
                     }
 
                     function svelteDOMAddEventListener(e) {
-                        console.log("DOMAddEventListener");
-                        console.log(e.detail);
 
                         const { node, event } = e.detail;
                         const nodeData = nodes.get(node);
@@ -173,8 +165,6 @@ chrome.devtools.panels.create(
                     }
 
                     function svelteDOMRemoveEventListener(e) {
-                        console.log("DOMRemoveEventListener");
-                        console.log(e.detail);
 
                         const { node, event } = e.detail;
                         nodeData = nodes.get(node);
@@ -252,8 +242,6 @@ chrome.devtools.panels.create(
                             for (let component in ctxObject) {
                                 const ctxData = {};
                                 ctxObject[component].forEach((element, index) => {
-                                    console.log(component);
-                                    console.log(element);
                                     ctxData[index] = parseCtx(element);
                                 })
                                 parsedCtx[component] = ctxData;

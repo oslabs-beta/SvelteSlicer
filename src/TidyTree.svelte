@@ -3,10 +3,7 @@
     import * as d3 from 'd3';
     
     export let treeData;
-    console.log('treeData',treeData)
     export let count;
-
-    console.log("count",count)
     
     let margin = {top:20,right:90,bottom:20,left:90}
         let width = 960 - margin.left - margin.right;
