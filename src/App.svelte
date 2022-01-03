@@ -2,7 +2,8 @@
 	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
 	import TidyTree from './TidyTree.svelte';
-	import State from './State.svelte';
+	import TidyTree2 from './TidyTree2.svelte';
+	//import State from './State.svelte';
 	
 	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree
 	
@@ -32,13 +33,14 @@
 	
 	<main>
 		<p>Svelte Slicer</p>
-		<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Tidy Tree</button>
+		<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
 		<hr>
 		{#if view === "componentTree"} 
 			<Component component={$fileTree} />
 		 	
 		{:else if view === "tidyTree"}
-		 <TidyTree treeData={$fileTree} {count}/>
+		 <!-- <TidyTree treeData={$fileTree} {count}/> -->
+		 <TidyTree2 treeData={$fileTree} {count}/>
 
 		{:else if view === "state"}
 			{#each $snapshots as snapshot, i}

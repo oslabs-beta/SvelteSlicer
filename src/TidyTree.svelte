@@ -170,13 +170,7 @@
            }
            }
         }
-        //    if(count>1){
-        //    console.log("in remove tree")
-            
-        //     let el = document.getElementsByClassName('container');
-
-        //     el.remove();
-        // }
+       
            
     </script>
     
