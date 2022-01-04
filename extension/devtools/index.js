@@ -26,7 +26,7 @@ chrome.devtools.panels.create(
                         root.addEventListener('SvelteDOMRemoveEventListener', svelteDOMRemoveEventListener);
                     }
                   
-                    function svelteRegisterComponent (e) {                        
+                    function svelteRegisterComponent (e) {                       
 
                         const { component, tagName, options } = e.detail;
 
@@ -97,11 +97,26 @@ chrome.devtools.panels.create(
                             }
                         }
                         else if (typeof element === "object") {
-                            const value = {};
-                            for (let i in element) {
-                                value[i] = parseCtx(element[i], i);
+                            if (element === null) {
+                                return {
+                                    type: 'value', 
+                                    value: element,
+                                    name
+                                };
                             }
-                            return {type: 'value', value, name};
+                            if (element.hasOwnProperty('$$')) {
+                                return {
+                                    type: 'Svelte Component',
+                                    value: '<' + element.constructor.name + '>'
+                                }
+                            }
+                            else {
+                                const value = {};
+                                for (let i in element) {
+                                    value[i] = parseCtx(element[i], i);
+                                }
+                                return {type: 'value', value, name};
+                            }
                         }
                         else {
                             return {
@@ -209,7 +224,6 @@ chrome.devtools.panels.create(
                         // make sure that data is being sent
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
                             firstLoadSent = true;
-                            console.log("sending firstLoad");
                             window.postMessage({
                                 source: 'panel.js',
                                 type: 'firstLoad',
@@ -256,7 +270,6 @@ chrome.devtools.panels.create(
                                 parsedCtx[component] = ctxData;
                             }
                             
-                            console.log("sending message " + type);
                             window.postMessage({
                                 source: 'panel.js',
                                 type,

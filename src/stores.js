@@ -36,7 +36,6 @@ chrome.runtime.onMessage.addListener((msg) => {
 	const { data, type } = parsedMessage;
 
 	if (type === "firstLoad") {
-		console.log(data);
 		const snapshot = buildFirstSnapshot(data);
 		snapshots.update(array => [...array, snapshot]);
 	}
@@ -48,7 +47,6 @@ chrome.runtime.onMessage.addListener((msg) => {
 
 // get and parse through the AST for additional variable info
 chrome.devtools.inspectedWindow.getResources(resources => {
-	console.log(resources);
 	const arrSvelteFiles = resources.filter(file =>file.url.includes(".svelte"));
 	arrSvelteFiles.forEach(svelteFile => {
 	  	svelteFile.getContent(source => {
@@ -182,8 +180,6 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 			}	
 	  	});
 	});
-
-	console.log(astInfo);
 });
 
 function buildFirstSnapshot(data) {
@@ -370,7 +366,7 @@ function buildNewSnapshot(data) {
 			listeners: {}
 		}
 		// add as a child to target node
-		if (node.target !== "body") {
+		if (typeof node.target === "number") {
 			nodes[node.target].children.push({id: node.id});
 		}
 	})
