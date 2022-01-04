@@ -1,6 +1,7 @@
 <script>
 
 import * as d3 from 'd3';
+import { onMount } from 'svelte';
 
 export let treeData;
 console.log('treeData',treeData)
@@ -8,16 +9,21 @@ export let count;
 
 console.log("count",count)
 
-let margin = {top:20,right:90,bottom:20,left:90}
-    let width = 960 - margin.left - margin.right;
-    let height = 500 - margin.top -margin.bottom;
+let margin = {top:20,right:0,bottom:20,left:0}
+    // let width = 400 - margin.left - margin.right;
+    // let height = 700 - margin.top -margin.bottom;
+//1/3 
+const width = document.body.clientWidth;
+const height = document.body.clientHeight;
 
     let svg;
 
-//check if dom already have 1 tidy tree    
- if(count<2){  
+//check if dom already have 1 tidy tree  
+//if(count<2){   
+onMount(()=>{
+  
      
-    svg = d3.select("body")
+    svg = d3.select("#chart")
        .append('div')
        .attr('class','container')
        .append("svg")
@@ -25,6 +31,8 @@ let margin = {top:20,right:90,bottom:20,left:90}
        .attr('height',height+ margin.top + margin.bottom)
        .append('g')
        .attr('transform',"translate(" + margin.left+ ","+ margin.top + ")");
+    
+      
        let i = 0;
        let duration = 750;
        let root;
@@ -35,14 +43,7 @@ let margin = {top:20,right:90,bottom:20,left:90}
            return d.children;
        });
        console.log('root',root)
-       //new link generator
-    //    const diagonal = d3
-    //      .linkHorizontal()
-    //      .x((d)=>d.x)
-    //      .y((d)=>d.y)
-       //set base: set where to start the nodes 
-    //    root.x0 = height/2;
-    //    root.y0 = 0;
+       
     root.x0 = 0;
     root.y0 = width/2;
 
@@ -53,9 +54,9 @@ let margin = {top:20,right:90,bottom:20,left:90}
            let nodes = treeData.descendants();
            console.log('nodes',nodes)
            //set depth
-        //    nodes.forEach(function(d){
-        //        d.y=d.depth*180;
-        //    });
+           nodes.forEach(function(d){
+               d.y=d.depth*140;
+           });
 
            let node = svg.selectAll('g.node').data(nodes,function(d){
                return d.id || (d.id= ++i); //return d.id or it has child 
@@ -81,7 +82,7 @@ let margin = {top:20,right:90,bottom:20,left:90}
             //add text  to show the node data
              nodeEnter
                .append('text')
-               .attr('dx','.15em')
+               .attr('dx','.35em')
             //    .attr('dx',function(d){
             //        console.log('d',d)
             //        return  d.children ||d._children? `.${d.data.id.length/0.2}em`:`.${d.data.id.length/0.2}em`
@@ -89,11 +90,11 @@ let margin = {top:20,right:90,bottom:20,left:90}
                //.attr('y',-20)
                .attr('y',function(d){
                     //return d.children ||d._children? -20:0;//has childern text on the left(not nesserary)
-                    return -10
+                    return -12
                })
-            //    .attr('text-anchor',function(d){
-            //        return d.children ||d._children? "end":"start"
-            //    })
+               .attr('text-anchor',function(d){
+                   return d.children ||d._children? "middle":"middle" //text position with node
+               })
                .text(function(d){
                    return d.data.id;
                })
@@ -189,10 +190,15 @@ let margin = {top:20,right:90,bottom:20,left:90}
            update(d);
        }
        }
-    }
+    
    
-       
+})  
+//}    
 </script>
+
+
+<div bind:this={svg} id='chart'></div>
+
 
 
    

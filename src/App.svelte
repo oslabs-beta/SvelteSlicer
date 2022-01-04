@@ -1,9 +1,9 @@
 <script>
 	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
-	import TidyTree from './TidyTree.svelte';
+	//import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
-	//import State from './State.svelte';
+	import State from './State.svelte';
 	
 	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree
 	
@@ -28,10 +28,13 @@
 		count+=1
 	}
 
+	let showLeft = true
+	let showRight = true
+
 	
 	</script>
 	
-	<main>
+	<!-- <main>
 		<p>Svelte Slicer</p>
 		<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
 		<hr>
@@ -39,7 +42,7 @@
 			<Component component={$fileTree} />
 		 	
 		{:else if view === "tidyTree"}
-		 <!-- <TidyTree treeData={$fileTree} {count}/> -->
+		 <TidyTree treeData={$fileTree} {count}/>
 		 <TidyTree2 treeData={$fileTree} {count}/>
 
 		{:else if view === "state"}
@@ -53,6 +56,78 @@
 		{/if}
 	
 		
+	</main> -->
+	<main id="parent" style="display:flex; height:auto; box-sizing:content-box">
+		<div id="left" class="center" style="background-color:#2D3436; height:100%; width:100%; border:solid 3px #F1F3F4; flex:{showLeft?3:0}">
+			<h2>Svelte Slicer</h2>
+			<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
+			<hr>
+			<label style="color:#F1F3F4; text-align:center">
+			Reduce LeftPanel <input type="checkbox" bind:checked={showLeft}>
+			</label>
+			<label style="color:#F1F3F4; text-align:center">
+			Toggle Data <input type="checkbox" bind:checked={showRight}>
+			</label>
+			{#if view === "state"}
+				{#each $snapshots as snapshot, i}
+					<button on:click={() => selectState(i)}>Snapshot {i}</button>
+				{/each}
+				<hr>
+			{/if}
+		</div>
+		<!-- <div id="right" style="flex:10; display:flex; flex-flow:row">
+			<div id="red" class="center" style="background-color:#636E72; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
+				<h2>Visual</h2>
+				{#if view === "componentTree"} 
+				<Component component={$fileTree}/>
+				{:else if view === "tidyTree"}
+		 
+		      <TidyTree2 treeData={$fileTree} {count}/>
+				
+				{/if}
+				
+			</div> -->
+			{#if view === "componentTree" }
+			<div id="right" style="flex:10; display:flex; flex-flow:row">
+				<div id="red" class="center" style="background-color:#636E72; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
+					<h2>Visual</h2>
+					
+					<Component component={$fileTree}/>
+				</div>
+			</div>
+			{:else if view === "tidyTree"}
+			<div id="right" style="flex:10; display:flex; flex-flow:row">
+				<div id="red" class="center" style="background-color:#636E72; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
+					<h2>Visual</h2>
+					
+						<TidyTree2 treeData={$fileTree} {count}/>
+				
+					
+				</div>
+			</div>
+			
+			{/if}
+			<!-- <div id="right" style="flex:10; display:flex; flex-flow:row">
+				<div id="red" class="center" style="background-color:#636E72; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
+					<h2>Visual</h2>
+					{#if view === "componentTree"} 
+					<Component component={$fileTree}/>
+					{:else if view === "tidyTree"}
+			 
+				  <TidyTree2 treeData={$fileTree} {count}/>
+					
+					{/if}
+					
+				</div> -->
+			<div id="red" class="center" style="background-color:#636E72; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
+				<h2>Data</h2>
+			{#if view === "state"}
+				{#if snapshot} 
+					<State component={snapshot}></State>
+				{/if}	
+			{/if}		
+			</div>
+			
 	</main>
 	
 	<style>
