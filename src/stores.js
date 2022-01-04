@@ -36,6 +36,7 @@ chrome.runtime.onMessage.addListener((msg) => {
 	const { data, type } = parsedMessage;
 
 	if (type === "firstLoad") {
+		console.log(data);
 		const snapshot = buildFirstSnapshot(data);
 		snapshots.update(array => [...array, snapshot]);
 	}
@@ -47,14 +48,13 @@ chrome.runtime.onMessage.addListener((msg) => {
 
 // get and parse through the AST for additional variable info
 chrome.devtools.inspectedWindow.getResources(resources => {
+	console.log(resources);
 	const arrSvelteFiles = resources.filter(file =>file.url.includes(".svelte"));
 	arrSvelteFiles.forEach(svelteFile => {
 	  	svelteFile.getContent(source => {
 			if (source) {
 				const { ast, vars } = compile(source, {varsReport: 'full'});
-				const componentName = svelteFile.url.slice((svelteFile.url.lastIndexOf('/') + 1), -7);
-				console.log(componentName);
-				console.log(ast);
+				const componentName = svelteFile.url.slice((svelteFile.url.lastIndexOf('/') + 1), svelteFile.url.lastIndexOf('.svelte'));
 				const variables = {};
 				const functions = {};
 				const components = {};		
@@ -182,6 +182,8 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 			}	
 	  	});
 	});
+
+	console.log(astInfo);
 });
 
 function buildFirstSnapshot(data) {
@@ -338,8 +340,6 @@ function buildFirstSnapshot(data) {
 	}
 
 	fileTree.set(componentTree[parentComponent]);
-
-	console.log(componentData);
 
 	return JSON.parse(JSON.stringify(componentData[domParent])); // deep clone to "freeze" state
 }

@@ -16,10 +16,10 @@ chrome.devtools.panels.create(
                     const ctxObject = {};
                     const componentCounts = {};
                     let node_id = 0;
+                    let firstLoadSent = false;
         
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
-                        root.addEventListener('SvelteRegisterBlock', svelteRegisterBlock);
                         root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
                         root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
                         root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener);
@@ -110,10 +110,6 @@ chrome.devtools.panels.create(
                                 name
                             };
                         }
-                    }
-
-                    function svelteRegisterBlock(e) {
-                        
                     }
 
                     function svelteDOMRemove(e) {
@@ -210,17 +206,22 @@ chrome.devtools.panels.create(
         
                     // capture initial DOM load as one snapshot
                     window.onload = () => {
-                        window.postMessage({
-                            source: 'panel.js',
-                            type: 'firstLoad',
-                            data: {
-                                components,
-                                insertedNodes,
-                                deletedNodes,
-                                addedEventListeners,
-                                deletedEventListeners
-                            }
-                        });
+                        // make sure that data is being sent
+                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
+                            firstLoadSent = true;
+                            console.log("sending firstLoad");
+                            window.postMessage({
+                                source: 'panel.js',
+                                type: 'firstLoad',
+                                data: {
+                                    components,
+                                    insertedNodes,
+                                    deletedNodes,
+                                    addedEventListeners,
+                                    deletedEventListeners
+                                }
+                            });
+                        }
 
                         // reset arrays
                         components.splice(0, components.length);
@@ -237,6 +238,14 @@ chrome.devtools.panels.create(
                     window.document.addEventListener('dom-changed', (e) => {
                         // only send message if something changed in SvelteDOM
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
+                            let type;
+                            // make sure the first load has already been sent; if not, this is the first load
+                            if (!firstLoadSent) {
+                                type = "firstLoad";
+                                firstLoadSent = true;
+                            }
+                            else type = "update";
+                            
                             // parse the ctxObject for messaging purposes
                             parsedCtx = {};
                             for (let component in ctxObject) {
@@ -247,9 +256,10 @@ chrome.devtools.panels.create(
                                 parsedCtx[component] = ctxData;
                             }
                             
+                            console.log("sending message " + type);
                             window.postMessage({
                                 source: 'panel.js',
-                                type: 'update',
+                                type,
                                 data: {
                                     ctxObject: parsedCtx,
                                     components,
