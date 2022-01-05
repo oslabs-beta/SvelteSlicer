@@ -18,7 +18,7 @@
 
 <main>
    
-    <ol><!-- transition:slide -->
+    <ol>
         <li>
             {#if children}
                 <span on:click={toggleExpansion}>
