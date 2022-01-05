@@ -499,7 +499,7 @@ function buildNewSnapshot(data) {
 			}
 		}
 	}
-
+	console.log('domparent ', componentData[domParent])
 	return JSON.parse(JSON.stringify(componentData[domParent]))  // deep copy to "freeze" state
 
 	// recursively delete node and all descendents
