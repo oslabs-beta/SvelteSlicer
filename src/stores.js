@@ -337,6 +337,8 @@ function buildFirstSnapshot(data) {
 
 	fileTree.set(componentTree[parentComponent]);
 
+	console.log(componentData[domParent]);
+
 	return JSON.parse(JSON.stringify(componentData[domParent])); // deep clone to "freeze" state
 }
 

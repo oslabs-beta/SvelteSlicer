@@ -191,7 +191,13 @@ chrome.devtools.panels.create(
                     }
 
                     function getComponentName(file) {
-                        return file.slice((file.lastIndexOf('/') + 1), -7);
+                        if (file.indexOf('/') === -1) {
+                            tagName = file.slice((file.lastIndexOf('\\\\') + 1), -7);
+                        }
+                        else {
+                            tagName = file.slice((file.lastIndexOf('/') + 1), -7);
+                        }
+                        return tagName;
                     }
 
                     function eventAlert(nodeId, event) {
