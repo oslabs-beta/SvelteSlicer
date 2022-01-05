@@ -17,6 +17,10 @@ a {
 	text-decoration: none;
 }
 
+ol li::marker {
+	content: "▼";
+  }
+  
 a:hover {
 	text-decoration: underline;
 }

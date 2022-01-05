@@ -17,17 +17,8 @@
 </script>
 
 <main>
-    <!-- <p>{component.id}
-    {#if component.children.length} 
-    <ul>
-        {#each component.children as child}
-            <li>
-                <svelte:self component={child}/>
-            </li>
-        {/each}
-        </ul>
-    {/if} -->
-    <ul><!-- transition:slide -->
+   
+    <ol><!-- transition:slide -->
         <li>
             {#if children}
                 <span on:click={toggleExpansion}>
@@ -46,17 +37,7 @@
                 </span>
             {/if}
         </li>
-    </ul>
+    </ol>
 
 </main>
 
-<style>
-	/* ul {
-		margin: 0;
-		list-style: none;
-		padding-left: 1.2rem; 
-		user-select: none;
-	}
-	.no-arrow { padding-left: 1.0rem; } */
-	
-</style>
