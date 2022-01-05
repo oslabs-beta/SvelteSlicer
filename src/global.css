@@ -17,6 +17,10 @@ a {
 	text-decoration: none;
 }
 
+ol li::marker {
+	content: "▼";
+  }
+  
 a:hover {
 	text-decoration: underline;
 }
@@ -89,3 +93,11 @@ button:focus {
   stroke: #ccc;
   stroke-width: 2px;
 }
+
+ul {
+	margin: 0;
+	list-style: none;
+	padding-left: 1.2rem; 
+	user-select: none;
+}
+.no-arrow { padding-left: 1.0rem; }

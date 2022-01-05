@@ -52,7 +52,7 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 	  	svelteFile.getContent(source => {
 			if (source) {
 				const { ast, vars } = compile(source, {varsReport: 'full'});
-				const componentName = svelteFile.url.slice((svelteFile.url.lastIndexOf('/') + 1), -7);
+				const componentName = svelteFile.url.slice((svelteFile.url.lastIndexOf('/') + 1), svelteFile.url.lastIndexOf('.svelte'));
 				const variables = {};
 				const functions = {};
 				const components = {};		
@@ -196,7 +196,7 @@ function buildFirstSnapshot(data) {
 			listeners: {}
 		}
 		// add as a child to target node
-		if (node.target !== "body") {
+		if (typeof node.target === "number") {
 			nodes[node.target].children.push({id: node.id});
 		}
 	})
@@ -252,7 +252,12 @@ function buildFirstSnapshot(data) {
 		})
 
 		// identify the top-level parent node for the component
-		const parentNode = (targets.hasOwnProperty("body")) ? "body" : Math.min(...Object.keys(targets));
+		let parentNode;
+		if (component.target) {
+			parentNode = component.target;
+			domParent = component.id;
+		}
+		parentNode = Math.min(...Object.keys(targets));
 		data.parentNode = parentNode;
 		data.targets = targets;
 
@@ -306,10 +311,8 @@ function buildFirstSnapshot(data) {
 	// determine and assign the DOM parent (can't happen until all components are built and have nodes assigned)
 	for (let component in componentData) {
 		const { parentNode } = componentData[component];
-		componentData[component].parent = (nodes.hasOwnProperty(parentNode)) ? nodes[parentNode].component : ((componentData[component].tagName === "App") ? null : "App0");
+		componentData[component].parent = (nodes.hasOwnProperty(parentNode)) ? nodes[parentNode].component : ((component === domParent) ? null : domParent);
 		componentData[component].children = [];
-	
-
 	}
 
 	// assign DOM children to components (can't happen until all components know their parents)
@@ -319,9 +322,6 @@ function buildFirstSnapshot(data) {
 		if (parent) {
 			componentData[parent].children.push(component);
 			
-		}
-		else {
-			domParent = component.id;
 		}
 	}
 
@@ -366,7 +366,7 @@ function buildNewSnapshot(data) {
 			listeners: {}
 		}
 		// add as a child to target node
-		if (node.target !== "body") {
+		if (typeof node.target === "number") {
 			nodes[node.target].children.push({id: node.id});
 		}
 	})
@@ -447,7 +447,7 @@ function buildNewSnapshot(data) {
 	// determine and assign the parent component
 	for (let component in componentData) {
 		const { parentNode } = componentData[component];
-		componentData[component].parent = (nodes.hasOwnProperty(parentNode)) ? nodes[parentNode].component : ((componentData[component].tagName === "App") ? null : "App0");
+		componentData[component].parent = (nodes.hasOwnProperty(parentNode)) ? nodes[parentNode].component : ((component === domParent) ? null : domParent);
 		componentData[component].children = [];
 	}
 
@@ -481,7 +481,7 @@ function buildNewSnapshot(data) {
 			componentData[parent].children.push(component);
 		}
 		// if no current nodes, mark component as not active
-		if (!Object.keys(component.nodes).length && component.tagName !== "App") {
+		if (!Object.keys(component.nodes).length && component.id !== domParent) {
 			component.active = false;
 		}
 		else {

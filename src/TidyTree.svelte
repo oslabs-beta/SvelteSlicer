@@ -3,12 +3,21 @@
     import * as d3 from 'd3';
     
     export let treeData;
+    console.log('treeData',treeData)
+    export let count;
+
+    console.log("count",count)
     
     let margin = {top:20,right:90,bottom:20,left:90}
         let width = 960 - margin.left - margin.right;
         let height = 500 - margin.top -margin.bottom;
+
+        let svg;
+    
+    //check if dom already have 1 tidy tree    
+     if(count<2){  
          
-         let svg = d3.select("body")
+        svg = d3.select("body")
            .append('div')
            .attr('class','container')
            .append("svg")
@@ -160,16 +169,16 @@
                update(d);
            }
            }
-    
-          
+        }
+       
            
     </script>
     
     
     
-    <div class="tidy" on:click> TidyTree {treeData.id}
+    <!-- <div class="tidy" on:click> TidyTree {treeData.id}
        
-    </div>
+    </div> -->
     <!-- <p class="test">Test CSS</p> -->
     
     <style>
