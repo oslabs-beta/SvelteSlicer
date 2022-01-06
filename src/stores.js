@@ -36,6 +36,7 @@ chrome.runtime.onMessage.addListener((msg) => {
 	const { data, type } = parsedMessage;
 
 	if (type === "firstLoad") {
+		snapshots.set([]);
 		const snapshot = buildFirstSnapshot(data);
 		snapshots.update(array => [...array, snapshot]);
 	}
