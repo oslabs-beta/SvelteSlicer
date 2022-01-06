@@ -10,11 +10,11 @@ export let count;
 console.log("count",count)
 
 let margin = {top:20,right:0,bottom:20,left:0}
-    // let width = 400 - margin.left - margin.right;
-    // let height = 700 - margin.top -margin.bottom;
+    let width = 400 - margin.left - margin.right;
+    let height = 700 - margin.top -margin.bottom;
 //1/3 
-const width = document.body.clientWidth;
-const height = document.body.clientHeight;
+// const width = document.body.clientWidth;
+// const height = document.body.clientHeight;
 
     let svg;
 

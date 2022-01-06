@@ -53,35 +53,24 @@
 			{/if}
 		</div>
 		
-			{#if view === "componentTree" }
 			<div id="right" style="flex:10; display:flex; flex-flow:row">
 				<div id="red" class="center" style="background-color:#636E72; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
 					<h2>Visual</h2>
-					
+					{#if view === "componentTree"} 
 					<Component component={$fileTree}/>
-				</div>
+					{:else if view === "tidyTree"}
+					<TidyTree2 treeData={$fileTree} {count}/>
+					{/if}
 			</div>
-			{:else if view === "tidyTree"}
-			<div id="right" style="flex:10; display:flex; flex-flow:row">
-				<div id="red" class="center" style="background-color:#636E72; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
-					<h2>Visual</h2>
-					
-						<TidyTree2 treeData={$fileTree} {count}/>
-				
-					
-				</div>
-			</div>
-			
-			{/if}
-			
 			<div id="red" class="center" style="background-color:#636E72; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
-				<h2>Data</h2>
-			{#if view === "state"}
-				{#if snapshot} 
-					<State component={snapshot}></State>
-				{/if}	
-			{/if}		
+					<h2>Data</h2>
+				{#if view === "state"}
+					{#if snapshot} 
+						<State component={snapshot}></State>
+					{/if}	
+				{/if}		
 			</div>
+		</div>	
 			
 	</main>
 	
