@@ -326,16 +326,21 @@ function buildFirstSnapshot(data) {
 		}
 	}
 
-	// assign component children and determine top-level parent component
+	// assign component children
 	for (let file in astInfo) {
 		for (let childFile in astInfo[file].components) {
 			componentTree[file].children.push(componentTree[childFile]);
+			componentTree[childFile].parent = file;
 		}
+	}
+
+	// determine top-level parent component
+	for (let file in astInfo) {
 		if (!componentTree[file].parent) {
 			parentComponent = file;
 		}
 	}
-
+	
 	fileTree.set(componentTree[parentComponent]);
 
 	return JSON.parse(JSON.stringify(componentData[domParent])); // deep clone to "freeze" state
