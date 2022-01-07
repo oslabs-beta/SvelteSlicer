@@ -47,7 +47,9 @@ chrome.runtime.onMessage.addListener((msg) => {
 	}
 	else if (type === "event") {
 		const listener = listeners[data.nodeId + data.event];
-		snapshotLabel = listener.component + ' - ' + listener.event + " -> " + listener.name;
+		const { component, event, name } = listener;
+		const tagName = componentData[listener.component].tagName
+		snapshotLabel = tagName + ' - ' + event + " -> " + name;
 	}
 });
 
@@ -349,12 +351,10 @@ function buildFirstSnapshot(data) {
 	const snapshot = {
 		data: componentData,
 		parent: domParent,
-		label: snapshotLabel
+		label: 'Initial State'
 	}
 
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
-
-	snapshotLabel = undefined;
 
 	fileTree.set(componentTree[parentComponent]);
 
