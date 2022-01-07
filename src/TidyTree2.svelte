@@ -67,10 +67,14 @@ onMount(()=>{
                   .enter()
                   .append('g')
                   .attr('class','node')
+                  .attr('id',function(d){
+                   return d.data.id;
+               })
                   .attr('transform',function(d){
                       return "translate(" + src.x0 + ", " + src.y0 +")";
                   })
                   .on('click',click);
+
             //create circles (this might be the place to set the state datas to deliver to data panel )  
               nodeEnter
                 .append('circle')
@@ -180,7 +184,7 @@ onMount(()=>{
            d.x0=d.x;
            d.y0=d.y;
        });
-       function click(event, d){
+       function click(event, d,e){
            if(d.children){
                d._children=d.children;
                d.children=null;
@@ -189,12 +193,17 @@ onMount(()=>{
                d._children=null;
            }
            update(d);
+           console.log(`${e.target.id} node is selected`)
        }
        }
     
    
 })  
-//}    
+//}   
+
+function nodeClicked(e){
+   console.log(`${e.target.id} node is selected`)
+}
 </script>
 
 

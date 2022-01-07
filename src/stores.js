@@ -6,8 +6,10 @@ export const fileTree = writable({});
 
 // store updateable objects for current component state
 const componentData = {}
-// store ALL nodes and listeners
+console.log("cdata",componentData)
+// store ALL nodes and listeners (DOM nodes,the real-time big data for Data panel use)
 const nodes = {};
+console.log('nodes',nodes)
 const listeners = {};
 
 // store AST info for each file
