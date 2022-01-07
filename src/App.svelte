@@ -48,7 +48,7 @@
 			</label>
 			{#if view === "state"}
 				{#each $snapshots as snapshot, i}
-					<button on:click={() => selectState(i)}>Snapshot {i} : {snapshot.label}</button>
+					<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
 					<br>
 				{/each}
 				<hr>

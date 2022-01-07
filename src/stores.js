@@ -47,7 +47,7 @@ chrome.runtime.onMessage.addListener((msg) => {
 	}
 	else if (type === "event") {
 		const listener = listeners[data.nodeId + data.event];
-		snapshotLabel = listener.event + " -> " + listener.name;
+		snapshotLabel = listener.component + ' - ' + listener.event + " -> " + listener.name;
 	}
 });
 
@@ -352,9 +352,13 @@ function buildFirstSnapshot(data) {
 		label: snapshotLabel
 	}
 
+	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
+
+	snapshotLabel = undefined;
+
 	fileTree.set(componentTree[parentComponent]);
 
-	return JSON.parse(JSON.stringify(snapshot)); // deep clone to "freeze" state
+	return deepCloneSnapshot; // deep clone to "freeze" state
 }
 
 function buildNewSnapshot(data) {
@@ -523,7 +527,11 @@ function buildNewSnapshot(data) {
 		label: snapshotLabel
 	}
 
-	return JSON.parse(JSON.stringify(snapshot))  // deep copy to "freeze" state
+	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
+
+	snapshotLabel = undefined;
+
+	return deepCloneSnapshot;  // deep copy to "freeze" state
 
 	// recursively delete node and all descendents
 	function deleteNode (nodeId) {
