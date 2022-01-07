@@ -518,11 +518,16 @@ function buildNewSnapshot(data) {
 		for(let i in componentData[component].variables) {
 			const variable = componentData[component].variables[i];
 			if (variable.ctxIndex) {
-				console.log(variable.value);
-				console.log(ctxObject[component][variable.ctxIndex].value);
 				if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
+					const data = {
+						name: variable.name,
+						oldValue: JSON.parse(JSON.stringify(variable.value !== undefined ? variable.value : "undefined")),
+						newValue: ctxObject[component][variable.ctxIndex].value,
+						component: variable.component,
+						type: variable.type
+					}
+					diff.push(data);
 					variable.value = ctxObject[component][variable.ctxIndex].value;
-					diff.push(variable);
 				}
 			}
 		}
