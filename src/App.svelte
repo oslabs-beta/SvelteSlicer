@@ -48,13 +48,14 @@
 			{#if view === "state"}
 				{#each $snapshots as snapshot, i}
 					<button on:click={() => selectState(i)}>Snapshot {i}</button>
+					<br>
 				{/each}
 				<hr>
 			{/if}
 		</div>
 		
 			<div id="right" style="flex:10; display:flex; flex-flow:row">
-				<div id="red" class="center" style="background-color:#636E72; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
+				<div id="red" class="center" style="background-color:orangered; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
 					<h2>Visual</h2>
 					{#if view === "componentTree"} 
 					<Component component={$fileTree}/>
@@ -62,7 +63,7 @@
 					<TidyTree2 treeData={$fileTree} {count}/>
 					{/if}
 			</div>
-			<div id="red" class="center" style="background-color:#636E72; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
+			<div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
 					<h2>Data</h2>
 				{#if view === "state"}
 					{#if snapshot} 

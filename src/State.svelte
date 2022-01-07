@@ -21,6 +21,7 @@
                 <li>
                     <svelte:self component={child}/>
                 </li>
+               
             {/if}        
         {/each}
         </ul>
