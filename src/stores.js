@@ -1,5 +1,7 @@
 import { writable } from 'svelte/store';
 import { compile } from "svelte/compiler";
+import _ from "lodash";
+
 
 export const snapshots = writable([]);
 export const fileTree = writable({});
@@ -516,7 +518,12 @@ function buildNewSnapshot(data) {
 		for(let i in componentData[component].variables) {
 			const variable = componentData[component].variables[i];
 			if (variable.ctxIndex) {
-				variable.value = ctxObject[component][variable.ctxIndex].value;
+				console.log(variable.value);
+				console.log(ctxObject[component][variable.ctxIndex].value);
+				if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
+					variable.value = ctxObject[component][variable.ctxIndex].value;
+					diff.push(variable);
+				}
 			}
 		}
 	}
@@ -524,7 +531,8 @@ function buildNewSnapshot(data) {
 	const snapshot = {
 		data: componentData,
 		parent: domParent,
-		label: snapshotLabel
+		label: snapshotLabel,
+		diff
 	}
 
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))

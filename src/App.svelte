@@ -18,6 +18,7 @@
 	
 	function selectState(index) {
 		CurrentI = index;
+		console.log($snapshots[CurrentI]);
 	}
 	
 	function selectView(view) {
