@@ -10,11 +10,11 @@ export let count;
 console.log("count",count)
 
 let margin = {top:20,right:0,bottom:20,left:0}
-    // let width = 400 - margin.left - margin.right;
-    // let height = 700 - margin.top -margin.bottom;
+    let width = 700 - margin.left - margin.right;
+    let height = 700 - margin.top -margin.bottom;
 //1/3 
-const width = document.body.clientWidth;
-const height = document.body.clientHeight;
+// const width = document.body.clientWidth;
+// const height = document.body.clientHeight;
 
     let svg;
 
@@ -56,6 +56,7 @@ onMount(()=>{
            //set depth
            nodes.forEach(function(d){
                d.y=d.depth*140;
+              
            });
 
            let node = svg.selectAll('g.node').data(nodes,function(d){
@@ -76,7 +77,7 @@ onMount(()=>{
                 .attr('class','node')
                 .attr('r',0)
                 .style('fill',function(d){
-                    return d._children? "red":"green";
+                    return d._children? "moccasin":"green";
                 })
 
             //add text  to show the node data
@@ -112,7 +113,7 @@ onMount(()=>{
               .select('circle.node')
               .attr('r',10)
               .style('fill',function(d){
-                    return d._children? "red":"green";
+                    return d._children? "moccasin":"green";
                 })
               .attr('cursor', 'pointer');
 

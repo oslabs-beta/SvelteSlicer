@@ -18,17 +18,23 @@
 
 <main>
    
-    <ol>
+    <ul>
         <li>
-            {#if children}
+            {#if children.length}
                 <span on:click={toggleExpansion}>
-                    <i class="fas fa-arrow-down"></i>
-                    {id}
+                    <span class="arrow" class:arrowDown>&#x25b6</span>
+                  {id}
+                    
                 </span>
                 {#if expanded}
-                    {#each children as child}
+                    
+                     {#each children as child}
+                    
                         <svelte:self component={child} />
+                        
+                        
                     {/each}
+                   
                 {/if}
             {:else}
                 <span>
@@ -37,7 +43,9 @@
                 </span>
             {/if}
         </li>
-    </ol>
+    </ul>
 
 </main>
+
+
 
