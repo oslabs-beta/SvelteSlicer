@@ -15,6 +15,7 @@ const astInfo = {};
 const componentTree = {};
 let parentComponent;
 let domParent;
+let snapshotLabel;
 
 // for debugging, store any AST variables not caught by switch statements
 const uncaughtVariables = [];
@@ -43,6 +44,10 @@ chrome.runtime.onMessage.addListener((msg) => {
 	else if (type === "update") {
 		const newSnapshot = buildNewSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
+	}
+	else if (type === "event") {
+		const listener = listeners[data.nodeId + data.event];
+		snapshotLabel = listener.event + " -> " + listener.name;
 	}
 });
 
@@ -341,9 +346,15 @@ function buildFirstSnapshot(data) {
 		}
 	}
 	
+	const snapshot = {
+		data: componentData,
+		parent: domParent,
+		label: snapshotLabel
+	}
+
 	fileTree.set(componentTree[parentComponent]);
 
-	return JSON.parse(JSON.stringify(componentData[domParent])); // deep clone to "freeze" state
+	return JSON.parse(JSON.stringify(snapshot)); // deep clone to "freeze" state
 }
 
 function buildNewSnapshot(data) {
@@ -506,7 +517,13 @@ function buildNewSnapshot(data) {
 		}
 	}
 
-	return JSON.parse(JSON.stringify(componentData[domParent]))  // deep copy to "freeze" state
+	const snapshot = {
+		data: componentData,
+		parent: domParent,
+		label: snapshotLabel
+	}
+
+	return JSON.parse(JSON.stringify(snapshot))  // deep copy to "freeze" state
 
 	// recursively delete node and all descendents
 	function deleteNode (nodeId) {
