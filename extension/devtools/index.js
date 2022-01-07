@@ -118,6 +118,7 @@ chrome.devtools.panels.create(
                             };
                         }
                     }
+
                     function svelteDOMRemove(e) {
                         
                         const { node } = e.detail;
@@ -129,6 +130,7 @@ chrome.devtools.panels.create(
                             })
                         }
                     }
+
                     function svelteDOMInsert(e) {
                         
                         const { node, target } = e.detail;
@@ -147,6 +149,7 @@ chrome.devtools.panels.create(
                             });
                         }
                     }
+
                     function svelteDOMAddEventListener(e) {
                         const { node, event } = e.detail;
                         const nodeData = nodes.get(node);
@@ -161,6 +164,7 @@ chrome.devtools.panels.create(
                             id: nodeData.id + event
                         })
                     }
+
                     function svelteDOMRemoveEventListener(e) {
                         const { node, event } = e.detail;
                         nodeData = nodes.get(node);
@@ -173,9 +177,17 @@ chrome.devtools.panels.create(
                             id: nodeData.id + event
                         })
                     }
+
                     function getComponentName(file) {
-                        return file.slice((file.lastIndexOf('/') + 1), -7);
+                        if (file.indexOf('/') === -1) {
+                            tagName = file.slice((file.lastIndexOf('\\\\') + 1), -7);
+                        }
+                        else {
+                            tagName = file.slice((file.lastIndexOf('/') + 1), -7);
+                        }
+                        return tagName;
                     }
+
                     function eventAlert(nodeId, event) {
                         window.postMessage({
                             source: 'panel.js',
@@ -186,6 +198,8 @@ chrome.devtools.panels.create(
                             }
                         });
                     }
+
+
                     setup(window.document);
                   
                     for (let i = 0; i < window.frames.length; i++) {
@@ -193,6 +207,7 @@ chrome.devtools.panels.create(
                         const root = frame.document
                         setup(root)
                     }
+
                     // observe for changes to the DOM
                     const observer = new MutationObserver( list => {
                         const evt = new CustomEvent('dom-changed', {detail: list});
@@ -216,6 +231,7 @@ chrome.devtools.panels.create(
                                 }
                             });
                         }
+
                         // reset arrays
                         components.splice(0, components.length);
                         insertedNodes.splice(0, insertedNodes.length);
@@ -225,6 +241,7 @@ chrome.devtools.panels.create(
                         // start MutationObserver
                         observer.observe(window.document, {attributes: true, childList: true, subtree: true});
                     }   
+
                     // capture subsequent DOM changes to update snapshots
                     window.document.addEventListener('dom-changed', (e) => {
                         // only send message if something changed in SvelteDOM
@@ -260,6 +277,7 @@ chrome.devtools.panels.create(
                                 }
                             });
                         }
+                        
                         // reset arrays
                         components.splice(0, components.length);
                         insertedNodes.splice(0, insertedNodes.length);
