@@ -20,7 +20,7 @@
    
     <ul>
         <li>
-            {#if children.length>0}
+            {#if children.length}
                 <span on:click={toggleExpansion}>
                     <span class="arrow" class:arrowDown>&#x25b6</span>
                   {id}
