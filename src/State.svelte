@@ -14,14 +14,17 @@
         {/each}
     {/if}
     {#if component.children.length} 
-    <ul>
+    <ol>
+        <ul>
         {#each component.children as child}
             {#if child.active}
                 <li>
                     <svelte:self component={child}/>
                 </li>
+               
             {/if}        
         {/each}
         </ul>
+    </ol>
     {/if}
 </main>
