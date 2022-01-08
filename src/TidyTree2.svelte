@@ -193,7 +193,7 @@ onMount(()=>{
                d._children=null;
            }
            update(d);
-           console.log(`${e.target.id} node is selected`)
+           console.log(`${d.data.id} node is selected`)
        }
        }
     
@@ -201,9 +201,9 @@ onMount(()=>{
 })  
 //}   
 
-function nodeClicked(e){
-   console.log(`${e.target.id} node is selected`)
-}
+// function nodeClicked(e){
+//    console.log(`${e.target.id} node is selected`)
+// }
 </script>
 
 
