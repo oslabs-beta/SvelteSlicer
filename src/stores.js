@@ -230,7 +230,7 @@ function buildFirstSnapshot(data) {
 
 	// build components and assign nodes, variables and listeners
 	components.forEach(component => {
-		const { ctx, injectState, tagName, id } = component;
+		const { ctx, injectState, tagName, id, instance } = component;
 
 		const data = {
 			tagName,
@@ -238,7 +238,8 @@ function buildFirstSnapshot(data) {
 			nodes: {},
 			listeners: {},
 			variables: {},
-			active: true
+			active: true,
+			instance
 		};
 
 		const targets = {};
@@ -396,7 +397,7 @@ function buildNewSnapshot(data) {
 
 	// add new components
 	components.forEach(component => {
-		const { ctx, injectState, captureState, tagName, id } = component;
+		const { ctx, injectState, captureState, tagName, id, instance } = component;
 
 		// create object with all associated variables
 		const variables = {};
@@ -420,7 +421,8 @@ function buildNewSnapshot(data) {
 			variables,
 			nodes: {},
 			listeners: {},
-			active: true
+			active: true,
+			instance
 		};
 		
 		// create object with all associated nodes
