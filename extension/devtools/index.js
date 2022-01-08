@@ -65,6 +65,7 @@ chrome.devtools.panels.create(
                             injectState,
                             tagName,
                             captureState,
+                            instance,
                             target: (options.target) ? options.target.nodeName + options.target.id : null
                         }
                         components.push(data);
