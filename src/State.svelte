@@ -7,9 +7,14 @@
     $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
     $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
 
+    function clickhandler() {
+        console.log(snapshot);
+    }
+
 </script>
 
 <main>
+    <button on:click={clickhandler}>Log State</button>
     {#if snapshot && component}
     <h3>{snapshot.label}</h3>
     <h4>{component.tagName}</h4>
