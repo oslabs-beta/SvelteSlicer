@@ -6,11 +6,13 @@
     $: snapshot = $snapshots[I];
     $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
     $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
+    
 
     function clickhandler() {
         console.log(snapshot);
+       
     }
-
+   
 </script>
 
 <main>
