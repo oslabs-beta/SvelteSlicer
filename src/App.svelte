@@ -4,17 +4,13 @@
 	//import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import State from './State.svelte';
-	import Data from './data.svelte'
+	
    
 	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree
 	
     
 	$: snapshot = $snapshots[CurrentI];
 	$: data = (snapshot ? snapshot.data : undefined);
-	$: parent = (snapshot ? snapshot.parent : undefined);
-    
-    
-	
 
 	let CurrentI;
 	
@@ -23,13 +19,6 @@
 	
 	function selectState(shot,index) {
 		CurrentI = index;
-		// able to catch data here
-		console.log('inside',shot)
-		console.log("data of snap btn",$snapshots[CurrentI]); 
-		dataForSelected=shot
-		
-		
-		
 	}
 	$: dataForSelected = selectState()  
 	console.log('out data',dataForSelected)
@@ -80,9 +69,8 @@
 			<div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
 					<h2>Data</h2>
 				{#if view === "state"}
-					{#if data} 
-						<State component={data[parent]}></State>
-						<Data dataForSelected={dataForSelected}/>
+					{#if data && snapshot} 
+						<State I={CurrentI}></State>
 					{/if}	
 				{/if}		
 			</div>
