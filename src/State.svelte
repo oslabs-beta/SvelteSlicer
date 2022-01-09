@@ -1,6 +1,14 @@
 <script>
     export let component;
+   
     import Variable from './Variable.svelte';
+    
+
+    //console.log('com in state',component)
+    // console.log('dataForSelected',dataForSelected)
+
+    
+    
 </script>
 
 <main>
@@ -14,7 +22,7 @@
         {/each}
     {/if}
     {#if component.children.length} 
-    <ol>
+   
         <ul>
         {#each component.children as child}
             {#if child.active}
@@ -25,6 +33,6 @@
             {/if}        
         {/each}
         </ul>
-    </ol>
+    
     {/if}
 </main>

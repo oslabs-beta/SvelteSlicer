@@ -1,5 +1,6 @@
 <script>
     export let variable;
+    //console.log("var",variable)
 </script>
 
 <main>
