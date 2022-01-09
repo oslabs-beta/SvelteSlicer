@@ -538,7 +538,7 @@ function buildNewSnapshot(data) {
 	const snapshot = {
 		data: componentData,
 		parent: domParent,
-		label: snapshotLabel,
+		label: (snapshotLabel ? snapshotLabel : "Unlabeled Snapshot"),
 		diff
 	}
 

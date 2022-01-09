@@ -9,7 +9,6 @@
 
 	$: snapshot = $snapshots[CurrentI];
 	$: data = (snapshot ? snapshot.data : undefined);
-	$: parent = (snapshot ? snapshot.parent : undefined);
 
 	let CurrentI;
 	
@@ -68,8 +67,8 @@
 			<div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
 					<h2>Data</h2>
 				{#if view === "state"}
-					{#if data} 
-						<State component={data[parent]}></State>
+					{#if data && snapshot} 
+						<State I={CurrentI}></State>
 					{/if}	
 				{/if}		
 			</div>
