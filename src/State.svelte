@@ -48,7 +48,7 @@
                 const listItem = document.createElement('LI')
                 const lBreak = document.createElement('br')
                 // dataContainer may need t be creaed before appending dataSection to it
-                let snapShotText = document.createTextNode('new Val ' + snapshot[element][i].newValue + ' old Val ' + snapshot[element][i].oldValue)
+                let snapShotText = document.createTextNode('new Val: ' + snapshot[element][i].newValue + ' old Val: ' + snapshot[element][i].oldValue)
                 listItem.appendChild(snapShotText);
                 oList.appendChild(listItem);
                 document.getElementById("holdsStateData").appendChild(oList)
