@@ -27,9 +27,9 @@
                 for(let i = 0; i < snapshot[element].length; i+=1){
                     
                 // console.log('text ', i, snapshot[element][i].name)
-                console.log('old val ', i, snapshot[element][i].oldValue)
+                console.log('old val: ', i, snapshot[element][i].oldValue)
                 oldSnapshotVal = snapshot[element][i].oldValue
-                console.log('new val ', i, snapshot[element][i].newValue)
+                console.log('new val: ', i, snapshot[element][i].newValue)
                 newSnapshotVal = snapshot[element][i].newValue
                 // console.log('text ', i, snapshot[element][i].name)
                 // console.log('new val ', i, snapshot[element][i].newValue)
