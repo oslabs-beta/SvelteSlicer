@@ -1,5 +1,7 @@
 import { writable } from 'svelte/store';
 import { compile } from "svelte/compiler";
+import _ from "lodash";
+
 
 export const snapshots = writable([]);
 export const fileTree = writable({});
@@ -15,6 +17,7 @@ const astInfo = {};
 const componentTree = {};
 let parentComponent;
 let domParent;
+let snapshotLabel;
 
 // for debugging, store any AST variables not caught by switch statements
 const uncaughtVariables = [];
@@ -43,6 +46,12 @@ chrome.runtime.onMessage.addListener((msg) => {
 	else if (type === "update") {
 		const newSnapshot = buildNewSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
+	}
+	else if (type === "event") {
+		const listener = listeners[data.nodeId + data.event];
+		const { component, event, name } = listener;
+		const tagName = componentData[listener.component].tagName
+		snapshotLabel = tagName + ' - ' + event + " -> " + name;
 	}
 });
 
@@ -221,7 +230,7 @@ function buildFirstSnapshot(data) {
 
 	// build components and assign nodes, variables and listeners
 	components.forEach(component => {
-		const { ctx, injectState, tagName, id } = component;
+		const { ctx, injectState, tagName, id, instance } = component;
 
 		const data = {
 			tagName,
@@ -229,7 +238,8 @@ function buildFirstSnapshot(data) {
 			nodes: {},
 			listeners: {},
 			variables: {},
-			active: true
+			active: true,
+			instance
 		};
 
 		const targets = {};
@@ -341,9 +351,17 @@ function buildFirstSnapshot(data) {
 		}
 	}
 	
+	const snapshot = {
+		data: componentData,
+		parent: domParent,
+		label: 'Initial State'
+	}
+
+	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
+
 	fileTree.set(componentTree[parentComponent]);
 
-	return JSON.parse(JSON.stringify(componentData[domParent])); // deep clone to "freeze" state
+	return deepCloneSnapshot; // deep clone to "freeze" state
 }
 
 function buildNewSnapshot(data) {
@@ -379,7 +397,7 @@ function buildNewSnapshot(data) {
 
 	// add new components
 	components.forEach(component => {
-		const { ctx, injectState, captureState, tagName, id } = component;
+		const { ctx, injectState, captureState, tagName, id, instance } = component;
 
 		// create object with all associated variables
 		const variables = {};
@@ -403,7 +421,8 @@ function buildNewSnapshot(data) {
 			variables,
 			nodes: {},
 			listeners: {},
-			active: true
+			active: true,
+			instance
 		};
 		
 		// create object with all associated nodes
@@ -501,12 +520,33 @@ function buildNewSnapshot(data) {
 		for(let i in componentData[component].variables) {
 			const variable = componentData[component].variables[i];
 			if (variable.ctxIndex) {
-				variable.value = ctxObject[component][variable.ctxIndex].value;
+				if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
+					const data = {
+						name: variable.name,
+						oldValue: JSON.parse(JSON.stringify(variable.value !== undefined ? variable.value : "undefined")),
+						newValue: ctxObject[component][variable.ctxIndex].value,
+						component: variable.component,
+						type: variable.type
+					}
+					diff.push(data);
+					variable.value = ctxObject[component][variable.ctxIndex].value;
+				}
 			}
 		}
 	}
-	console.log('domparent ', componentData[domParent])
-	return JSON.parse(JSON.stringify(componentData[domParent]))  // deep copy to "freeze" state
+
+	const snapshot = {
+		data: componentData,
+		parent: domParent,
+		label: (snapshotLabel ? snapshotLabel : "Unlabeled Snapshot"),
+		diff
+	}
+
+	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
+
+	snapshotLabel = undefined;
+
+	return deepCloneSnapshot;  // deep copy to "freeze" state
 
 	// recursively delete node and all descendents
 	function deleteNode (nodeId) {
