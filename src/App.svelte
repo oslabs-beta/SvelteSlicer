@@ -4,6 +4,7 @@
 	//import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import State from './State.svelte';
+	//import Data from './data.svelte';
 	
    
 	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree

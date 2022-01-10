@@ -20,14 +20,14 @@
 <main>
     <button on:click={clickhandler}>Log State</button>
 {#if snapshot && component}
-        {#each Object.keys(snapshot.data) as componentName}
-           <!-- {#if Object.keys(componentName.variables).length>0}
-              <h3>heyehy</h3>
-            {:else} -->
+         {#each Object.keys(snapshot.data) as componentName} 
+           {#if Object.keys(snapshot.data[componentName].variables).length>0 && Object.keys(snapshot.data[componentName].active === 'true')}
+           <h3>{componentName}</h3>
+           
        
-               <h3>{componentName}</h3>
-           <!-- {/if} -->
-        {/each}
+              
+           {/if}
+       {/each}
            <h3>{snapshot.label}</h3>
            <h4>{component.tagName}</h4>
     {#if Object.keys(component.variables).length}
@@ -38,7 +38,7 @@
             {/if}
         {/each}
     {/if}
-    <!-- {#if component.children.length} 
+    {#if component.children.length} 
    
         <ul>
         {#each component.children as child}
@@ -51,6 +51,6 @@
         {/each}
         </ul>
     
-    {/if} -->
+    {/if}
 {/if}
 </main>
