@@ -34,17 +34,31 @@
 	
 	</script>
 	
-	<main id="parent" style="display:flex; height:auto; box-sizing:content-box">
-		<div id="left" class="center" style="background-color:#2D3436; height:100%; width:100%; border:solid 3px #F1F3F4; flex:{showLeft?3:0}">
+	<main id="parent" style="display:flex; height:auto; box-sizing:content-box align-item:center">
+		<!-- <div id="left" class="center" style="background-color:#2D3436; height:100%; width:100%; border:solid 3px #F1F3F4; flex:{showLeft?3:0}"> -->
+			<div id="left" class="center" style=" border:solid 3px #F1F3F4; height:100%; width:100%; align-items; flex:{showLeft?3:0}">
 			<h2>Svelte Slicer</h2>
 			<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
 			<hr>
-			<label style="color:#F1F3F4; text-align:center">
-			Reduce LeftPanel <input type="checkbox" bind:checked={showLeft}>
-			</label>
-			<label style="color:#F1F3F4; text-align:center">
-			Toggle Data <input type="checkbox" bind:checked={showRight}>
-			</label>
+			<!-- <label style="color:#F1F3F4; text-align:center"> -->
+			<div>
+				<!-- <label style=" text-align:center" class="switch"> -->
+				<!-- Reduce LeftPanel <input type="checkbox" bind:checked={showLeft}> -->
+				<!-- Reduce Left <input type="checkbox" bind:checked={showLeft}> -->
+				<!-- Visual/Data View  -->
+				<!-- <input type="checkbox" bind:checked={showLeft}>
+				<span class="slider round"></span>
+				</label> -->
+				
+				<!-- <label style="color:#F1F3F4; text-align:center"> -->
+				<label class="switch" style=" text-align:center">
+				<!-- Toggle Data <input type="checkbox" bind:checked={showRight}> -->
+				<input type="checkbox" bind:checked={showLeft}>
+				<span class="slider round"></span>
+				</label>
+			</div>
+			
+			
 			{#if view === "state"}
 				{#each $snapshots as snapshot, i}
 					<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
@@ -55,7 +69,8 @@
 		</div>
 		
 			<div id="right" style="flex:10; display:flex; flex-flow:row">
-				<div id="red" class="center" style="background-color:orangered; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
+				<!-- <div id="red" class="center" style="background-color:orangered; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;"> -->
+				<div id="red" class="center" style="height:100%; border:solid 3px #F1F3F4; width:100%; flex:1;">
 					<h2>Visual</h2>
 					{#if view === "componentTree"} 
 					<Component component={$fileTree}/>
@@ -63,8 +78,9 @@
 					<TidyTree2 treeData={$fileTree} {count}/>
 					{/if}
 			</div>
-			<div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
-					<h2>Data</h2>
+			<!-- <div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};"> -->
+				<div id="red" class="center" style=" border:solid 3px #F1F3F4; height:100%; width:100%; flex:1; display:{showRight?'flex':'none'};">
+					<!-- <h2>Data</h2> -->
 				{#if view === "state"}
 					{#if data && snapshot} 
 						<State I={CurrentI}></State>
@@ -79,7 +95,8 @@
 		main {
 			/* text-align: center; */
 			padding: 1em;
-			max-width: 240px;
+			/* max-width: 240px; */
+			max-width:max-content;
 			margin: 0 auto;
 		}
 	
@@ -88,5 +105,59 @@
 				max-width: none;
 			}
 		}
+	
+	.switch {
+  position: relative;
+  /* display: inline-block; */
+  display: inline-flexbox;
+  width: 30px;
+  height: 17px;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "visual/data";
+  height: 13px;
+  width: 13px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider.round {
+  border-radius: 17px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
 	</style>
 	
