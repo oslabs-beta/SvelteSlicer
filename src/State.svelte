@@ -1,15 +1,21 @@
 <script>
+    import { onMount } from 'svelte';
     export let I;
     export let oldSnapshotVal = '';
     export let newSnapshotVal = '';
     import {snapshots} from './stores.js';
     import Variable from './Variable.svelte';
- 
+    let canvas;
     $: snapshot = $snapshots[I];
     $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
     $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
+    let outsideClickHandler; 
+    
+    // onMount(() => {
 
-    function clickhandler() {
+         function clickhandler() {
+
+        // outsideClickHandler = () => {
        
         console.log('snapshots no s', snapshot);
         console.log('snapshots$', $snapshots)
@@ -17,26 +23,10 @@
             if(element === 'diff'){
                 console.log('snapshots at diff ', snapshot[element])
 
-                //need to grab the arr to prevent looping thr entire snapshot ob
-            // for(let i = 0; i < snapshot[element].length; i+=1){
-                //this loop is currently appending text to dom but in the far right corner
+                //this loop is currently appending text to dom but in the far left corner
                 for(let i = 0; i < snapshot[element].length; i+=1){
-         
-                // if(i <= 2){
-                 const oList = document.createElement("OL");
-                 //create  div to place li
-                oList.setAttribute("id", "myOl");
-                document.body.appendChild(oList);
-                const listItem = document.createElement('LI')
-                
-                let snapShotText = document.createTextNode(snapshot[element][i].newValue)
-                // listItem.appendChild(snapShotText);
-                const lBreak = document.createElement('br')
-                listItem.appendChild(snapShotText);
-                document.getElementById("myOl").appendChild(listItem)
-                listItem.appendChild(lBreak)
-                
-                console.log('text ', i, snapshot[element][i].name)
+                    
+                // console.log('text ', i, snapshot[element][i].name)
                 console.log('old val ', i, snapshot[element][i].oldValue)
                 oldSnapshotVal = snapshot[element][i].oldValue
                 console.log('new val ', i, snapshot[element][i].newValue)
@@ -44,6 +34,29 @@
                 // console.log('text ', i, snapshot[element][i].name)
                 // console.log('new val ', i, snapshot[element][i].newValue)
                 // console.log('old val ', i, snapshot[element][i].oldValue)
+
+                const dataSection = document.createElement("SECTION");
+                dataSection.setAttribute("id", "holdsStateData");
+                document.body.appendChild(dataSection);
+                //canvas tag --- is this accesbile since declare in below code?
+                // document.getElementById("dataContainer").appendChild(dataSection); 
+
+                const oList = document.createElement("OL");
+                //create ol to place li
+                oList.setAttribute("id", "myOl");
+                // document.body.appendChild(oList);
+                const listItem = document.createElement('LI')
+                const lBreak = document.createElement('br')
+                // dataContainer may need t be creaed before appending dataSection to it
+                let snapShotText = document.createTextNode('new Val ' + snapshot[element][i].newValue + ' old Val ' + snapshot[element][i].oldValue)
+                listItem.appendChild(snapShotText);
+                oList.appendChild(listItem);
+                document.getElementById("holdsStateData").appendChild(oList)
+                // listItem.appendChild(lBreak);
+                // dataSection.appendChild(oList);
+                
+                // dataSection.appendChild(listItem)
+                // document.body.appendChild(holdsData);
                 
                 }
                 break;
@@ -52,21 +65,22 @@
             
             console.log('outof loop')
             }
-            
-           
-        }
         
-    // }
-
+        }
+  
 </script>
 
 <main>
-    <button on:click={clickhandler}>Log State</button>
-    
+    <!-- give button an id and append chandler to it -->
+    <!-- <button on:click={clickhandler}>Log State</button> -->
+    <button  on:click={clickhandler}>Log State</button>
+    <!-- <button on:click={outsideClickHandler}>Log State</button> -->
+   
     {#if snapshot && component}
-    <h3>{snapshot.label}</h3>
-    <h4>{component.tagName}</h4>
+    <h3>{snapshot.label.slice(0,13)} </h3> 
+    
 
+    <h4>{component.tagName}</h4>
     {#if Object.keys(component.variables).length}
         <h5>Variables</h5>
       
@@ -86,10 +100,29 @@
                 <li>
                     <svelte:self component={child}/>
                 </li>
-            {/if}        
+                
+            {/if}   
+            <canvas id="dataContainer"
+                bind:this={canvas}
+                width={50}
+                height={50}>
+        
+            </canvas>     
         {/each}
         </ul>
     </ol>
     {/if}
     {/if}
 </main>
+ 
+    
+<style>
+    
+    canvas {
+		width: 50%;
+		height: 50%;
+		background-color: rgb(14, 158, 146);
+		/* -webkit-mask: url(/svelte-logo-mask.svg) 50% 50% no-repeat;
+		mask: url(/svelte-logo-mask.svg) 50% 50% no-repeat; */
+	}
+</style>
