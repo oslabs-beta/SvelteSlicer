@@ -33,8 +33,8 @@
                 // listItem.appendChild(snapShotText);
                 const lBreak = document.createElement('br')
                 listItem.appendChild(snapShotText);
-                document.getElementById("myOl").appendChild(snapShotText)
-                snapshot.appendChild(lBreak)
+                document.getElementById("myOl").appendChild(listItem)
+                listItem.appendChild(lBreak)
                 
                 console.log('text ', i, snapshot[element][i].name)
                 console.log('old val ', i, snapshot[element][i].oldValue)
@@ -56,7 +56,7 @@
            
         }
         
-    }
+    // }
 
 </script>
 
