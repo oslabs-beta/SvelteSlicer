@@ -42,20 +42,12 @@
 			<hr>
 			<!-- <label style="color:#F1F3F4; text-align:center"> -->
 			<div>
-				<!-- <label style=" text-align:center" class="switch"> -->
-				<!-- Reduce LeftPanel <input type="checkbox" bind:checked={showLeft}> -->
-				<!-- Reduce Left <input type="checkbox" bind:checked={showLeft}> -->
-				<!-- Visual/Data View  -->
-				<!-- <input type="checkbox" bind:checked={showLeft}>
-				<span class="slider round"></span>
-				</label> -->
 				
-				<!-- <label style="color:#F1F3F4; text-align:center"> -->
 				<label class="switch" style=" text-align:center">
 				<!-- Toggle Data <input type="checkbox" bind:checked={showRight}> -->
-				<input type="checkbox" bind:checked={showLeft}>
+				<input type="checkbox" bind:checked={showRight}>
 				<span class="slider round"></span>
-				</label>
+				</label> 
 			</div>
 			
 			
@@ -80,7 +72,7 @@
 			</div>
 			<!-- <div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};"> -->
 				<div id="red" class="center" style=" border:solid 3px #F1F3F4; height:100%; width:100%; flex:1; display:{showRight?'flex':'none'};">
-					<!-- <h2>Data</h2> -->
+					<h2>Data</h2>
 				{#if view === "state"}
 					{#if data && snapshot} 
 						<State I={CurrentI}></State>
