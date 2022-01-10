@@ -9,7 +9,9 @@
     
 
     function clickhandler() {
-        console.log(snapshot);
+        console.log("snap,",snapshot);
+        console.log('parent',parent)
+        console.log('comp',component)
        
     }
    
@@ -17,12 +19,17 @@
 
 <main>
     <button on:click={clickhandler}>Log State</button>
-    {#if snapshot && component}
-    {#each Object.keys(snapshot.data) as componentName}
-        <h3>{componentName}</h3>
-    {/each}
-    <h3>{snapshot.label}</h3>
-    <h4>{component.tagName}</h4>
+{#if snapshot && component}
+        {#each Object.keys(snapshot.data) as componentName}
+           <!-- {#if Object.keys(componentName.variables).length>0}
+              <h3>heyehy</h3>
+            {:else} -->
+       
+               <h3>{componentName}</h3>
+           <!-- {/if} -->
+        {/each}
+           <h3>{snapshot.label}</h3>
+           <h4>{component.tagName}</h4>
     {#if Object.keys(component.variables).length}
         <h5>Variables</h5>
         {#each Object.keys(component.variables) as variable}  
@@ -31,7 +38,7 @@
             {/if}
         {/each}
     {/if}
-    {#if component.children.length} 
+    <!-- {#if component.children.length} 
    
         <ul>
         {#each component.children as child}
@@ -44,6 +51,6 @@
         {/each}
         </ul>
     
-    {/if}
-    {/if}
+    {/if} -->
+{/if}
 </main>
