@@ -36,46 +36,45 @@
 	let showRight = false
 	
 	</script>
-	
-	<main id="parent" style="display:flex; height:auto; box-sizing:content-box align-item:center">
+	<Header/>
+	<!-- <main id="parent" style="display:flex; height:auto; box-sizing:content-box align-item:center"> -->
+		<main id="parent" style="display:flex; height:auto; align-item:center">
 		<!-- <div id="left" class="center" style="background-color:#2D3436; height:100%; width:100%; border:solid 3px #F1F3F4; flex:{showLeft?3:0}"> -->
-			<div id="left" class="center" style=" border:solid 3px #F1F3F4; height:100%; width:100%; align-items; flex:{showLeft?3:0}">
-			<Header/>
-				<h2>Svelte Slicer</h2>
-			<button on:click={() => selectView("componentTree")}>Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
-			<hr>
-			<!-- <label style="color:#F1F3F4; text-align:center"> -->
-			<div>
-				<span>Visual/Data</span>
-				<label class="switch" style=" text-align:center">
-				<!-- Toggle Data <input type="checkbox" bind:checked={showRight}> -->
-				<input type="checkbox" bind:checked={showRight}>
-				<span class="slider round"></span>
-				</label> 
-			</div>
+			<div id="left" class="center" style=" border:solid 3px #F1F3F4; height:100%; width:100%; align-items; flex:{showLeft?2:0}">
 			
-			
-			{#if view === "state"}
-				{#each $snapshots as snapshot, i}
-					<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
-					<br>
-				{/each}
+				<button on:click={() => selectView("componentTree")}>Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
 				<hr>
-			{/if}
-		</div>
+				<!-- <label style="color:#F1F3F4; text-align:center"> -->
+					<div>
+						<span>Visual/Data</span>
+						<label class="switch" style=" text-align:center">
+						<!-- Toggle Data <input type="checkbox" bind:checked={showRight}> -->
+						<input type="checkbox" bind:checked={showRight}>
+						<span class="slider round"></span>
+						</label> 
+					</div>
+
+				{#if view === "state"}
+					{#each $snapshots as snapshot, i}
+						<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
+						<br>
+					{/each}
+				{/if}
+			<!-- </div> -->
 		
 			<div id="right" style="flex:10; display:flex; flex-flow:row">
 				<!-- <div id="red" class="center" style="background-color:orangered; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;"> -->
-				<div id="red" class="center" style="height:100%; border:solid 3px #F1F3F4; width:100%; flex:1;">
+				<div id="red" class="center" style="height:100%; border-top:solid 3px #F1F3F4; width:100%; flex:1;">
 					<h2>Visual</h2>
 					{#if view === "componentTree"} 
 					<Component component={$fileTree}/>
 					{:else if view === "tidyTree"}
 					<TidyTree2 treeData={$fileTree} {count}/>
 					{/if}
-			</div>
-			<!-- <div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};"> -->
-				<div id="red" class="center" style=" border:solid 3px #F1F3F4; height:100%; width:100%; flex:1; display:{showRight?'flex':'none'};">
+				</div>
+			
+				<div id="red" class="center" style=" border-top:solid 3px #F1F3F4; align-items: center; border-left:solid 3px #F1F3F4;height:100%; width:100%; align-items: right; display:{showRight?'flex':'none'};">
+				
 					<h2>Data</h2>
 				{#if view === "state"}
 					{#if data && snapshot} 
@@ -84,6 +83,7 @@
 				{/if}		
 			</div>
 		</div>	
+	</div>
 			
 	</main>
 	
@@ -93,7 +93,7 @@
 			padding: 1em;
 			/* max-width: 240px; */
 			max-width:max-content;
-			margin: 20px auto;
+			margin: 10px auto;
 			align-items: center;
 		}
 	
@@ -142,7 +142,10 @@
 
 .slider.round {
   border-radius: 30px;
+  
 }
+
+
 
 .slider.round:before {
   border-radius: 50%;
