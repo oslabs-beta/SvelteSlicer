@@ -30,7 +30,7 @@
 	}
 
 	let showLeft = true
-	let showRight = true
+	let showRight = false
 	
 	</script>
 	
@@ -38,11 +38,11 @@
 		<!-- <div id="left" class="center" style="background-color:#2D3436; height:100%; width:100%; border:solid 3px #F1F3F4; flex:{showLeft?3:0}"> -->
 			<div id="left" class="center" style=" border:solid 3px #F1F3F4; height:100%; width:100%; align-items; flex:{showLeft?3:0}">
 			<h2>Svelte Slicer</h2>
-			<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
+			<button on:click={() => selectView("componentTree")}>Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
 			<hr>
 			<!-- <label style="color:#F1F3F4; text-align:center"> -->
 			<div>
-				
+				<span>Visual/Data</span>
 				<label class="switch" style=" text-align:center">
 				<!-- Toggle Data <input type="checkbox" bind:checked={showRight}> -->
 				<input type="checkbox" bind:checked={showRight}>
@@ -102,8 +102,8 @@
   position: relative;
   /* display: inline-block; */
   display: inline-flexbox;
-  width: 30px;
-  height: 17px;
+  width: 40px;
+  height: 16px;
 }
 
 .slider {
@@ -120,7 +120,8 @@
 
 .slider:before {
   position: absolute;
-  content: "visual/data";
+  /* content: "visual/data"; */
+  content: "";
   height: 13px;
   width: 13px;
   left: 4px;
@@ -140,6 +141,7 @@
 
 input:checked + .slider {
   background-color: #2196F3;
+  /* background-color: none; */
 }
 
 input:focus + .slider {
