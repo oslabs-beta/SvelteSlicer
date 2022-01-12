@@ -19,18 +19,41 @@
 
 <main>
     <button on:click={clickhandler}>Log State</button>
+    
 {#if snapshot && component}
+<h2>{snapshot.label}</h2>
          {#each Object.keys(snapshot.data) as componentName} 
-           {#if Object.keys(snapshot.data[componentName].variables).length>0 && Object.keys(snapshot.data[componentName].active === 'true')}
-           <h3>{componentName}</h3>
+           {#if Object.keys(snapshot.data[componentName].variables).length>0 && snapshot.data[componentName].active}
            
-       
-              
+           
+           <h3>{snapshot.data[componentName].tagName}</h3>
+           {#each Object.keys(snapshot.data[componentName].variables) as variable}  
+            {#if snapshot.data[componentName].variables[variable].value}  
+                <Variable variable={snapshot.data[componentName].variables[variable]}/>
+            {/if}
+        {/each}
+            
+            
            {/if}
+           <!-- {#if snapshot.data[componentName].children.length} 
+   
+           <ul>
+           {#each snapshot.data[componentName].children as child}
+               {#if child.active}
+                   <li>
+                       <svelte:self snapshot={snapshot.data[componentName][child]}/>
+                   </li>
+                  
+               {/if}        
+           {/each}
+           </ul>
+       
+       {/if} -->
+           
        {/each}
-           <h3>{snapshot.label}</h3>
-           <h4>{component.tagName}</h4>
-    {#if Object.keys(component.variables).length}
+          
+
+    <!-- {#if Object.keys(component.variables).length > 0}
         <h5>Variables</h5>
         {#each Object.keys(component.variables) as variable}  
             {#if component.variables[variable].value}  
@@ -51,6 +74,6 @@
         {/each}
         </ul>
     
-    {/if}
+    {/if} -->
 {/if}
 </main>

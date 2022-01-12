@@ -21,8 +21,9 @@
 	function selectState(shot,index) {
 		CurrentI = index;
 	}
-	$: dataForSelected = selectState()  
-	console.log('out data',dataForSelected)
+	// $: dataForSelected = selectState()  
+	// console.log('out data',dataForSelected)
+
 	function selectView(view) {
 		selection = view;
 	}
