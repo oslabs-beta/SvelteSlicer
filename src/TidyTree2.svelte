@@ -84,11 +84,7 @@ onMount(()=>{
              nodeEnter
                .append('text')
                .attr('dx','.35em')
-            //    .attr('dx',function(d){
-            //        console.log('d',d)
-            //        return  d.children ||d._children? `.${d.data.id.length/0.2}em`:`.${d.data.id.length/0.2}em`
-            //    })
-               //.attr('y',-20)
+   
                .attr('y',function(d){
                     //return d.children ||d._children? -20:0;//has childern text on the left(not nesserary)
                     return -12

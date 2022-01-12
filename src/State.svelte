@@ -71,11 +71,10 @@
 </script>
 
 <main>
-    <!-- give button an id and append chandler to it -->
-    <!-- <button on:click={clickhandler}>Log State</button> -->
-    <button  on:click={clickhandler}>Log State</button>
+    <div>
+        <button  on:click={clickhandler}>Log State</button>
     <!-- <button on:click={outsideClickHandler}>Log State</button> -->
-   
+<!--    
     {#if snapshot && component}
     <h3>{snapshot.label.slice(0,13)} </h3> 
     
@@ -112,7 +111,9 @@
         </ul>
     </ol>
     {/if}
-    {/if}
+    {/if} -->
+    </div>
+    
 </main>
  
     

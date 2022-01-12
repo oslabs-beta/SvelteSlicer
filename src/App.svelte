@@ -32,49 +32,58 @@
 		count+=1
 	}
 
-	let showLeft = true
+	// let showLeft = true
 	let showRight = false
 	
 	</script>
 	<Header/>
 		<main id="parent" style="height:auto; align-item:center">
-			<div id="left" class="flex-grid" style=" border:solid 3px #F1F3F4; height:100%; width:100%; align-items; flex:{showLeft?2:0}">
-				<div class="col">
-					<button on:click={() => selectView("componentTree")}>Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
-					<hr>
-					
-						<span>Visual/Data</span>
-						<label class="switch" style=" text-align:center">
-						<input type="checkbox" bind:checked={showRight}>
-						<span class="slider round"></span>
-						</label> 
+			<div id="left" class="flex-grid" style=" border:solid 1px #F1F3F4; height:100%; width:100%; align-items; flex:{showLeft?2:0}">
+				<div >
+					<button on:click={() => selectView("componentTree")}>Tree</button>
+					<button on:click={() => selectView("state")}>State</button>
+					<button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
 				</div>
-
-				{#if view === "state"}
+				<!-- <div> -->
+					<h6>Visual/Data</h6>
+						<label class="switch" style=" text-align:center">
+							<input type="checkbox" bind:checked={showRight}>
+							<span class="slider round"></span>
+						</label> 
+				<!-- </div> -->
+				
+			<div id="right" class="flex-grid-third" style="display:flex; border-top:solid 1px #F1F3F4; ">
+				<div class="col" style="height:fit-content; flex:1;">
+					{#if view === "state"}
 					{#each $snapshots as snapshot, i}
 						<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
 						<br>
 					{/each}
-				{/if}		
-			<div id="right" class="col" style=" display:flex; ">
-				<div id="red" class="center" style="height:100%; border-top:solid 3px #F1F3F4; width:100%; flex:1;">
+					{/if}	
+				</div>
+				<div id="red" class="col" style="height:100%; border-left:1px; flex:1;">
 					<h2>Visual</h2>
 					{#if view === "componentTree"} 
 					<Component component={$fileTree}/>
 					{:else if view === "tidyTree"}
+					
+					<!-- tidy tree currently offset to right. set alignment -->
 					<TidyTree2 treeData={$fileTree} {count}/>
+					<!-- set conditional for tidy tree versus data -->
+					<!-- {:else if view !== "tidyTree"}
+					{:else} -->
 					{/if}
 				</div>
 			
-			<div id="red" class="col" style=" border-top:solid 3px #F1F3F4; align-items: center; border-left:solid 3px #F1F3F4;height:100%; width:100%; align-items: right; display:{showRight?'flex':'none'};">
-				
+				<div id="red" class="col" style=" border-left:1px; align-items: center; height:100%;  align-items: right; display:{showRight?'flex':'none'};">
+					
 					<h2>Data</h2>
-				{#if view === "state"}
-					{#if data && snapshot} 
-						<State I={CurrentI}></State>
-					{/if}	
-				{/if}		
-			</div>
+					{#if view === "state"}
+						{#if data && snapshot} 
+							<State I={CurrentI}></State>
+						{/if}	
+					{/if}		
+				</div>
 		</div>
 	
 	</main>
@@ -100,20 +109,20 @@
 				display: block;
 			}
 		}
-		/* to separate both visual and data sections */
-		/* .flex-grid-split {
-		display: flex;
-		justify-content: space-between;
-		}
-		.flex-grid-split .col {
-		width: 50%;
-} */
+
+	.flex-grid-third .col {
+		width: 25%;
+		align-items: center;
+		padding: 2px;
+		margin: 2px;
+	} 
 	.switch {
   position: relative;
   /* display: inline-block; */
   display: inline-flexbox;
   width: 47px;
   height: 22px;
+  margin: 0px;
 }
 
 .slider {
@@ -128,7 +137,7 @@
   -webkit-transition: .4s;
   -webkit-tap-highlight-color: transparent;
   outline:#2196F3;
-
+	margin:1px;
   transition: .4s;
 }
 
@@ -151,13 +160,12 @@
 }
 
 
-
 .slider.round:before {
   border-radius: 50%;
 }
 
 input:checked + .slider {
-  background-color: #2196F3;
+  background-color: teal;
   /* background-color: none; */
 }
 
