@@ -7,6 +7,7 @@
     {#if typeof variable.value !== "object"}
     <p>{variable.name}: {variable.value}</p>
     {:else} 
+    <div>
         <p>{variable.name}: </p>
         <ul>
             {#each Object.keys(variable.value) as nestedValue}
@@ -15,5 +16,7 @@
                 </li>    
             {/each}
         </ul>
+    </div>
     {/if}
 </main>
+

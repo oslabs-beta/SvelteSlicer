@@ -14,24 +14,27 @@
         console.log('comp',component)
        
     }
-    function helper(s){
-      let obj = {}
-        Object.keys(s).forEach(item=>{
-            if(!obj[item].tagName){
-                obj.id = obj[item].tagName;
-                obj.children = obj[item].variables
-            }
-        })
-    }
-    // const _expansionState = {
-	// 	/* expanded <boolean> */
-	// }
-    // const {id}=snapshot.data
-    // let expanded = _expansionState[snapshot] || false
-    // const toggleExpansion = () => {
-	// 	expanded = _expansionState[id] = !expanded
-	// }
-    // $: arrowDown = expanded
+
+let collapse = document.getElementsByClassName("collapsible");
+let i;
+
+function collapsible(){
+ 
+ for (i = 0; i < collapse.length; i++) {
+     this.classList.add('arrow')
+     this.classList.toggle("active");
+     let content = this.nextElementSibling.nextElementSibling;
+     if (content.style.display === "block") {
+     
+      content.style.display = "none";
+     } else {
+     
+     content.style.display = "block";
+     }
+  
+ }
+}
+    
    
 </script>
 
@@ -43,22 +46,22 @@
     {#each Object.keys(snapshot.data) as componentName} 
         {#if Object.keys(snapshot.data[componentName].variables).length>0 && snapshot.data[componentName].active}
            
-        <!-- <span on:click={toggleExpansion} id={componentName}>
-            <span class="arrow" class:arrowDown>&#x25b6</span>
-            {#each Object.keys(snapshot.data[componentName].variables) as variable}  
-            {#if snapshot.data[componentName].variables[variable].value}  
-            <Variable variable={snapshot.data[componentName].variables[variable]}/>
-            {/if}
-       {/each}
-            
-        </span> -->
+        
            <!-- <h3>{snapshot.data[componentName].tagName}</h3> -->
-           <h3>--{componentName}</h3>
-           {#each Object.keys(snapshot.data[componentName].variables) as variable}  
-                {#if snapshot.data[componentName].variables[variable].value}  
-                <Variable variable={snapshot.data[componentName].variables[variable]}/>
-                {/if}
-           {/each}
+           
+           <button class="collapsible" on:click={collapsible}>--{componentName}</button>
+           <br/>
+           <div class="content">
+              
+                {#each Object.keys(snapshot.data[componentName].variables) as variable}  
+                   {#if snapshot.data[componentName].variables[variable].value}  
+                
+                      <Variable variable={snapshot.data[componentName].variables[variable]}/>
+                
+                   {/if}
+                {/each}
+             
+          </div>
             
             
         {/if}
@@ -91,3 +94,50 @@
     {/if} -->
 {/if}
 </main>
+
+<style>
+  .collapsible {
+  /* background-color: #777;
+  color: white; */
+  cursor: pointer;
+  display: inline-block;
+  /* padding: 18px; */
+  /* width: 100%; */
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  font-family: 'Comic Sans MS', cursive;
+}
+
+/* .active, .collapsible:hover {
+  background-color: #555;
+} */
+
+/* .collapsible:after {
+  content: '\002B';
+  color: white;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+} */
+
+/* .active:after {
+  content: "\2212";
+} */
+
+.content {
+   padding: 0 18px;
+   display: none;
+   overflow: hidden;
+   /* background-color: #f1f1f1; */
+  
+}
+.arrow {
+	cursor: pointer;
+	display: inline-block;
+	/* transition: transform 200ms; */
+}
+.arrowDown { transform: rotate(90deg); }
+
+</style>
