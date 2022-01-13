@@ -17,7 +17,8 @@ chrome.devtools.panels.create(
                     const componentCounts = {};
                     let node_id = 0;
                     let firstLoadSent = false;
-        
+                    const domHistory = [];
+
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
                         root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
@@ -219,6 +220,8 @@ chrome.devtools.panels.create(
                     window.onload = () => {
                         // make sure that data is being sent
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
+                            const domNode = document.body;
+                            domHistory.push(domNode.cloneNode(true));
                             firstLoadSent = true;
                             window.postMessage({
                                 source: 'panel.js',
@@ -247,6 +250,9 @@ chrome.devtools.panels.create(
                     window.document.addEventListener('dom-changed', (e) => {
                         // only send message if something changed in SvelteDOM
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
+                            count++;
+                            const domNode = document.body;
+                            domHistory.push(domNode.cloneNode(true));
                             let type;
                             // make sure the first load has already been sent; if not, this is the first load
                             if (!firstLoadSent) {
@@ -286,6 +292,12 @@ chrome.devtools.panels.create(
                         addedEventListeners.splice(0, addedEventListeners.length);
                         deletedEventListeners.splice(0, deletedEventListeners.length);
                     });
+
+                    function repaintDom(index) {
+                        const newDomDoc = domHistory[index];
+                        document.body.parentNode.replaceChild(newDomDoc, document.body);
+                    }
+
                     `
                 }
             ); 
