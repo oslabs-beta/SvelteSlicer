@@ -32,16 +32,21 @@
 		count+=1
 	}
 
-	// let showLeft = true
+	let showLeft = true
 	let showRight = false
 	
 	</script>
 	<Header/>
-		<main id="parent" style="height:auto; align-item:center">
-			<div id="left" class="flex-grid" style=" border:solid 1px #F1F3F4; height:100%; width:100%; align-items; flex:{showLeft?2:0}">
-				<div >
+	<!-- border:solid 1px #F1F3F4;  -->
+		<main id="parent" style="height:auto;  border: 1px solid whitesmoke align-item:center">
+			<div id="left" class="flex-grid panelDiv" style=" height:100%; width:100%; align-items; flex:{showLeft?2:0}">
+				<div>
+					<!-- <button on:click={() => selectView("componentTree")}>Tree</button> -->
+					<!-- <button on:click={() => selectView("state")}>State Snapshot</button> -->
+					<button class="optionButtons" on:click={() => selectView("state")}>State Snapshot</button>
 					<button on:click={() => selectView("componentTree")}>Tree</button>
-					<button on:click={() => selectView("state")}>State</button>
+					<button  on:click={()=>selectTree("data")}>Data</button>
+					<!-- <button id="tidy" on:click={()=>selectTree("tidyTree")}>Diff</button> -->
 					<button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
 				</div>
 				<!-- <div> -->
@@ -52,38 +57,62 @@
 						</label> 
 				<!-- </div> -->
 				
-			<div id="right" class="flex-grid-third" style="display:flex; border-top:solid 1px #F1F3F4; ">
-				<div class="col" style="height:fit-content; flex:1;">
-					{#if view === "state"}
+			<div id="right" style="display:flex;">
+				<div class="col panelDiv" style="height:fit-content; flex:1;">
+					<!-- <h6>Snapshot</h6> -->
+					
+					<!-- {#if view === "state"} -->
 					{#each $snapshots as snapshot, i}
 						<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
 						<br>
 					{/each}
-					{/if}	
-				</div>
-				<div id="red" class="col" style="height:100%; border-left:1px; flex:1;">
+					<!-- {/if}	 -->
+					
+					<!-- {#if view === "componentTree"} 
 					<h2>Visual</h2>
-					{#if view === "componentTree"} 
 					<Component component={$fileTree}/>
 					{:else if view === "tidyTree"}
 					
-					<!-- tidy tree currently offset to right. set alignment -->
-					<TidyTree2 treeData={$fileTree} {count}/>
+					
+					<TidyTree2 treeData={$fileTree} {count}/> -->
 					<!-- set conditional for tidy tree versus data -->
 					<!-- {:else if view !== "tidyTree"}
 					{:else} -->
-					{/if}
-				</div>
-			
-				<div id="red" class="col" style=" border-left:1px; align-items: center; height:100%;  align-items: right; display:{showRight?'flex':'none'};">
-					
+
+					<!-- {:else if view === 'data'}
+					<h2>Data</h2> -->
+					<!-- {#if view === "state"}
+						{#if data && snapshot}  -->
+						<!-- <State I={CurrentI}></State> -->
+						<!-- {/if}	
+					{/if}		 -->
+					<!-- {/if} -->
+				<!-- </div> -->
+			</div>
+				<div id="red" class="col panelDiv" style="  height:100%;  align-items: right; display:{showRight?'flex':'none'};">
+					<!-- {#if view === 'data'}
 					<h2>Data</h2>
-					{#if view === "state"}
-						{#if data && snapshot} 
-							<State I={CurrentI}></State>
-						{/if}	
-					{/if}		
-				</div>
+					 {#if view === "state"}
+						{#if data && snapshot}  -->
+							<!-- <State I={CurrentI}></State> -->
+						<!-- {/if}	
+					{/if}		 -->
+					
+				<!-- </div> -->
+
+
+				{#if view === "componentTree"} 
+					<h2>Visual</h2>
+					<Component component={$fileTree}/>
+					{:else if view === "tidyTree"}
+					<TidyTree2 treeData={$fileTree} {count}/>
+
+					{:else if view === 'data'}
+					
+				
+					<State I={CurrentI}></State>
+				
+					{/if}
 		</div>
 	
 	</main>
@@ -103,6 +132,7 @@
 		@media (min-width: 640px) {
 			main {
 				max-width: none;
+			
 
 			}
 			.flex-grid {
@@ -110,11 +140,19 @@
 			}
 		}
 
-	.flex-grid-third .col {
-		width: 25%;
+		/* .optionButtons {
+
+		} */
+
+	.flex-grid-half  {
+		width: 50%;
 		align-items: center;
 		padding: 2px;
 		margin: 2px;
+	}
+	.col {
+		flex: 1;
+		width:max-content;
 	} 
 	.switch {
   position: relative;

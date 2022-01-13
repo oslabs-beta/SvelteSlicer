@@ -11,7 +11,10 @@ body {
 	box-sizing: content-box;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
-
+.panelDiv {
+	border: 1px solid whitesmoke;
+	text-align: center;
+}
 a {
 	color: rgb(0,100,200);
 	text-decoration: none;

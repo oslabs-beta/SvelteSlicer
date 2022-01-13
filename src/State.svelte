@@ -72,6 +72,7 @@
 
 <main>
     <div>
+        <h2>Data</h2>
         <button  on:click={clickhandler}>Log State</button>
     <!-- <button on:click={outsideClickHandler}>Log State</button> -->
 <!--    
