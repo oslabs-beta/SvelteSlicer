@@ -250,7 +250,6 @@ chrome.devtools.panels.create(
                     window.document.addEventListener('dom-changed', (e) => {
                         // only send message if something changed in SvelteDOM
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
-                            count++;
                             const domNode = document.body;
                             domHistory.push(domNode.cloneNode(true));
                             let type;

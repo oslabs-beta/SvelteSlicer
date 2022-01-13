@@ -1,6 +1,7 @@
 <script>
-	import {snapshots, fileTree, backgroundConnection} from './stores.js';
+	import {snapshots, fileTree, backgroundPageConnection} from './stores.js';
 	import Component from './Component.svelte';
+	import { get } from 'svelte/store';
 	//import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import State from './State.svelte';
@@ -24,7 +25,6 @@
 	}
 	
 	function rerenderState(index) {
-		prevI = CurrentI;
 		I = index;
 		connection.postMessage({
     		source: 'panel',
