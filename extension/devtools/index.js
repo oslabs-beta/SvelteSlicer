@@ -18,6 +18,8 @@ chrome.devtools.panels.create(
                     let node_id = 0;
                     let firstLoadSent = false;
                     const domHistory = [];
+                    const listeners = {};
+                    const activeDom = [];
 
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
@@ -153,8 +155,15 @@ chrome.devtools.panels.create(
                     }
 
                     function svelteDOMAddEventListener(e) {
-                        const { node, event } = e.detail;
+                        const { node, event, handler } = e.detail;
                         const nodeData = nodes.get(node);
+
+                        id = nodeData.id + event;
+
+                        // store listener data to be added back to DOM after re-renders
+                        listeners[node] = listeners[node] ? listeners[node] : [];
+                        listeners[node].push({event, handler});
+
                         node.addEventListener(event, () => eventAlert(nodeData.id, event));
                             
                         addedEventListeners.push({
@@ -163,15 +172,23 @@ chrome.devtools.panels.create(
                             handlerName: e.detail.handler.name,
                             handlerString: e.detail.handler.toString(),
                             component: nodeData.component,
-                            id: nodeData.id + event
+                            id
                         })
                     }
 
                     function svelteDOMRemoveEventListener(e) {
                         const { node, event } = e.detail;
                         nodeData = nodes.get(node);
+                        const id = nodeData.id + event;
+
                         node.removeEventListener(event, () => eventAlert(nodeData.id, event));
                         
+                        listeners[node].forEach((listener, index) => {
+                            if (listener.event === event) {
+                                listeners[node].splice(index, 1);
+                            }
+                        })                       
+
                         deletedEventListeners.push({
                             node: nodeData.id,
                             event: event,
@@ -312,9 +329,58 @@ chrome.devtools.panels.create(
                         }
                           
                         if (event.data.type === 'rerenderState') {
-                            repaintDom(event.data.index);
+                            const { index, prevIndex } = event.data;
+                            if (index === domHistory.length - 1) {
+                                restoreDom();
+                                activeDom.splice(0, activeDom.length);
+                            }
+                            else {
+                                if (prevIndex === domHistory.length - 1) {
+                                    storeCurrentDom(document.body, document.body.cloneNode(), document.body.parentNode);
+                                }
+                                repaintDom(index);
+                            }
                         }
                     })
+
+                    function storeCurrentDom(node, newNode, newParent) {
+                        // if node is in our node map, update map to reference new node
+                        const nodeData = nodes.get(node);
+                        if (nodeData) {
+                            const id = nodeData.id + event;
+                            nodes.set(newNode, {id: nodeData.id, componentName: nodeData.componentName});
+                        }
+                        
+                        // if node has listeners, append those listeners onto the new node
+                        if (listeners[node]) {
+                            listeners[node].forEach(listener => {
+                                newNode.addEventListener(listener.event, listener.handler);
+                                newNode.addEventListener(listener.event, () => eventAlert(nodeData.id, listener.event));
+                            })
+                        }
+
+                        // if assign the new parent node to the new node
+                        newNode.newParent = newParent; 
+
+                        activeDom.push(newNode);
+
+                        if(node.hasChildNodes()) {
+                            newNode.newChildren = [];
+                            node.childNodes.forEach(child => {
+                                const newChild = child.cloneNode();
+                                newNode.newChildren.push(newChild);
+                                storeCurrentDom(child, newChild, newNode);
+                            })
+                        }
+                    }
+
+                    function restoreDom() {
+                        newDomDoc = activeDom[0];
+                        document.body.parentNode.replaceChild(newDomDoc, document.body);
+                        for (let i = 1; i < activeDom.length; i++) {
+                            activeDom[i].newParent.appendChild(activeDom[i]);
+                        }
+                    }
                     `
                 }
             ); 

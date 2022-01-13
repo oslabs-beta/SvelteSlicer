@@ -14,6 +14,7 @@
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
 	let I;
+	let prevIndex;
 	
 	$: view = selection;
 	let selection;
@@ -25,11 +26,13 @@
 	}
 	
 	function rerenderState(index) {
+		prevIndex = CurrentI;
 		I = index;
 		connection.postMessage({
     		source: 'panel',
 			name: 'rerenderState',
     		index,
+			prevIndex,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
 	}
