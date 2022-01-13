@@ -14,6 +14,24 @@
         console.log('comp',component)
        
     }
+    function helper(s){
+      let obj = {}
+        Object.keys(s).forEach(item=>{
+            if(!obj[item].tagName){
+                obj.id = obj[item].tagName;
+                obj.children = obj[item].variables
+            }
+        })
+    }
+    // const _expansionState = {
+	// 	/* expanded <boolean> */
+	// }
+    // const {id}=snapshot.data
+    // let expanded = _expansionState[snapshot] || false
+    // const toggleExpansion = () => {
+	// 	expanded = _expansionState[id] = !expanded
+	// }
+    // $: arrowDown = expanded
    
 </script>
 
@@ -22,35 +40,31 @@
     
 {#if snapshot && component}
 <h2>{snapshot.label}</h2>
-         {#each Object.keys(snapshot.data) as componentName} 
-           {#if Object.keys(snapshot.data[componentName].variables).length>0 && snapshot.data[componentName].active}
+    {#each Object.keys(snapshot.data) as componentName} 
+        {#if Object.keys(snapshot.data[componentName].variables).length>0 && snapshot.data[componentName].active}
            
-           
-           <h3>{snapshot.data[componentName].tagName}</h3>
-           {#each Object.keys(snapshot.data[componentName].variables) as variable}  
+        <!-- <span on:click={toggleExpansion} id={componentName}>
+            <span class="arrow" class:arrowDown>&#x25b6</span>
+            {#each Object.keys(snapshot.data[componentName].variables) as variable}  
             {#if snapshot.data[componentName].variables[variable].value}  
-                <Variable variable={snapshot.data[componentName].variables[variable]}/>
+            <Variable variable={snapshot.data[componentName].variables[variable]}/>
             {/if}
-        {/each}
-            
-            
-           {/if}
-           <!-- {#if snapshot.data[componentName].children.length} 
-   
-           <ul>
-           {#each snapshot.data[componentName].children as child}
-               {#if child.active}
-                   <li>
-                       <svelte:self snapshot={snapshot.data[componentName][child]}/>
-                   </li>
-                  
-               {/if}        
-           {/each}
-           </ul>
-       
-       {/if} -->
-           
        {/each}
+            
+        </span> -->
+           <!-- <h3>{snapshot.data[componentName].tagName}</h3> -->
+           <h3>--{componentName}</h3>
+           {#each Object.keys(snapshot.data[componentName].variables) as variable}  
+                {#if snapshot.data[componentName].variables[variable].value}  
+                <Variable variable={snapshot.data[componentName].variables[variable]}/>
+                {/if}
+           {/each}
+            
+            
+        {/if}
+           
+           
+    {/each}
           
 
     <!-- {#if Object.keys(component.variables).length > 0}
