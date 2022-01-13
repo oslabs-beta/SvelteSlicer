@@ -3,17 +3,19 @@ var connections = {};
 
 chrome.runtime.onConnect.addListener(function (port) {
 
-    var extensionListener = function (message, sender, sendResponse) {
+  var extensionListener = function (message, sender, sendResponse) {
 
-        // The original connection event doesn't include the tab ID of the
-        // DevTools page, so we need to send it explicitly.
-        if (message.name == "init") {
-          connections[message.tabId] = port;
-          return;
-        }
-
-	// other message handling
+    // The original connection event doesn't include the tab ID of the
+    // DevTools page, so we need to send it explicitly.
+    if (message.name == "init") {
+      connections[message.tabId] = port;
+      return;
     }
+    
+    if (message.name === "rerenderState") {
+      chrome.tabs.sendMessage(message.tabId, message);
+    }
+  }
 
     // Listen to messages sent from the DevTools page
     port.onMessage.addListener(extensionListener);

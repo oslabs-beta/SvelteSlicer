@@ -5,6 +5,7 @@ import _ from "lodash";
 
 export const snapshots = writable([]);
 export const fileTree = writable({});
+export const backgroundPageConnection = writable(chrome.runtime.connect({name: "panel"}));
 
 // store updateable objects for current component state
 const componentData = {}
@@ -23,11 +24,9 @@ let snapshotLabel;
 const uncaughtVariables = [];
 
 // set up background page Connection
-var backgroundPageConnection = chrome.runtime.connect({
-    name: "panel"
-});
+const connection = get(backgroundPageConnection);
 
-backgroundPageConnection.postMessage({
+connection.postMessage({
     name: 'init',
     tabId: chrome.devtools.inspectedWindow.tabId
 });

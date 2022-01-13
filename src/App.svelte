@@ -1,5 +1,5 @@
 <script>
-	import {snapshots, fileTree} from './stores.js';
+	import {snapshots, fileTree, backgroundConnection} from './stores.js';
 	import Component from './Component.svelte';
 	//import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
@@ -10,15 +10,28 @@
 	$: snapshot = $snapshots[CurrentI];
 	$: data = (snapshot ? snapshot.data : undefined);
 	$: parent = (snapshot ? snapshot.parent : undefined);
+	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
-	let CurrentI;
+	let I;
 	
 	$: view = selection;
 	let selection;
-	
+
+	const connection = get(backgroundPageConnection);
+
 	function selectState(index) {
-		CurrentI = index;
-		console.log($snapshots[CurrentI]);
+		I = index;
+	}
+	
+	function rerenderState(index) {
+		prevI = CurrentI;
+		I = index;
+		connection.postMessage({
+    		source: 'panel',
+			name: 'rerenderState',
+    		index,
+			tabId: chrome.devtools.inspectedWindow.tabId
+		});
 	}
 	
 	function selectView(view) {
@@ -49,7 +62,9 @@
 			</label>
 			{#if view === "state"}
 				{#each $snapshots as snapshot, i}
-					<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
+					<p style="color: white">Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</p>
+					<button on:click={() => selectState(i)}>Data</button>
+					<button on:click={() => rerenderState(i)}>Render</button>
 					<br>
 				{/each}
 				<hr>

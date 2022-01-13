@@ -298,6 +298,24 @@ chrome.devtools.panels.create(
                         document.body.parentNode.replaceChild(newDomDoc, document.body);
                     }
 
+
+                    // listen for devTool requesting state injections 
+                    window.addEventListener('message', function () {
+                        // Only accept messages from the same frame
+                        if (event.source !== window) {
+                            return;
+                        }
+                        
+                        // Only accept messages that we know are ours
+                        if (typeof event.data !== 'object' || event.data === null ||
+                          !event.data.source === 'panel.js') {
+                          return;
+                        }
+                          
+                        if (event.data.type === 'rerenderState') {
+                            repaintDom(event.data.index);
+                        }
+                    })
                     `
                 }
             ); 
