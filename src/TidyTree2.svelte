@@ -1,7 +1,26 @@
 <script>
-
+export let I;
+import {snapshots} from './stores.js';
 import * as d3 from 'd3';
 import { onMount } from 'svelte';
+
+$: snapshot = $snapshots[I];
+    $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
+    $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
+    let state
+    //const {id,children} = component;
+    onMount(()=>{
+    if(snapshot && component){   
+    const {id,children} = component;
+    console.log('ccOut',component);
+    }
+    })
+    
+    function clickhandler() {
+        console.log("shot,",snapshot);
+        console.log('cc',component);
+       
+    }
 
 export let treeData;
 console.log('treeData',treeData)
@@ -20,8 +39,9 @@ let margin = {top:20,right:0,bottom:20,left:0}
 
 //check if dom already have 1 tidy tree  
 //if(count<2){   
+
 onMount(()=>{
-  
+    if(snapshot && component){
      
     svg = d3.select("#chart")
        .append('div')
@@ -39,7 +59,7 @@ onMount(()=>{
        //d3.tree() is tidy tree layout module
        let treemap = d3.tree().size([width,height]);
        //construct root node
-       root = d3.hierarchy(treeData, function(d){
+       root = d3.hierarchy(component, function(d){
            return d.children;
        });
        console.log('root',root)
@@ -197,8 +217,9 @@ onMount(()=>{
        }
        }
     
-   
-})  
+    }  
+}) 
+
 //}   
 
 // function nodeClicked(e){
@@ -208,6 +229,7 @@ onMount(()=>{
 
 
 <div bind:this={svg} id='chart'></div>
+
 
 
 

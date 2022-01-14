@@ -1,7 +1,7 @@
 <script>
 	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
-	//import TidyTree from './TidyTree.svelte';
+	import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import State from './State.svelte';
 	//import Data from './data.svelte';
@@ -20,6 +20,7 @@
 	
 	function selectState(shot,index) {
 		CurrentI = index;
+		count+=1
 	}
 	// $: dataForSelected = selectState()  
 	// console.log('out data',dataForSelected)
@@ -65,7 +66,7 @@
 					{#if view === "componentTree"} 
 					<Component component={$fileTree}/>
 					{:else if view === "tidyTree"}
-					<TidyTree2 treeData={$fileTree} {count}/>
+					<TidyTree2 treeData={$fileTree} {count} I={CurrentI}/>
 					{/if}
 			</div>
 			<div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
@@ -73,6 +74,7 @@
 				{#if view === "state"}
 					{#if data && snapshot} 
 						<State I={CurrentI}></State>
+						<TidyTree treeData={$fileTree} {count} I={CurrentI}/>
 					{/if}	
 				{/if}		
 			</div>
