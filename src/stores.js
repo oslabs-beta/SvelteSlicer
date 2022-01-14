@@ -8,7 +8,7 @@ export const fileTree = writable({});
 export const backgroundPageConnection = writable(chrome.runtime.connect({name: "panel"}));
 
 // store updateable objects for current component state
-const componentData = {}
+let componentData = {}
 // store ALL nodes and listeners
 const nodes = {};
 const listeners = {};
@@ -18,7 +18,7 @@ const astInfo = {};
 const componentTree = {};
 let parentComponent;
 let domParent;
-let snapshotLabel;
+let snapshotLabel = "Initial State";
 
 // for debugging, store any AST variables not caught by switch statements
 const uncaughtVariables = [];
@@ -39,6 +39,7 @@ chrome.runtime.onMessage.addListener((msg) => {
 
 	if (type === "firstLoad") {
 		snapshots.set([]);
+		componentData = {};
 		const snapshot = buildFirstSnapshot(data);
 		snapshots.update(array => [...array, snapshot]);
 	}
@@ -49,7 +50,7 @@ chrome.runtime.onMessage.addListener((msg) => {
 	else if (type === "event") {
 		const listener = listeners[data.nodeId + data.event];
 		const { component, event, name } = listener;
-		const tagName = componentData[listener.component].tagName
+		const tagName = componentData[component].tagName
 		snapshotLabel = tagName + ' - ' + event + " -> " + name;
 	}
 });
@@ -350,10 +351,12 @@ function buildFirstSnapshot(data) {
 		}
 	}
 	
+	console.log(snapshotLabel);
+
 	const snapshot = {
 		data: componentData,
 		parent: domParent,
-		label: 'Initial State'
+		label: snapshotLabel
 	}
 
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
@@ -541,8 +544,11 @@ function buildNewSnapshot(data) {
 		diff
 	}
 
+	console.log("label on updates: " + snapshot.label);
+
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
+	// Do we want this code????
 	snapshotLabel = undefined;
 
 	return deepCloneSnapshot;  // deep copy to "freeze" state

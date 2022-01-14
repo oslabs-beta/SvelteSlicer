@@ -26,13 +26,12 @@
 	}
 	
 	function rerenderState(index) {
-		prevIndex = CurrentI;
 		I = index;
 		connection.postMessage({
     		source: 'panel',
 			name: 'rerenderState',
     		index,
-			prevIndex,
+			parent,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
 	}

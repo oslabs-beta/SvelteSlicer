@@ -14,12 +14,14 @@ chrome.devtools.panels.create(
                     const deletedEventListeners = [];
                     const nodes = new Map();
                     const ctxObject = {};
+                    componentObject = {};
                     const componentCounts = {};
                     let node_id = 0;
                     let firstLoadSent = false;
                     const domHistory = [];
                     const listeners = {};
                     const activeDom = [];
+                    let rebuildingDom = false;
 
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
@@ -53,6 +55,7 @@ chrome.devtools.panels.create(
                             injectState[varName] = varIndex;
                             string = string.slice(varNameEnd);
                         }
+                        componentObject[id] = component;
                         ctxObject[id] = component.$$.ctx;
                         // parse ctx for messaging purposes
                         const ctx = {};
@@ -208,6 +211,8 @@ chrome.devtools.panels.create(
                     }
 
                     function eventAlert(nodeId, event) {
+                        rebuildingDom = false;
+                        console.log("nodeId: " + nodeId + " event: " + event)
                         window.postMessage({
                             source: 'panel.js',
                             type: 'event',
@@ -229,8 +234,10 @@ chrome.devtools.panels.create(
 
                     // observe for changes to the DOM
                     const observer = new MutationObserver( list => {
-                        const evt = new CustomEvent('dom-changed', {detail: list});
-                        window.document.dispatchEvent(evt)
+                        if (!rebuildingDom){
+                            const evt = new CustomEvent('dom-changed', {detail: list});
+                            window.document.dispatchEvent(evt)
+                        }
                     });
         
                     // capture initial DOM load as one snapshot
@@ -329,57 +336,24 @@ chrome.devtools.panels.create(
                         }
                           
                         if (event.data.type === 'rerenderState') {
-                            const { index, prevIndex } = event.data;
+                            const { index, parent } = event.data;
                             if (index === domHistory.length - 1) {
-                                restoreDom();
-                                activeDom.splice(0, activeDom.length);
+                                rebuildDom(parent);
                             }
                             else {
-                                if (prevIndex === domHistory.length - 1) {
-                                    storeCurrentDom(document.body, document.body.cloneNode(), document.body.parentNode);
-                                }
                                 repaintDom(index);
                             }
                         }
                     })
 
-                    function storeCurrentDom(node, newNode, newParent) {
-                        // if node is in our node map, update map to reference new node
-                        const nodeData = nodes.get(node);
-                        if (nodeData) {
-                            const id = nodeData.id + event;
-                            nodes.set(newNode, {id: nodeData.id, componentName: nodeData.componentName});
-                        }
-                        
-                        // if node has listeners, append those listeners onto the new node
-                        if (listeners[node]) {
-                            listeners[node].forEach(listener => {
-                                newNode.addEventListener(listener.event, listener.handler);
-                                newNode.addEventListener(listener.event, () => eventAlert(nodeData.id, listener.event));
-                            })
-                        }
-
-                        // if assign the new parent node to the new node
-                        newNode.newParent = newParent; 
-
-                        activeDom.push(newNode);
-
-                        if(node.hasChildNodes()) {
-                            newNode.newChildren = [];
-                            node.childNodes.forEach(child => {
-                                const newChild = child.cloneNode();
-                                newNode.newChildren.push(newChild);
-                                storeCurrentDom(child, newChild, newNode);
-                            })
-                        }
-                    }
-
-                    function restoreDom() {
-                        newDomDoc = activeDom[0];
-                        document.body.parentNode.replaceChild(newDomDoc, document.body);
-                        for (let i = 1; i < activeDom.length; i++) {
-                            activeDom[i].newParent.appendChild(activeDom[i]);
-                        }
+                    function rebuildDom(parent) {
+                        rebuildingDom = true;
+                        firstLoadSent = false;
+                        document.body.replaceChildren();
+                        const appConstructor = componentObject[parent].constructor;
+                        const app = new appConstructor({
+                            target: document.body
+                        })
                     }
                     `
                 }

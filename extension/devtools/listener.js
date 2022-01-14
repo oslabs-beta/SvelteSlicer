@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener(message => {
       source: 'listener.js',
       type: 'rerenderState',
       index: message.index,
-      prevIndex: message.prevIndex
+      parent: message.parent
     });
   }
 });
