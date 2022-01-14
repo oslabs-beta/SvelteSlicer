@@ -48,20 +48,17 @@
 					<button  on:click={()=>selectTree("data")}>Data</button>
 					<!-- <button id="tidy" on:click={()=>selectTree("tidyTree")}>Diff</button> -->
 					<button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
-				</div>
-				<!-- <div> -->
 					<h6>Visual/Data</h6>
-						<label class="switch" style=" text-align:center">
-							<input type="checkbox" bind:checked={showRight}>
-							<span class="slider round"></span>
-						</label> 
-				<!-- </div> -->
+					<label class="switch" style=" text-align:center">
+						<input type="checkbox" bind:checked={showRight}>
+						<span class="slider round"></span>
+					</label> 
+				</div>
 				
+			
 			<div id="right" style="display:flex;">
 				<div class="col panelDiv" style="height:fit-content; flex:1;">
-					<!-- <h6>Snapshot</h6> -->
 					
-					<!-- {#if view === "state"} -->
 					{#each $snapshots as snapshot, i}
 						<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
 						<br>
@@ -107,7 +104,7 @@
 					{:else if view === "tidyTree"}
 					<TidyTree2 treeData={$fileTree} {count}/>
 
-					{:else if view === 'data'}
+					{:else if view === 'state'}
 					
 				
 					<State I={CurrentI}></State>
@@ -157,10 +154,10 @@
 	.switch {
   position: relative;
   /* display: inline-block; */
-  display: inline-flexbox;
+  display:flexbox;
   width: 47px;
-  height: 22px;
-  margin: 0px;
+  height: 21px;
+  margin: 1px;
 }
 
 .slider {
@@ -183,13 +180,14 @@
   position: absolute;
   /* content: "visual/data"; */
   content: "";
-  height: 20px;
+  height: 17px;
   width: 20px;
-  left: 5px;
+  left: 7px;
   bottom: 2px;
   background-color: white;
   -webkit-transition: .4s;
   transition: .4s;
+  align-items: center;
 }
 
 .slider.round {

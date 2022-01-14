@@ -9,78 +9,79 @@
     $: snapshot = $snapshots[I];
     $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
     $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
-    let outsideClickHandler; 
+    let stateList = false; 
     const renderedDiffs = {};
-    // onMount(() => {
+  
+        function clickhandler() {
 
-         function clickhandler() {
-
-    
-        console.log('snapshots no s', snapshot);
+        console.log('snapshots no s ', snapshot);
         console.log('snapshots$', $snapshots)
-        for(let element in snapshot){
-            if(element === 'diff'){
-                console.log('snapshots at diff ', snapshot[element])
+        console.log('snapshot.diff ', snapshot.diff)
+        stateList = true;
 
+        // for(let element in snapshot){
+        //     if(element === 'diff'){
+        //         console.log('snapshots at diff ', snapshot[element])
                 //this loop is currently appending text to dom but in the far left corner
-                for(let i = 0; i < snapshot[element].length; i+=1){
-                    
-                // console.log('text ', i, snapshot[element][i].name)
-                console.log('old val: ', i, snapshot[element][i].oldValue)
-                oldSnapshotVal = snapshot[element][i].oldValue
-                console.log('new val: ', i, snapshot[element][i].newValue)
-                newSnapshotVal = snapshot[element][i].newValue
-                // console.log('text ', i, snapshot[element][i].name)
-                // console.log('new val ', i, snapshot[element][i].newValue)
-                // console.log('old val ', i, snapshot[element][i].oldValue)
+                // for(let i = 0; i < snapshot[element].length; i+=1){
+                    //start iterating at 1 to avoid initial undefined val
+                // for(let i = 0; i < snapshot.diff.length; i+=1){
+                // const leDiff = snapshot.diff[i];
+                // console.log('leDiff ', leDiff)
+                // console.log('old val: ', i, leDiff.oldValue)
+                // oldSnapshotVal = leDiff.oldValue
+                // console.log('new val: ', i, leDiff.newValue)
+                // newSnapshotVal = leDiff.newValue
+                
 
-                const dataSection = document.createElement("SECTION");
+                // const dataSection = document.createElement("SECTION");
                 // dataSection.setAttribute("id", "holdsStateData");
                 //document.body.appendChild(dataSection);
                 //canvas tag --- is this accesbile since declare in below code?
                 // document.getElementById("dataContainer").appendChild(dataSection); 
 
-                const oList = document.createElement("OL");
+                // const oList = document.createElement("OL");
                 //create ol to place li
-                oList.setAttribute("id", "myOl");
+                // oList.setAttribute("id", "myOl");
                 // document.body.appendChild(oList);
-                const listItem = document.createElement('LI')
-                const lBreak = document.createElement('br')
+                // const listItem = document.createElement('LI')
+                // const lBreak = document.createElement('br')
                 // dataContainer may need t be creaed before appending dataSection to it
-                let snapShotText = document.createTextNode('new Val: ' + snapshot[element][i].newValue + ' old Val: ' + snapshot[element][i].oldValue)
-                listItem.appendChild(snapShotText);
-                oList.appendChild(lBreak);
-                oList.appendChild(listItem);
-                // document.getElementById("holdsStateData").appendChild(oList)
-                // if(!renderedDiffs[listItem]){
-                //     renderedDiffs[listItem] = listItem;
-                //     document.getElementById("red").appendChild(oList)
-                // }else{
-                    
-                // }
-                document.getElementById("red").appendChild(oList)
-                // listItem.appendChild(lBreak);
-                // dataSection.appendChild(oList);
-                
-                // dataSection.appendChild(listItem)
-                // document.body.appendChild(holdsData);
-                
-                }
-                break;
+                // let snapShotTextOld = document.createTextNode('Old Value: ' + leDiff.oldValue);
+                // let snapShotTextNew = document.createTextNode('New Value: ' + leDiff.newValue);
+                // listItem.appendChild(snapShotTextOld);
+                // oList.appendChild(lBreak);
+                // oList.appendChild(listItem);
+                // listItem.appendChild(snapShotTextNew);
+                // oList.appendChild(listItem);
+    
+                // document.getElementById("red").appendChild(oList);
+       
+                // document.getElementById("red").appendChild(oList)
+             
                
-            }
+            // }
             
             console.log('outof loop')
             }
         
-        }
+        // }
   
 </script>
 
 <main>
-    <div>
+    <div id="valuesList">
         <h2>Data</h2>
-        <button  on:click={clickhandler}>Log State</button>
+        <button on:click={clickhandler}>Log State</button>
+        {#if stateList}
+            {#each snapshot.diff as diff}
+                <ul id="myOl">
+                    <li>Component: {diff.component}</li>
+                    <li>Old Value: {diff.oldValue}</li>
+                    <li>New Value: {diff.newValue}</li>
+                </ul>
+            {/each}
+        {/if}
     <!-- <button on:click={outsideClickHandler}>Log State</button> -->
 <!--    
     {#if snapshot && component}
