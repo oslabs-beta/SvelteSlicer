@@ -5,6 +5,7 @@
 
 <main>
     {#if typeof variable.value !== "object"}
+    <!-- {#if variable.value instanceof !Object} -->
     <p>{variable.name}: {variable.value}</p>
     {:else} 
     <div>

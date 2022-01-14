@@ -17,12 +17,13 @@
 
 let collapse = document.getElementsByClassName("collapsible");
 let i;
-
+//let opened = collapse[i] || false;
 function collapsible(){
  
  for (i = 0; i < collapse.length; i++) {
-     this.classList.add('arrow')
+    
      this.classList.toggle("active");
+     
      let content = this.nextElementSibling.nextElementSibling;
      if (content.style.display === "block") {
      
@@ -31,9 +32,11 @@ function collapsible(){
      
      content.style.display = "block";
      }
-  
+    
  }
+   //opened =collapse[i]= !opened
 }
+ $: arrowDown = true
     
    
 </script>
@@ -47,9 +50,38 @@ function collapsible(){
         {#if Object.keys(snapshot.data[componentName].variables).length>0 && snapshot.data[componentName].active}
            
         
-           <!-- <h3>{snapshot.data[componentName].tagName}</h3> -->
+          
            
-           <button class="collapsible" on:click={collapsible}>--{componentName}</button>
+            <!-- {#if snapshot.data[componentName].instance == 0} -->
+           <span class="collapsible"  on:click={collapsible}>
+           
+           
+            <span class="arrow" class:arrowDown> &#x25b6</span>
+            {componentName}
+            
+           
+            
+          </span>
+           <br/>
+           <div class="content">
+              
+                {#each Object.keys(snapshot.data[componentName].variables) as variable}  
+                   {#if snapshot.data[componentName].variables[variable].value !==undefined && snapshot.data[componentName].variables[variable].value !== null}  
+                
+                      <Variable variable={snapshot.data[componentName].variables[variable]}/>
+                
+                   {/if}
+                {/each}
+             
+          </div>
+          <!-- {:else}
+          <span class="collapsible" on:click={collapsible}>
+           
+            
+            
+            --{componentName}
+            
+          </span>
            <br/>
            <div class="content">
               
@@ -62,6 +94,9 @@ function collapsible(){
                 {/each}
              
           </div>
+
+          {/if} -->
+          
             
             
         {/if}
@@ -110,21 +145,21 @@ function collapsible(){
   font-family: 'Comic Sans MS', cursive;
 }
 
-/* .active, .collapsible:hover {
-  background-color: #555;
-} */
+.collapsible:hover {
+  background-color: rgb(238, 137, 5);
+}
 
-/* .collapsible:after {
-  content: '\002B';
+ /* .collapsible:after {
+  content: '\25b6';
   color: white;
   font-weight: bold;
   float: right;
   margin-left: 5px;
 } */
 
-/* .active:after {
-  content: "\2212";
-} */
+/* .active {
+  content: "\25bc";
+}  */
 
 .content {
    padding: 0 18px;
@@ -136,6 +171,7 @@ function collapsible(){
 .arrow {
 	cursor: pointer;
 	display: inline-block;
+    color: white;
 	/* transition: transform 200ms; */
 }
 .arrowDown { transform: rotate(90deg); }
