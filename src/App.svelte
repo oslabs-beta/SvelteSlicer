@@ -14,7 +14,6 @@
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
 	let I;
-	let prevIndex;
 	
 	$: view = selection;
 	let selection;
@@ -22,11 +21,11 @@
 	const connection = get(backgroundPageConnection);
 
 	function selectState(index) {
-		I = index;
+		I = index === $snapshots.length - 1 ? undefined : index
 	}
 	
 	function rerenderState(index) {
-		I = index;
+		I = index === $snapshots.length - 1 ? undefined : index
 		connection.postMessage({
     		source: 'panel',
 			name: 'rerenderState',

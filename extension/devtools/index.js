@@ -57,6 +57,7 @@ chrome.devtools.panels.create(
                         }
                         componentObject[id] = component;
                         ctxObject[id] = component.$$.ctx;
+                        console.log(ctxObject);
                         // parse ctx for messaging purposes
                         const ctx = {};
                         component.$$.ctx.forEach((element, index) => {
@@ -235,8 +236,12 @@ chrome.devtools.panels.create(
                     // observe for changes to the DOM
                     const observer = new MutationObserver( list => {
                         if (!rebuildingDom){
-                            const evt = new CustomEvent('dom-changed', {detail: list});
-                            window.document.dispatchEvent(evt)
+                            const domChange = new CustomEvent('dom-changed', {detail: list});
+                            window.document.dispatchEvent(domChange)
+                        }
+                        else {
+                            const rebuild = new CustomEvent('rebuild', {detail: list});
+                            window.document.dispatchEvent(rebuild);
                         }
                     });
         
@@ -316,6 +321,20 @@ chrome.devtools.panels.create(
                         deletedEventListeners.splice(0, deletedEventListeners.length);
                     });
 
+                    window.document.addEventListener('rebuild', () => {
+                        window.postMessage({
+                            source: 'panel.js',
+                            type: 'rebuild',
+                            data: {
+                                components,
+                                insertedNodes,
+                                deletedNodes,
+                                addedEventListeners,
+                                deletedEventListeners
+                            }
+                        });
+                    })
+
                     function repaintDom(index) {
                         const newDomDoc = domHistory[index];
                         document.body.parentNode.replaceChild(newDomDoc, document.body);
@@ -348,7 +367,6 @@ chrome.devtools.panels.create(
 
                     function rebuildDom(parent) {
                         rebuildingDom = true;
-                        firstLoadSent = false;
                         document.body.replaceChildren();
                         const appConstructor = componentObject[parent].constructor;
                         const app = new appConstructor({

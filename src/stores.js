@@ -39,13 +39,19 @@ chrome.runtime.onMessage.addListener((msg) => {
 
 	if (type === "firstLoad") {
 		snapshots.set([]);
-		componentData = {};
 		const snapshot = buildFirstSnapshot(data);
 		snapshots.update(array => [...array, snapshot]);
 	}
 	else if (type === "update") {
 		const newSnapshot = buildNewSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
+	}
+	else if (type === "rebuild") {
+		for (let component in componentData) {
+			componentData[component].active = false;
+			componentData[component].nodes = {};
+		}
+		const newSnapshot = buildFirstSnapshot(data);
 	}
 	else if (type === "event") {
 		const listener = listeners[data.nodeId + data.event];
@@ -350,8 +356,6 @@ function buildFirstSnapshot(data) {
 			parentComponent = file;
 		}
 	}
-	
-	console.log(snapshotLabel);
 
 	const snapshot = {
 		data: componentData,
@@ -518,6 +522,8 @@ function buildNewSnapshot(data) {
 
 	// update ctx variables
 	const diff = [];
+	console.log(ctxObject);
+	console.log(componentData);
 	for (let component in componentData) {
 		for(let i in componentData[component].variables) {
 			const variable = componentData[component].variables[i];
@@ -543,8 +549,6 @@ function buildNewSnapshot(data) {
 		label: snapshotLabel,
 		diff
 	}
-
-	console.log("label on updates: " + snapshot.label);
 
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
