@@ -10,13 +10,12 @@
     $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
     $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
     let outsideClickHandler; 
-    
+    const renderedDiffs = {};
     // onMount(() => {
 
          function clickhandler() {
 
-        // outsideClickHandler = () => {
-       
+    
         console.log('snapshots no s', snapshot);
         console.log('snapshots$', $snapshots)
         for(let element in snapshot){
@@ -36,8 +35,8 @@
                 // console.log('old val ', i, snapshot[element][i].oldValue)
 
                 const dataSection = document.createElement("SECTION");
-                dataSection.setAttribute("id", "holdsStateData");
-                document.body.appendChild(dataSection);
+                // dataSection.setAttribute("id", "holdsStateData");
+                //document.body.appendChild(dataSection);
                 //canvas tag --- is this accesbile since declare in below code?
                 // document.getElementById("dataContainer").appendChild(dataSection); 
 
@@ -50,8 +49,16 @@
                 // dataContainer may need t be creaed before appending dataSection to it
                 let snapShotText = document.createTextNode('new Val: ' + snapshot[element][i].newValue + ' old Val: ' + snapshot[element][i].oldValue)
                 listItem.appendChild(snapShotText);
+                oList.appendChild(lBreak);
                 oList.appendChild(listItem);
-                document.getElementById("holdsStateData").appendChild(oList)
+                // document.getElementById("holdsStateData").appendChild(oList)
+                // if(!renderedDiffs[listItem]){
+                //     renderedDiffs[listItem] = listItem;
+                //     document.getElementById("red").appendChild(oList)
+                // }else{
+                    
+                // }
+                document.getElementById("red").appendChild(oList)
                 // listItem.appendChild(lBreak);
                 // dataSection.appendChild(oList);
                 
