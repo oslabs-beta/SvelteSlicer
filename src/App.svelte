@@ -141,12 +141,12 @@
 
 		} */
 
-	.flex-grid-half  {
+	/* .flex-grid-half  {
 		width: 50%;
 		align-items: center;
 		padding: 2px;
 		margin: 2px;
-	}
+	} */
 	.col {
 		flex: 1;
 		width:max-content;
