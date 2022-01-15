@@ -10,8 +10,10 @@ export let count;
 console.log("count",count)
 
 let margin = {top:20,right:0,bottom:20,left:0}
-    let width = 700 - margin.left - margin.right;
-    let height = 700 - margin.top -margin.bottom;
+    // let width = 700 - margin.left - margin.right;
+    // let height = 700 - margin.top -margin.bottom;
+    let width = 500 - margin.left - margin.right;
+    let height = 500 - margin.top -margin.bottom;
 //1/3 
 // const width = document.body.clientWidth;
 // const height = document.body.clientHeight;
@@ -23,6 +25,7 @@ let margin = {top:20,right:0,bottom:20,left:0}
 onMount(()=>{
   
      
+    // svg = d3.select("#chart")
     svg = d3.select("#chart")
        .append('div')
        .attr('class','container')
@@ -84,11 +87,7 @@ onMount(()=>{
              nodeEnter
                .append('text')
                .attr('dx','.35em')
-            //    .attr('dx',function(d){
-            //        console.log('d',d)
-            //        return  d.children ||d._children? `.${d.data.id.length/0.2}em`:`.${d.data.id.length/0.2}em`
-            //    })
-               //.attr('y',-20)
+   
                .attr('y',function(d){
                     //return d.children ||d._children? -20:0;//has childern text on the left(not nesserary)
                     return -12
