@@ -4,18 +4,21 @@
 	//import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import State from './State.svelte';
-	
+
 	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree
-	
+
 	$: snapshot = $snapshots[CurrentI];
+	$: data = (snapshot ? snapshot.data : undefined);
+	$: parent = (snapshot ? snapshot.parent : undefined);
+
 	let CurrentI;
 	
 	$: view = selection;
 	let selection;
 	
-	
 	function selectState(index) {
 		CurrentI = index;
+		console.log($snapshots[CurrentI]);
 	}
 	
 	function selectView(view) {
@@ -30,7 +33,6 @@
 
 	let showLeft = true
 	let showRight = true
-
 	
 	</script>
 	
@@ -47,7 +49,7 @@
 			</label>
 			{#if view === "state"}
 				{#each $snapshots as snapshot, i}
-					<button on:click={() => selectState(i)}>Snapshot {i}</button>
+					<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
 					<br>
 				{/each}
 				<hr>
@@ -66,8 +68,8 @@
 			<div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
 					<h2>Data</h2>
 				{#if view === "state"}
-					{#if snapshot} 
-						<State component={snapshot}></State>
+					{#if data} 
+						<State component={data[parent]}></State>
 					{/if}	
 				{/if}		
 			</div>
