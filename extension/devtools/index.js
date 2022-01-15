@@ -56,8 +56,7 @@ chrome.devtools.panels.create(
                             string = string.slice(varNameEnd);
                         }
                         componentObject[id] = component;
-                        ctxObject[id] = component.$$.ctx;
-                        console.log(ctxObject);
+                        ctxObject[id] = {ctx: component.$$.ctx, tagName, instance};
                         // parse ctx for messaging purposes
                         const ctx = {};
                         component.$$.ctx.forEach((element, index) => {
@@ -213,7 +212,6 @@ chrome.devtools.panels.create(
 
                     function eventAlert(nodeId, event) {
                         rebuildingDom = false;
-                        console.log("nodeId: " + nodeId + " event: " + event)
                         window.postMessage({
                             source: 'panel.js',
                             type: 'event',
@@ -293,7 +291,7 @@ chrome.devtools.panels.create(
                             parsedCtx = {};
                             for (let component in ctxObject) {
                                 const ctxData = {};
-                                ctxObject[component].forEach((element, index) => {
+                                ctxObject[component].ctx.forEach((element, index) => {
                                     ctxData[index] = parseCtx(element);
                                 })
                                 parsedCtx[component] = ctxData;
@@ -367,11 +365,29 @@ chrome.devtools.panels.create(
 
                     function rebuildDom(parent) {
                         rebuildingDom = true;
+
+                        // store old component counts
+                        componentCountsHistory = JSON.parse(JSON.stringify(componentCounts));
+
+                        // erase dom and build new app
                         document.body.replaceChildren();
                         const appConstructor = componentObject[parent].constructor;
                         const app = new appConstructor({
                             target: document.body
                         })
+
+                        for (let component in componentCountsHistory) {
+                            const count = componentCountsHistory[component];
+                            for (let componentInstance in ctxObject) {
+                                const {tagName, instance, ctx } = ctxObject[componentInstance];
+                                if (tagName === component && instance > count) {
+                                    const oldInstance = tagName + (instance - (count + 1));
+                                    ctxObject[componentInstance].ctx = ctxObject[oldInstance].ctx;
+                                }
+                            }
+                        }
+                        
+                        
                     }
                     `
                 }

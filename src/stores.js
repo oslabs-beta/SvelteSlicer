@@ -522,8 +522,6 @@ function buildNewSnapshot(data) {
 
 	// update ctx variables
 	const diff = [];
-	console.log(ctxObject);
-	console.log(componentData);
 	for (let component in componentData) {
 		for(let i in componentData[component].variables) {
 			const variable = componentData[component].variables[i];
@@ -550,9 +548,10 @@ function buildNewSnapshot(data) {
 		diff
 	}
 
+	console.log(componentData);
+
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
-	// Do we want this code????
 	snapshotLabel = undefined;
 
 	return deepCloneSnapshot;  // deep copy to "freeze" state
