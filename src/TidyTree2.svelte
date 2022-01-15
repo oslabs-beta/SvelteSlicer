@@ -7,14 +7,7 @@ import { onMount } from 'svelte';
 $: snapshot = $snapshots[I];
     $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
     $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
-    let state
-    //const {id,children} = component;
-    onMount(()=>{
-    if(snapshot && component){   
-    const {id,children} = component;
-    console.log('ccOut',component);
-    }
-    })
+    
     
     function clickhandler() {
         console.log("shot,",snapshot);
@@ -71,8 +64,18 @@ onMount(()=>{
        function update(src){
            let treeData = treemap(root)
            //nodes //return thr arr of descendant nodes, staring with this node then followed by each child
-           let nodes = treeData.descendants();
+        //    let nodes = treeData.descendants();
+        //    let activeNode = [];
+        let activeNode = treeData.descendants();
+           let nodes = [];
+           activeNode.forEach(item=>{
+               console.log('item',item)
+               if(item.data.active){
+            nodes.push(item)
+               }
+           })
            console.log('nodes',nodes)
+           console.log('activeNodes',activeNode)
            //set depth
            nodes.forEach(function(d){
                d.y=d.depth*140;
@@ -82,6 +85,7 @@ onMount(()=>{
            let node = svg.selectAll('g.node').data(nodes,function(d){
                return d.id || (d.id= ++i); //return d.id or it has child 
            });
+           console.log('node >>',node)
            //node start at the parent's position
            let nodeEnter = node
                   .enter()
