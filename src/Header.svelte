@@ -10,7 +10,7 @@
     h1 {
         color: whitesmoke; 
         text-align: left;
-        padding: 1em;
+        padding: 5px;
         
     }
 </style>

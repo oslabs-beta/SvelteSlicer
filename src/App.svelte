@@ -120,7 +120,7 @@
 			padding: 1em;
 			/* max-width: 240px; */
 			max-width:max-content;
-			margin: 10px auto;
+			margin: 5px auto;
 			align-items: center;
 			color: whitesmoke;
 			background: rgb(83, 81, 81);
@@ -180,10 +180,10 @@
   position: absolute;
   /* content: "visual/data"; */
   content: "";
-  height: 17px;
+  height: 18px;
   width: 20px;
   left: 7px;
-  bottom: 2px;
+  bottom: 3px;
   background-color: white;
   -webkit-transition: .4s;
   transition: .4s;
@@ -194,7 +194,6 @@
   border-radius: 30px;
   
 }
-
 
 .slider.round:before {
   border-radius: 50%;

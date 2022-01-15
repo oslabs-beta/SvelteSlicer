@@ -1,8 +1,6 @@
 <script>
     import { onMount } from 'svelte';
     export let I;
-    export let oldSnapshotVal = '';
-    export let newSnapshotVal = '';
     import {snapshots} from './stores.js';
     import Variable from './Variable.svelte';
     let canvas;
@@ -11,7 +9,7 @@
     $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
     let stateList = false; 
     const renderedDiffs = {};
-  
+    let i = 0;
         function clickhandler() {
 
         console.log('snapshots no s ', snapshot);
@@ -70,14 +68,23 @@
 </script>
 
 <main>
+   
     <div id="valuesList">
         <h2>Data</h2>
-        <button on:click={clickhandler}>Log State</button>
+        <button on:click={clickhandler}>Log State/Diffs</button>
         {#if stateList}
-            {#each snapshot.diff as diff}
+            {#each snapshot.diff as diff ,i}
                 <ul id="myOl">
                     <li>Component: {diff.component}</li>
-                    <li>Old Value: {diff.oldValue}</li>
+                    <br>
+                    <li>Variable Name: {diff.name}</li>
+                    <br>
+                    {#if !diff.oldValue}
+                        <li>N/A</li>
+                        {:else}
+                        <li>Old Value: {diff.oldValue}</li>
+                    {/if}
+                    <br>
                     <li>New Value: {diff.newValue}</li>
                 </ul>
             {/each}
@@ -128,11 +135,5 @@
     
 <style>
     
-    canvas {
-		width: 50%;
-		height: 50%;
-		background-color: rgb(14, 158, 146);
-		/* -webkit-mask: url(/svelte-logo-mask.svg) 50% 50% no-repeat;
-		mask: url(/svelte-logo-mask.svg) 50% 50% no-repeat; */
-	}
+  
 </style>
