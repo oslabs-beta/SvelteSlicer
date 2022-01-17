@@ -148,6 +148,9 @@ chrome.devtools.panels.create(
                                 componentName = getComponentName(node.__svelte_meta.loc.file)
                                 nodes.set(node, {id, componentName});
                             }
+                            console.log(id);
+                            console.log(componentName);
+                            console.log(target.nodeName);
                             insertedNodes.push({
                                 target: ((nodes.get(target)) ? nodes.get(target).id : target.nodeName + target.id),
                                 id,
@@ -353,9 +356,9 @@ chrome.devtools.panels.create(
                         }
                           
                         if (event.data.type === 'rerenderState') {
-                            const { index, parent } = event.data;
+                            const { index, parent, state } = event.data;
                             if (index === domHistory.length - 1) {
-                                rebuildDom(parent);
+                                rebuildDom(parent, state);
                             }
                             else {
                                 repaintDom(index);
@@ -363,11 +366,11 @@ chrome.devtools.panels.create(
                         }
                     })
 
-                    function rebuildDom(parent) {
+                    function rebuildDom(parent, state) {
                         rebuildingDom = true;
 
                         // store old component counts
-                        componentCountsHistory = JSON.parse(JSON.stringify(componentCounts));
+                        const componentCountsHistory = JSON.parse(JSON.stringify(componentCounts));
 
                         // erase dom and build new app
                         document.body.replaceChildren();
@@ -379,15 +382,25 @@ chrome.devtools.panels.create(
                         for (let component in componentCountsHistory) {
                             const count = componentCountsHistory[component];
                             for (let componentInstance in ctxObject) {
-                                const {tagName, instance, ctx } = ctxObject[componentInstance];
+                                const {tagName, instance } = ctxObject[componentInstance];
                                 if (tagName === component && instance > count) {
                                     const oldInstance = tagName + (instance - (count + 1));
-                                    ctxObject[componentInstance].ctx = ctxObject[oldInstance].ctx;
+                                    const { variables } = state[oldInstance];
+                                    for (let variable in variables) {
+                                        const { name, ctxIndex, initValue } = variables[variable];
+                                        if (ctxIndex && initValue) {
+                                            injectState(componentInstance, name, ctxObject[oldInstance].ctx[ctxIndex]);
+                                        }
+                                    }
                                 }
                             }
                         }
-                        
-                        
+                        console.log(ctxObject);
+                    }
+
+                    function injectState(componentId, key, value) {
+                        const component = componentObject[componentId];
+                        component.$inject_state({ [key]: value })
                     }
                     `
                 }

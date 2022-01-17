@@ -18,7 +18,7 @@ const astInfo = {};
 const componentTree = {};
 let parentComponent;
 let domParent;
-let snapshotLabel = "Initial State";
+let snapshotLabel;
 
 // for debugging, store any AST variables not caught by switch statements
 const uncaughtVariables = [];
@@ -295,7 +295,8 @@ function buildFirstSnapshot(data) {
 			const varData = {
 				name: astVariable.name,
 				type: astVariable.type,
-				component: id
+				component: id,
+				initValue: astVariable.value ? astVariable.value : null
 			}
 			if (astVariable.ctxVariable) {
 				if (injectState.hasOwnProperty(astVariable.name)) {
@@ -403,28 +404,12 @@ function buildNewSnapshot(data) {
 
 	// add new components
 	components.forEach(component => {
-		const { ctx, injectState, captureState, tagName, id, instance } = component;
-
-		// create object with all associated variables
-		const variables = {};
-		captureState.forEach(variable => {
-			const varObj = {
-				name: variable
-			}
-
-			for (let variableName in injectState) {
-				if (variableName === variable) {
-					varObj.index = injectState[variableName];
-					varObj.value = ctx[injectState[variableName]].value;
-				}
-			}
-			variables[variable] = varObj;
-		})
+		const { ctx, injectState, tagName, id, instance } = component;
 
 		const data = {
 			tagName,
 			id,
-			variables,
+			variables: {},
 			nodes: {},
 			listeners: {},
 			active: true,
@@ -449,12 +434,49 @@ function buildNewSnapshot(data) {
 				targets[node.target] = true;
 				targets[node.id] = true;
 			}
+			console.log(node.id + ": " + nodes[node.id].component);
 		})
 
 		// identify the target node for the component
 		const parentNode = (targets.hasOwnProperty("body")) ? "body" : Math.min(...Object.keys(targets));
 		data.parentNode = parentNode;
 		data.targets = targets;
+
+		// assign variables to components using AST data and ctx
+		const astVariables = astInfo[tagName].variables;
+		const unclaimedVariables = [];
+		for (let i in astVariables) {
+			const astVariable = astVariables[i];
+			const varData = {
+				name: astVariable.name,
+				type: astVariable.type,
+				component: id, 
+				initValue: astVariable.value ? astVariable.value : null
+			}
+			if (astVariable.ctxVariable) {
+				if (injectState.hasOwnProperty(astVariable.name)) {
+					const index = injectState[astVariable.name]
+					varData.ctxIndex = index;
+					varData.value = ctx[index].value;
+					delete ctx[index];
+				}
+				// if not in injectState, push to array for later processing
+				else unclaimedVariables.push(astVariable);
+			}
+			data.variables[varData.name] = varData;
+		}
+
+		// match unassigned value indices in ctx with unclaimed variables
+		unclaimedVariables.forEach(variable => {
+			for (let i in ctx) {
+				if (ctx[i].type === "value") {
+					data.variables[variable.name].ctxIndex = i;
+					data.variables[variable.name].value = ctx[i].value;
+					delete ctx[i];
+					break; 
+				}
+			}
+		})	
 
 		componentData[id] = data;
 	})
@@ -473,6 +495,7 @@ function buildNewSnapshot(data) {
 				componentData[component].targets[node.id] = true;
 			}
 		}
+		console.log(node.id + ": " + nodes[node.id].component);
 	})
 
 	// determine and assign the parent component
@@ -548,8 +571,6 @@ function buildNewSnapshot(data) {
 		diff
 	}
 
-	console.log(componentData);
-
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
 	snapshotLabel = undefined;
@@ -564,6 +585,7 @@ function buildNewSnapshot(data) {
 				deleteNode(child.id);
 			})
 		}
+		console.log('component in Delete: ' + component);
 		delete componentData[component].nodes[id];
 	}
 }

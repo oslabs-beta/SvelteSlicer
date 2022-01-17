@@ -26,13 +26,12 @@
 	
 	function rerenderState(index) {
 		I = index === $snapshots.length - 1 ? undefined : index
-		console.log("snapshot " + index)
-		console.log(snapshot);
 		connection.postMessage({
     		source: 'panel',
 			name: 'rerenderState',
     		index,
 			parent,
+			state: $snapshots[index].data,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
 	}
