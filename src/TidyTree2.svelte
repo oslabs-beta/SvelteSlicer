@@ -64,8 +64,7 @@ onMount(()=>{
        function update(src){
            let treeData = treemap(root)
            //nodes //return thr arr of descendant nodes, staring with this node then followed by each child
-        //    let nodes = treeData.descendants();
-        //    let activeNode = [];
+        //filter nodes. only show active nodes.
         let activeNode = treeData.descendants();
            let nodes = [];
            activeNode.forEach(item=>{
@@ -127,6 +126,20 @@ onMount(()=>{
                .text(function(d){
                    return d.data.id;
                })
+
+               nodeEnter
+                 .append('g:title')
+                 .attr("transform", "translate(10,0)")
+                 .text(function(d){
+                     console.log('d for mouseover',d.data.variables.length)
+                
+                  if(Object.keys(d.data.variables).length > 0){
+                      console.log('inside checking variables')
+                      return d.data.variables
+                  }else{
+                   return `There are ${d.data.children.length} children`;
+                  }
+               })
              
             //make transition node/ start from parent position to new position
             let nodeUpdate = nodeEnter.merge(node);
@@ -170,8 +183,16 @@ onMount(()=>{
                 return path;
             }
            
-             
-            let links = treeData.descendants().slice(1);
+           let activelinks = treeData.descendants().slice(1);
+           let links = [];
+           activelinks.forEach(item=>{
+               console.log('item for links ',item)
+               if(item.data.active){
+            links.push(item)
+               }
+           })
+            
+            // let links = treeData.descendants().slice(1);
             let link = svg.selectAll('path.link').data(links, function(d){
                 return d.id;
             })

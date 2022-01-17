@@ -55,6 +55,7 @@
                let treeData = treemap(root)
                //nodes
                let nodes = treeData.descendants();
+               
     
                //set depth
             //    nodes.forEach(function(d){
