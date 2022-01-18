@@ -43,8 +43,6 @@
 			});
 		}
 	}
-	// $: dataForSelected = selectState()  
-	// console.log('out data',dataForSelected)
 
 	function selectView(view) {
 		selection = view;
@@ -86,16 +84,16 @@
 			<div id="right" style="flex:10; display:flex; flex-flow:row">
 				<div id="red" class="center" style="background-color:orangered; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
 					<h2>Visual</h2>
-					{#if view === "componentTree"} 
+					{#if view === "componentTree" && $fileTree} 
 					<Component component={$fileTree}/>
-					{:else if view === "tidyTree"}
+					{:else if view === "tidyTree" && $fileTree}
 					<TidyTree2 treeData={$fileTree} {count} I={CurrentI}/>
 					{/if}
 			</div>
 			<div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
 					<h2>Data</h2>
 				{#if view === "state"}
-					{#if data && snapshot} 
+					{#if data && snapshot && $fileTree} 
 						<State I={CurrentI}></State>
 						<TidyTree treeData={$fileTree} {count} I={CurrentI}/>
 					{/if}	

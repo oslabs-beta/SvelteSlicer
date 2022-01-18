@@ -196,22 +196,6 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 			}	
 	  	});
 	});
-	// assign component children
-	for (let file in astInfo) {
-		for (let childFile in astInfo[file].components) {
-			componentTree[file].children.push(componentTree[childFile]);
-			componentTree[childFile].parent = file;
-		}
-	}
-
-	// determine top-level parent component
-	for (let file in astInfo) {
-		if (!componentTree[file].parent) {
-			parentComponent = file;
-		}
-	}
-
-	fileTree.set(componentTree[parentComponent]);
 });
 
 function buildSnapshot(data) {
@@ -401,6 +385,23 @@ function buildSnapshot(data) {
 		}
 	}
 
+	// assign component children
+	for (let file in astInfo) {
+		for (let childFile in astInfo[file].components) {
+			componentTree[file].children.push(componentTree[childFile]);
+			componentTree[childFile].parent = file;
+		}
+	}
+
+	// determine top-level parent component
+	for (let file in astInfo) {
+		if (!componentTree[file].parent) {
+			parentComponent = file;
+		}
+	}
+
+	fileTree.set(componentTree[parentComponent]);
+
 	const snapshot = {
 		data: componentData,
 		parent: domParent,
@@ -409,7 +410,6 @@ function buildSnapshot(data) {
 	}
 
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
-	console.log(deepCloneSnapshot);
 
 	snapshotLabel = undefined;
 

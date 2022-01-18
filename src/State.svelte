@@ -8,42 +8,32 @@
     $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
     
 
-    function clickhandler() {
-        console.log("snap,",snapshot);
-        console.log('parent',parent)
-        console.log('comp',component)
-       
-    }
-
-let collapse = document.getElementsByClassName("collapsible");
-let i;
-//let opened = collapse[i] || false;
-function collapsible(){
+    let collapse = document.getElementsByClassName("collapsible");
+    let i;
+    //let opened = collapse[i] || false;
+    function collapsible(){
  
- for (i = 0; i < collapse.length; i++) {
+    for (i = 0; i < collapse.length; i++) {
     
-     this.classList.toggle("active");
+        this.classList.toggle("active");
      
-     let content = this.nextElementSibling.nextElementSibling;
-     if (content.style.display === "block") {
+        let content = this.nextElementSibling.nextElementSibling;
+        if (content.style.display === "block") {
      
-      content.style.display = "none";
-     } else {
+        content.style.display = "none";
+        } else {
      
-     content.style.display = "block";
-     }
+        content.style.display = "block";
+        }
     
- }
-   //opened =collapse[i]= !opened
-}
- $: arrowDown = true
+    }
+    //opened =collapse[i]= !opened
+    }
+    $: arrowDown = true
     
-   
 </script>
 
 <main>
-    <button on:click={clickhandler}>Log State</button>
-    
 {#if snapshot && component}
 <h2>{snapshot.label}</h2>
     {#each Object.keys(snapshot.data) as componentName} 

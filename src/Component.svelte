@@ -1,8 +1,5 @@
 <script>
     export let component;
-    
-    console.log("component.children",component.children);
-    console.log('hierarchical data for tidy tree',component)
 
     const _expansionState = {
 		/* treeNodeId: expanded <boolean> */
