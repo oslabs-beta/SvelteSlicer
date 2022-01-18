@@ -1,1 +1,1 @@
-# svelteDevTool
+# SvelteSlicer

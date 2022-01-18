@@ -17,6 +17,10 @@ a {
 	text-decoration: none;
 }
 
+ol li::marker {
+	content: "▼";
+  }
+  
 a:hover {
 	text-decoration: underline;
 }
@@ -62,4 +66,55 @@ button:focus {
 	border-color: #666;
 }
 
-main.svelte-1h6otfa{text-align:center;padding:1em;max-width:240px;margin:0 auto}@media(min-width: 640px){main.svelte-1h6otfa{max-width:none}}
+.xAxis path,
+.xAxis line {
+  stroke: teal;
+  shape-rendering: crispEdges;
+}
+.xAxis text {
+  font-family: Optima, Futura, sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  fill: teal;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 3px;
+}
+
+.node text {
+  font: 12px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+
+ul {
+	margin: 0;
+	list-style: none;
+	padding-left: 1.2rem; 
+	user-select: none;
+}
+
+.test {
+	content: "▼";
+  }
+
+ul {
+	margin: 0;
+	list-style: none;
+	padding-left: 1.2rem; 
+	user-select: none;
+}
+.no-arrow { padding-left: 1.0rem; }
+.arrow {
+	cursor: pointer;
+	display: inline-block;
+	/* transition: transform 200ms; */
+}
+.arrowDown { transform: rotate(90deg); }

@@ -1,0 +1,30 @@
+{
+    "manifest_version": 3,
+    "name": "Svelte Slicer",
+    "version": "1.0",
+    "minimum_chrome_version": "10.0",
+    "description": "Browser devtools extension for time traveling and visualizing Svelte applications.",
+    
+    "devtools_page": "devtools/index.html",
+    "permissions": [
+      "activeTab",
+      "scripting"
+    ],
+    "host_permissions": [
+      "http://*/*",
+      "https://*/*"
+    ],
+    "background": {
+      "service_worker": "devtools/background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": [
+          "http://*/*",
+          "https://*/*"
+        ],
+        "js": ["devtools/listener.js"],
+        "run_at": "document_start"
+      }
+    ]
+  }
