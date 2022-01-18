@@ -400,6 +400,7 @@ function buildSnapshot(data) {
 		}
 	}
 
+	fileTree.set({});
 	fileTree.set(componentTree[parentComponent]);
 
 	const snapshot = {

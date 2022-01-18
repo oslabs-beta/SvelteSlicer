@@ -1,29 +1,16 @@
 <script>
 export let I;
-import {snapshots} from './stores.js';
+export let view;
+import { fileTree, snapshots } from './stores';
 import * as d3 from 'd3';
 import { onMount } from 'svelte';
 
-$: snapshot = $snapshots[I];
-    $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
-    $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
-    
-    
-    function clickhandler() {
-        console.log("shot,",snapshot);
-        console.log('cc',component);
-       
-    }
-
-export let treeData;
-console.log('treeData',treeData)
-export let count;
-
-console.log("count",count)
+$: parent = $snapshots[I].parent;
+$: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
 
 let margin = {top:20,right:0,bottom:20,left:0}
-    let width = 700 - margin.left - margin.right;
-    let height = 700 - margin.top -margin.bottom;
+    let width = 500 - margin.left - margin.right;
+    let height = 500 - margin.top -margin.bottom;
 //1/3 
 // const width = document.body.clientWidth;
 // const height = document.body.clientHeight;
@@ -34,7 +21,7 @@ let margin = {top:20,right:0,bottom:20,left:0}
 //if(count<2){   
 
 onMount(()=>{
-    if(snapshot && component){
+    if(component){
      
     svg = d3.select("#chart")
        .append('div')
@@ -68,8 +55,7 @@ onMount(()=>{
         let activeNode = treeData.descendants();
            let nodes = [];
            activeNode.forEach(item=>{
-               console.log('item',item)
-               if(item.data.active){
+               if(item.data.active === true || item.data.active === undefined){
             nodes.push(item)
                }
            })
@@ -127,11 +113,10 @@ onMount(()=>{
                    return d.data.id;
                })
 
-               nodeEnter
+               /*nodeEnter
                  .append('g:title')
                  .attr("transform", "translate(10,0)")
                  .text(function(d){
-                     console.log('d for mouseover',d.data.variables.length)
                 
                   if(Object.keys(d.data.variables).length > 0){
                       console.log('inside checking variables')
@@ -140,7 +125,7 @@ onMount(()=>{
                    return `There are ${d.data.children.length} children`;
                   }
                })
-             
+               */
             //make transition node/ start from parent position to new position
             let nodeUpdate = nodeEnter.merge(node);
             nodeUpdate
