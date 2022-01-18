@@ -22,7 +22,8 @@ chrome.runtime.onMessage.addListener(message => {
       type: 'rerenderState',
       index: message.index,
       parent: message.parent,
-      state: message.state
+      state: message.state,
+      prevI: message.prevI
     });
   }
 });

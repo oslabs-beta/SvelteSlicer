@@ -14,6 +14,7 @@
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
 	let I;
+	let prevI;
 	
 	$: view = selection;
 	let selection;
@@ -25,6 +26,7 @@
 	}
 	
 	function rerenderState(index) {
+		prevI = CurrentI;
 		I = index === $snapshots.length - 1 ? undefined : index
 		connection.postMessage({
     		source: 'panel',
@@ -32,6 +34,7 @@
     		index,
 			parent,
 			state: $snapshots[index].data,
+			prevI,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
 	}

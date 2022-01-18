@@ -11,7 +11,6 @@ chrome.devtools.panels.create(
                     const deletedNodes = [];
                     const insertedNodes = [];
                     const addedEventListeners = [];
-                    const deletedEventListeners = [];
                     const nodes = new Map();
                     const ctxObject = {};
                     componentObject = {};
@@ -62,21 +61,95 @@ chrome.devtools.panels.create(
                         component.$$.ctx.forEach((element, index) => {
                             ctx[index] = parseCtx(element);
                         })
-                        // parse out elements of $capture_state
-                        const captureStateString = component.$capture_state.toString().slice(8, -2);
-                        const captureState = captureStateString.split(',').map(string => string.trim());
+
                         data = {
                             id,
                             ctx,
                             injectState,
                             tagName,
-                            captureState,
                             instance,
                             target: (options.target) ? options.target.nodeName + options.target.id : null
                         }
                         components.push(data);
                     }
-                  
+
+                    function svelteDOMRemove(e) {
+                        
+                        const { node } = e.detail;
+                        const nodeData = nodes.get(node);
+                        if (nodeData) {
+                            deletedNodes.push({
+                                id: nodeData.id,
+                                component: nodeData.component
+                            })
+                        }
+                    }
+
+                    function svelteDOMInsert(e) {
+                        
+                        const { node, target } = e.detail;
+                        if (node.__svelte_meta) {
+                            let id = nodes.get(node);
+                            if (!id) {
+                                id = node_id++;
+                                componentName = getComponentName(node.__svelte_meta.loc.file)
+                                nodes.set(node, {id, componentName});
+                            }
+                            insertedNodes.push({
+                                target: ((nodes.get(target)) ? nodes.get(target).id : target.nodeName + target.id),
+                                id,
+                                component: componentName, 
+                                loc: node.__svelte_meta.loc.char
+                            });
+                        }
+                    }
+
+                    function svelteDOMAddEventListener(e) {
+                        const { node, event, handler } = e.detail;
+                        const nodeData = nodes.get(node);
+
+                        id = nodeData.id + event;
+
+                        // store listener data to be added back to DOM after re-renders
+                        listeners[node] = listeners[node] ? listeners[node] : [];
+                        listeners[node].push({event, handler});
+
+                        node.addEventListener(event, () => eventAlert(nodeData.id, event));
+                            
+                        addedEventListeners.push({
+                            node: nodeData.id,
+                            event,
+                            handlerName: e.detail.handler.name,
+                            handlerString: e.detail.handler.toString(),
+                            component: nodeData.component,
+                            id
+                        })
+                    }
+
+                    function svelteDOMRemoveEventListener(e) {
+                        const { node, event } = e.detail;
+                        nodeData = nodes.get(node);
+                        const id = nodeData.id + event;
+
+                        node.removeEventListener(event, () => eventAlert(nodeData.id, event));
+                        
+                        listeners[node].forEach((listener, index) => {
+                            if (listener.event === event) {
+                                listeners[node].splice(index, 1);
+                            }
+                        })                       
+                    }
+
+                    function getComponentName(file) {
+                        if (file.indexOf('/') === -1) {
+                            tagName = file.slice((file.lastIndexOf('\\\\') + 1), -7);
+                        }
+                        else {
+                            tagName = file.slice((file.lastIndexOf('/') + 1), -7);
+                        }
+                        return tagName;
+                    }
+
                     function parseCtx(element, name = null) {
                         if (typeof element === "function") {
                             return {
@@ -126,91 +199,16 @@ chrome.devtools.panels.create(
                         }
                     }
 
-                    function svelteDOMRemove(e) {
-                        
-                        const { node } = e.detail;
-                        const nodeData = nodes.get(node);
-                        if (nodeData) {
-                            deletedNodes.push({
-                                id: nodeData.id,
-                                component: nodeData.component
+                    function parseCtxObject() {
+                        parsedCtx = {};
+                        for (let component in ctxObject) {
+                            const ctxData = {};
+                            ctxObject[component].ctx.forEach((element, index) => {
+                                ctxData[index] = parseCtx(element);
                             })
+                            parsedCtx[component] = ctxData;
                         }
-                    }
-
-                    function svelteDOMInsert(e) {
-                        
-                        const { node, target } = e.detail;
-                        if (node.__svelte_meta) {
-                            let id = nodes.get(node);
-                            if (!id) {
-                                id = node_id++;
-                                componentName = getComponentName(node.__svelte_meta.loc.file)
-                                nodes.set(node, {id, componentName});
-                            }
-                            console.log(id);
-                            console.log(componentName);
-                            console.log(target.nodeName);
-                            insertedNodes.push({
-                                target: ((nodes.get(target)) ? nodes.get(target).id : target.nodeName + target.id),
-                                id,
-                                component: componentName, 
-                                loc: node.__svelte_meta.loc.char
-                            });
-                        }
-                    }
-
-                    function svelteDOMAddEventListener(e) {
-                        const { node, event, handler } = e.detail;
-                        const nodeData = nodes.get(node);
-
-                        id = nodeData.id + event;
-
-                        // store listener data to be added back to DOM after re-renders
-                        listeners[node] = listeners[node] ? listeners[node] : [];
-                        listeners[node].push({event, handler});
-
-                        node.addEventListener(event, () => eventAlert(nodeData.id, event));
-                            
-                        addedEventListeners.push({
-                            node: nodeData.id,
-                            event,
-                            handlerName: e.detail.handler.name,
-                            handlerString: e.detail.handler.toString(),
-                            component: nodeData.component,
-                            id
-                        })
-                    }
-
-                    function svelteDOMRemoveEventListener(e) {
-                        const { node, event } = e.detail;
-                        nodeData = nodes.get(node);
-                        const id = nodeData.id + event;
-
-                        node.removeEventListener(event, () => eventAlert(nodeData.id, event));
-                        
-                        listeners[node].forEach((listener, index) => {
-                            if (listener.event === event) {
-                                listeners[node].splice(index, 1);
-                            }
-                        })                       
-
-                        deletedEventListeners.push({
-                            node: nodeData.id,
-                            event: event,
-                            component: nodeData.component,
-                            id: nodeData.id + event
-                        })
-                    }
-
-                    function getComponentName(file) {
-                        if (file.indexOf('/') === -1) {
-                            tagName = file.slice((file.lastIndexOf('\\\\') + 1), -7);
-                        }
-                        else {
-                            tagName = file.slice((file.lastIndexOf('/') + 1), -7);
-                        }
-                        return tagName;
+                        return parsedCtx;
                     }
 
                     function eventAlert(nodeId, event) {
@@ -225,147 +223,6 @@ chrome.devtools.panels.create(
                         });
                     }
 
-
-                    setup(window.document);
-                  
-                    for (let i = 0; i < window.frames.length; i++) {
-                        const frame = window.frames[i]
-                        const root = frame.document
-                        setup(root)
-                    }
-
-                    // observe for changes to the DOM
-                    const observer = new MutationObserver( list => {
-                        if (!rebuildingDom){
-                            const domChange = new CustomEvent('dom-changed', {detail: list});
-                            window.document.dispatchEvent(domChange)
-                        }
-                        else {
-                            const rebuild = new CustomEvent('rebuild', {detail: list});
-                            window.document.dispatchEvent(rebuild);
-                        }
-                    });
-        
-                    // capture initial DOM load as one snapshot
-                    window.onload = () => {
-                        // make sure that data is being sent
-                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
-                            const domNode = document.body;
-                            domHistory.push(domNode.cloneNode(true));
-                            firstLoadSent = true;
-                            window.postMessage({
-                                source: 'panel.js',
-                                type: 'firstLoad',
-                                data: {
-                                    components,
-                                    insertedNodes,
-                                    deletedNodes,
-                                    addedEventListeners,
-                                    deletedEventListeners
-                                }
-                            });
-                        }
-
-                        // reset arrays
-                        components.splice(0, components.length);
-                        insertedNodes.splice(0, insertedNodes.length);
-                        deletedNodes.splice(0, deletedNodes.length);
-                        addedEventListeners.splice(0, addedEventListeners.length);
-                        deletedEventListeners.splice(0, deletedEventListeners.length);
-                        // start MutationObserver
-                        observer.observe(window.document, {attributes: true, childList: true, subtree: true});
-                    }   
-
-                    // capture subsequent DOM changes to update snapshots
-                    window.document.addEventListener('dom-changed', (e) => {
-                        // only send message if something changed in SvelteDOM
-                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
-                            const domNode = document.body;
-                            domHistory.push(domNode.cloneNode(true));
-                            let type;
-                            // make sure the first load has already been sent; if not, this is the first load
-                            if (!firstLoadSent) {
-                                type = "firstLoad";
-                                firstLoadSent = true;
-                            }
-                            else type = "update";
-                            
-                            // parse the ctxObject for messaging purposes
-                            parsedCtx = {};
-                            for (let component in ctxObject) {
-                                const ctxData = {};
-                                ctxObject[component].ctx.forEach((element, index) => {
-                                    ctxData[index] = parseCtx(element);
-                                })
-                                parsedCtx[component] = ctxData;
-                            }
-                            
-                            window.postMessage({
-                                source: 'panel.js',
-                                type,
-                                data: {
-                                    ctxObject: parsedCtx,
-                                    components,
-                                    insertedNodes,
-                                    deletedNodes,
-                                    addedEventListeners,
-                                    deletedEventListeners
-                                }
-                            });
-                        }
-                        
-                        // reset arrays
-                        components.splice(0, components.length);
-                        insertedNodes.splice(0, insertedNodes.length);
-                        deletedNodes.splice(0, deletedNodes.length);
-                        addedEventListeners.splice(0, addedEventListeners.length);
-                        deletedEventListeners.splice(0, deletedEventListeners.length);
-                    });
-
-                    window.document.addEventListener('rebuild', () => {
-                        window.postMessage({
-                            source: 'panel.js',
-                            type: 'rebuild',
-                            data: {
-                                components,
-                                insertedNodes,
-                                deletedNodes,
-                                addedEventListeners,
-                                deletedEventListeners
-                            }
-                        });
-                    })
-
-                    function repaintDom(index) {
-                        const newDomDoc = domHistory[index];
-                        document.body.parentNode.replaceChild(newDomDoc, document.body);
-                    }
-
-
-                    // listen for devTool requesting state injections 
-                    window.addEventListener('message', function () {
-                        // Only accept messages from the same frame
-                        if (event.source !== window) {
-                            return;
-                        }
-                        
-                        // Only accept messages that we know are ours
-                        if (typeof event.data !== 'object' || event.data === null ||
-                          !event.data.source === 'panel.js') {
-                          return;
-                        }
-                          
-                        if (event.data.type === 'rerenderState') {
-                            const { index, parent, state } = event.data;
-                            if (index === domHistory.length - 1) {
-                                rebuildDom(parent, state);
-                            }
-                            else {
-                                repaintDom(index);
-                            }
-                        }
-                    })
-
                     function rebuildDom(parent, state) {
                         rebuildingDom = true;
 
@@ -373,7 +230,11 @@ chrome.devtools.panels.create(
                         const componentCountsHistory = JSON.parse(JSON.stringify(componentCounts));
 
                         // erase dom and build new app
-                        document.body.replaceChildren();
+                        const parentNode = document.body.parentNode;
+                        console.log(parentNode);
+                        parentNode.removeChild(document.body);
+                        let body = document.createElement("body");
+                        parentNode.appendChild(body);
                         const appConstructor = componentObject[parent].constructor;
                         const app = new appConstructor({
                             target: document.body
@@ -395,13 +256,141 @@ chrome.devtools.panels.create(
                                 }
                             }
                         }
-                        console.log(ctxObject);
                     }
 
                     function injectState(componentId, key, value) {
                         const component = componentObject[componentId];
                         component.$inject_state({ [key]: value })
                     }
+
+                    function repaintDom(index) {
+                        const newDomDoc = domHistory[index];
+                        document.body.parentNode.replaceChild(newDomDoc, document.body);
+                    }
+
+                    setup(window.document);
+                  
+                    for (let i = 0; i < window.frames.length; i++) {
+                        const frame = window.frames[i]
+                        const root = frame.document
+                        setup(root)
+                    }
+
+                    // observe for changes to the DOM
+                    const observer = new MutationObserver( list => {
+                        if (!rebuildingDom){
+                            const domChange = new CustomEvent('dom-changed');
+                            window.document.dispatchEvent(domChange)
+                        }
+                        else {
+                            const rebuild = new CustomEvent('rebuild');
+                            window.document.dispatchEvent(rebuild);
+                        }
+                    });
+        
+                    // capture initial DOM load as one snapshot
+                    window.onload = () => {
+                        // make sure that data is being sent
+                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
+                            const domNode = document.body;
+                            domHistory.push(domNode.cloneNode(true));
+                            firstLoadSent = true;
+                            // parse the ctxObject for messaging purposes
+                            
+                            window.postMessage({
+                                source: 'panel.js',
+                                type: 'firstLoad',
+                                data: {
+                                    ctxObject: parseCtxObject(),
+                                    components,
+                                    insertedNodes,
+                                    deletedNodes,
+                                    addedEventListeners,
+                                }
+                            })
+                        }
+
+                        // reset arrays
+                        components.splice(0, components.length);
+                        insertedNodes.splice(0, insertedNodes.length);
+                        deletedNodes.splice(0, deletedNodes.length);
+                        addedEventListeners.splice(0, addedEventListeners.length);
+
+                        // start MutationObserver
+                        observer.observe(window.document, {attributes: true, childList: true, subtree: true});
+                    }   
+
+                    // capture subsequent DOM changes to update snapshots
+                    window.document.addEventListener('dom-changed', (e) => {
+                        // only send message if something changed in SvelteDOM
+                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
+                            const domNode = document.body;
+                            domHistory.push(domNode.cloneNode(true));
+                            let type;
+                            // make sure the first load has already been sent; if not, this is the first load
+                            if (!firstLoadSent) {
+                                type = "firstLoad";
+                                firstLoadSent = true;
+                            }
+                            else type = "update";
+                            
+                            window.postMessage({
+                                source: 'panel.js',
+                                type,
+                                data: {
+                                    ctxObject: parseCtxObject(),
+                                    components,
+                                    insertedNodes,
+                                    deletedNodes,
+                                    addedEventListeners,
+                                }
+                            });
+                        }
+                        
+                        // reset arrays
+                        components.splice(0, components.length);
+                        insertedNodes.splice(0, insertedNodes.length);
+                        deletedNodes.splice(0, deletedNodes.length);
+                        addedEventListeners.splice(0, addedEventListeners.length);
+                    });
+
+                    window.document.addEventListener('rebuild', () => {
+                        window.postMessage({
+                            source: 'panel.js',
+                            type: 'rebuild',
+                            data: {
+                                components,
+                                insertedNodes,
+                                deletedNodes,
+                                addedEventListeners,
+                                ctxObject: parseCtxObject()
+                            }
+                        });
+                    })
+
+                    // listen for devTool requesting state injections 
+                    window.addEventListener('message', function () {
+                        // Only accept messages from the same frame
+                        if (event.source !== window) {
+                            return;
+                        }
+                        
+                        // Only accept messages that we know are ours
+                        if (typeof event.data !== 'object' || event.data === null ||
+                          !event.data.source === 'panel.js') {
+                          return;
+                        }
+                          
+                        if (event.data.type === 'rerenderState') {
+                            const { index, parent, state, prevI } = event.data;
+                            if (index === domHistory.length - 1 && index !== prevI) {
+                                rebuildDom(parent, state);
+                            }
+                            else if (index !== domHistory.length) {
+                                repaintDom(index);
+                            }
+                        }
+                    })
                     `
                 }
             ); 
