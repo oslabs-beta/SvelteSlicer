@@ -212,7 +212,6 @@ chrome.devtools.panels.create(
                     }
 
                     function eventAlert(nodeId, event) {
-                        rebuildingDom = false;
                         window.postMessage({
                             source: 'panel.js',
                             type: 'event',
@@ -365,6 +364,7 @@ chrome.devtools.panels.create(
                                 ctxObject: parseCtxObject()
                             }
                         });
+                        rebuildingDom = false;
                     })
 
                     // listen for devTool requesting state injections 
@@ -382,7 +382,7 @@ chrome.devtools.panels.create(
                           
                         if (event.data.type === 'rerenderState') {
                             const { index, parent, state, prevI } = event.data;
-                            if (index === domHistory.length - 1 && index !== prevI) {
+                            if (index === domHistory.length - 1) {
                                 rebuildDom(parent, state);
                             }
                             else if (index !== domHistory.length) {
