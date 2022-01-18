@@ -26,17 +26,18 @@
 	}
 	
 	function rerenderState(index) {
-		prevI = CurrentI;
-		I = index === $snapshots.length - 1 ? undefined : index
-		connection.postMessage({
-    		source: 'panel',
-			name: 'rerenderState',
-    		index,
-			parent,
-			state: $snapshots[index].data,
-			prevI,
-			tabId: chrome.devtools.inspectedWindow.tabId
-		});
+		if (index !== CurrentI) {
+			I = index === $snapshots.length - 1 ? undefined : index
+			connection.postMessage({
+    			source: 'panel',
+				name: 'rerenderState',
+    			index,
+				parent,
+				state: $snapshots[index].data,
+				prevI,
+				tabId: chrome.devtools.inspectedWindow.tabId
+			});
+		}
 	}
 	
 	function selectView(view) {

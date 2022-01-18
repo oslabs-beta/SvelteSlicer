@@ -231,7 +231,6 @@ chrome.devtools.panels.create(
 
                         // erase dom and build new app
                         const parentNode = document.body.parentNode;
-                        console.log(parentNode);
                         parentNode.removeChild(document.body);
                         let body = document.createElement("body");
                         parentNode.appendChild(body);
