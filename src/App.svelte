@@ -2,12 +2,15 @@
 	import {snapshots, fileTree, backgroundPageConnection} from './stores.js';
 	import Component from './Component.svelte';
 	import { get } from 'svelte/store';
-	//import TidyTree from './TidyTree.svelte';
+	import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import State from './State.svelte';
-
+	//import Data from './data.svelte';
+	
+   
 	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree
-
+	
+    
 	$: snapshot = $snapshots[CurrentI];
 	$: data = (snapshot ? snapshot.data : undefined);
 	$: parent = (snapshot ? snapshot.parent : undefined);
@@ -22,7 +25,8 @@
 	const connection = get(backgroundPageConnection);
 
 	function selectState(index) {
-		I = index === $snapshots.length - 1 ? undefined : index
+		I = index === $snapshots.length - 1 ? undefined : index;
+		count += 1;
 	}
 	
 	function rerenderState(index) {
@@ -39,7 +43,9 @@
 			});
 		}
 	}
-	
+	// $: dataForSelected = selectState()  
+	// console.log('out data',dataForSelected)
+
 	function selectView(view) {
 		selection = view;
 	}
@@ -83,14 +89,15 @@
 					{#if view === "componentTree"} 
 					<Component component={$fileTree}/>
 					{:else if view === "tidyTree"}
-					<TidyTree2 treeData={$fileTree} {count}/>
+					<TidyTree2 treeData={$fileTree} {count} I={CurrentI}/>
 					{/if}
 			</div>
 			<div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
 					<h2>Data</h2>
 				{#if view === "state"}
-					{#if data} 
-						<State component={data[parent]}></State>
+					{#if data && snapshot} 
+						<State I={CurrentI}></State>
+						<TidyTree treeData={$fileTree} {count} I={CurrentI}/>
 					{/if}	
 				{/if}		
 			</div>

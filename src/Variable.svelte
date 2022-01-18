@@ -1,11 +1,14 @@
 <script>
     export let variable;
+    //console.log("var",variable)
 </script>
 
 <main>
     {#if typeof variable.value !== "object"}
+    <!-- {#if variable.value instanceof !Object} -->
     <p>{variable.name}: {variable.value}</p>
     {:else} 
+    <div>
         <p>{variable.name}: </p>
         <ul>
             {#each Object.keys(variable.value) as nestedValue}
@@ -14,5 +17,7 @@
                 </li>    
             {/each}
         </ul>
+    </div>
     {/if}
 </main>
+

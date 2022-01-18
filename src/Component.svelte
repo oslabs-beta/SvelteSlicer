@@ -21,7 +21,7 @@
     <ul>
         <li>
             {#if children.length}
-                <span on:click={toggleExpansion}>
+                <span on:click={toggleExpansion} id={id}>
                     <span class="arrow" class:arrowDown>&#x25b6</span>
                   {id}
                     
