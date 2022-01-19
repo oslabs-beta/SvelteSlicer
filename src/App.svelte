@@ -7,12 +7,14 @@
 	import Diffs from './Diffs.svelte';
 	
 	$: snapshot = $snapshots[CurrentI];
-	$: data = (snapshot ? snapshot.data : undefined);
 	$: parent = (snapshot ? snapshot.parent : undefined);
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
 	let I;
 	let prevI;
+
+	let filtered = [];
+	let input = "";
 	
 	let view = "state";
 	$: View = view;
@@ -44,14 +46,46 @@
 
 	function selectView(selection) {
 		view = selection;
+		filtered = [];
 	}
 
 	function selectVis(selection){
         vis = selection;
 	}
 
-	let showLeft = true
-	let showRight = true
+	function filterState(snapshot){
+		let i = $snapshots.indexOf(snapshot);
+		rerenderState(i);
+	}
+
+	function filterEventHandler() {
+		input = input.trim().toLowerCase();
+		console.log("filterInput", input);
+		function isSubstring(s1, s2) {
+			let S = s1.length;
+			let L = s2.length;
+    		for (let i = 0; i <= L - S; i++) {
+        		let j;
+				for (j = 0; j < S; j++) {
+					if (s2[i + j] != s1[j]) break;
+					}
+					if (j == S) return i;
+    		}
+  			return -1;
+		}
+    	for (let snapshot of $snapshots) {
+        	let label = snapshot.label
+			label = label.toLowerCase();
+			console.log("label", label);
+    
+        	let res = isSubstring(input, label);
+			if(res > -1){
+				filtered.push(snapshot);
+			}
+	}
+	input = " ";
+	console.log("filtered", filtered);
+}
 	
 	</script>
 	
@@ -61,13 +95,32 @@
 				<h2>Svelte Slicer</h2>
 			</div>
 			<div id="snapshots">
-				{#each $snapshots as snapshot, i}
-					<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
-					<div class="right-align">
-						<button on:click={() => rerenderState(i)}>Render</button>
-					</div>
-					<br>
-				{/each}
+				<div class="filter" style="display:flex; flex-flow:row">
+					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
+					  	<input type="text" bind:value={input} placeholder="Filter..." class="search-field" />
+					  	<button type="submit" class="search-button">
+							<i class="fas fa-search"></i>
+					  	</button>
+					</form>
+				</div>
+				{#if !filtered.length}
+					{#each $snapshots as snapshot, i}
+						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
+						<div class="right-align">
+							<button on:click={() => rerenderState(i)}>Render</button>
+						</div>
+						<br>
+					{/each}
+					<hr>
+				{:else if filtered.length}
+					{#each filtered as snapshot, i}
+						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
+						<div class="right-align">
+							<button on:click={() => filterState(snapshot)}>Render</button>
+						</div>
+						<br>
+					{/each}
+				{/if}
 			</div>
 			<div id="banner">
 				<button on:click={() => selectView("files")}>File Structure</button>
