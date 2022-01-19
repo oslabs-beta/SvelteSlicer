@@ -4,6 +4,7 @@
 	import { get } from 'svelte/store';
 	import TidyTree2 from './TidyTree2.svelte';
 	import State from './State.svelte';
+	import Diffs from './Diffs.svelte';
 	
 	$: snapshot = $snapshots[CurrentI];
 	$: data = (snapshot ? snapshot.data : undefined);
@@ -92,6 +93,8 @@
 						<State I={CurrentI}></State>
 					{:else if View === "state" && Vis === "chart"} 
 						<TidyTree2 {view} I={CurrentI}/>
+					{:else if View === "diff"}
+						<Diffs I={CurrentI}/>
 					{/if}
 				{/if}
 			</div>

@@ -212,6 +212,7 @@ chrome.devtools.panels.create(
                     }
 
                     function eventAlert(nodeId, event) {
+                        rebuildingDom = false;
                         window.postMessage({
                             source: 'panel.js',
                             type: 'event',
@@ -364,7 +365,6 @@ chrome.devtools.panels.create(
                                 ctxObject: parseCtxObject()
                             }
                         });
-                        rebuildingDom = false;
                     })
 
                     // listen for devTool requesting state injections 

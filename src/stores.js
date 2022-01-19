@@ -385,23 +385,25 @@ function buildSnapshot(data) {
 		}
 	}
 
-	// assign component children
-	for (let file in astInfo) {
-		for (let childFile in astInfo[file].components) {
-			componentTree[file].children.push(componentTree[childFile]);
-			componentTree[childFile].parent = file;
+	let currentTree = get(fileTree);
+	if (_.isEmpty(currentTree)) {
+		// assign component children
+		for (let file in astInfo) {
+			for (let childFile in astInfo[file].components) {
+				componentTree[file].children.push(componentTree[childFile]);
+				componentTree[childFile].parent = file;
+			}
 		}
-	}
 
-	// determine top-level parent component
-	for (let file in astInfo) {
-		if (!componentTree[file].parent) {
-			parentComponent = file;
+		// determine top-level parent component
+		for (let file in astInfo) {
+			if (!componentTree[file].parent) {
+				parentComponent = file;
+			}
 		}
-	}
 
-	fileTree.set({});
-	fileTree.set(componentTree[parentComponent]);
+	 	fileTree.set(componentTree[parentComponent]);
+	};
 
 	const snapshot = {
 		data: componentData,

@@ -47,7 +47,7 @@
            
            
             <span class="arrow" class:arrowDown> &#x25b6</span>
-            {componentName}
+            {snapshot.data[componentName].tagName}
             
            
             
