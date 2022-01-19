@@ -46,13 +46,6 @@ chrome.runtime.onMessage.addListener((msg) => {
 		const newSnapshot = buildSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
 	}
-	else if (type === "rebuild") {
-		for (let component in componentData) {
-			componentData[component].active = false;
-			componentData[component].nodes = {};
-		}
-		const newSnapshot = buildSnapshot(data);
-	}
 	else if (type === "event") {
 		const listener = listeners[data.nodeId + data.event];
 		const { component, event, name } = listener;
@@ -411,6 +404,8 @@ function buildSnapshot(data) {
 		label: (snapshotLabel ? snapshotLabel : "Unlabeled Snapshot"),
 		diff
 	}
+
+	console.log(snapshot);
 
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
