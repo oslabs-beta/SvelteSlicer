@@ -1,17 +1,13 @@
 <script>
-	import {snapshots, fileTree, backgroundPageConnection} from './stores.js';
+	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
-	import { get } from 'svelte/store';
 	import TidyTree2 from './TidyTree2.svelte';
 	import State from './State.svelte';
 	import Diffs from './Diffs.svelte';
 	
-	$: snapshot = $snapshots[CurrentI];
-	$: parent = (snapshot ? snapshot.parent : undefined);
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
 	let I;
-	let prevI;
 
 	let filtered = [];
 	let input = "";
@@ -22,26 +18,9 @@
 	let vis = "tree";
 	$: Vis = vis;
 
-	const connection = get(backgroundPageConnection);
-
 	function selectState(index) {
 		I = index === $snapshots.length - 1 ? undefined : index;
 		count += 1;
-	}
-	
-	function rerenderState(index) {
-		if (index !== CurrentI) {
-			I = index === $snapshots.length - 1 ? undefined : index
-			connection.postMessage({
-    			source: 'panel',
-				name: 'rerenderState',
-    			index,
-				parent,
-				state: $snapshots[index].data,
-				prevI,
-				tabId: chrome.devtools.inspectedWindow.tabId
-			});
-		}
 	}
 
 	function selectView(selection) {
@@ -55,7 +34,7 @@
 
 	function filterState(snapshot){
 		let i = $snapshots.indexOf(snapshot);
-		rerenderState(i);
+		selectState(i);
 	}
 
 	function filterEventHandler() {
@@ -107,7 +86,7 @@
 					{#each $snapshots as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
 						<div class="right-align">
-							<button on:click={() => rerenderState(i)}>Render</button>
+							<button on:click={() => selectState(i)}>Data</button>
 						</div>
 						<br>
 					{/each}
@@ -116,7 +95,7 @@
 					{#each filtered as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
 						<div class="right-align">
-							<button on:click={() => filterState(snapshot)}>Render</button>
+							<button on:click={() => filterState(snapshot)}>Data</button>
 						</div>
 						<br>
 					{/each}
