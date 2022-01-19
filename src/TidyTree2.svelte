@@ -138,7 +138,7 @@ onMount(()=>{
                       console.log('valuechecking',d.data.variables)
                       let text = '';
                       Object.keys(d.data.variables).forEach(item=>{
-                        
+                        console.log('item>>',item)
                         console.log('text pre',d.data.variables[item].name,d.data.variables[item].value)
                           if(typeof item.value !== 'object'){
                              console.log('not obj',d.data.variables[item].value)
@@ -147,8 +147,9 @@ onMount(()=>{
                              //}
                             
                             
+                          }else{
+                          console.log('is obj',d.data.variables[item].value)
                           }
-                          console.log('here 147',d.data.variables[item].value)
                         //   Object.keys(d.data.variables[item].value).forEach(nestedValue=>{
                             
                         //     console.log('in nest')
