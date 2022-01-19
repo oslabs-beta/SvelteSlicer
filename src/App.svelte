@@ -3,6 +3,7 @@
 	import Component from './Component.svelte';
 	import Header from './Header.svelte';
 	import Tabs from './Header.svelte';
+	import Diffs from './Diffs.svelte';
 	//import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import State from './State.svelte';
@@ -12,7 +13,7 @@
 	let clickedTab = 'Home'
 	$: snapshot = $snapshots[CurrentI];
 	$: data = (snapshot ? snapshot.data : undefined);
-
+	$: parent = (snapshot ? snapshot.parent : undefined);
 	let CurrentI;
 	
 	$: view = selection;
@@ -45,7 +46,8 @@
 					<!-- <button on:click={() => selectView("state")}>State Snapshot</button> -->
 					<button class="optionButtons" on:click={() => selectView("state")}>State Snapshot</button>
 					<button on:click={() => selectView("componentTree")}>Tree</button>
-					<button  on:click={()=>selectTree("data")}>Data</button>
+					<button  on:click={()=>selectView("data")}>Data</button>
+					<button  on:click={()=>selectView("diffs")}>Diffs</button>
 					<!-- <button id="tidy" on:click={()=>selectTree("tidyTree")}>Diff</button> -->
 					<button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
 					<h6>Visual/Data</h6>
@@ -63,53 +65,24 @@
 						<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
 						<br>
 					{/each}
-					<!-- {/if}	 -->
 					
-					<!-- {#if view === "componentTree"} 
-					<h2>Visual</h2>
-					<Component component={$fileTree}/>
-					{:else if view === "tidyTree"}
-					
-					
-					<TidyTree2 treeData={$fileTree} {count}/> -->
-					<!-- set conditional for tidy tree versus data -->
-					<!-- {:else if view !== "tidyTree"}
-					{:else} -->
-
-					<!-- {:else if view === 'data'}
-					<h2>Data</h2> -->
-					<!-- {#if view === "state"}
-						{#if data && snapshot}  -->
-						<!-- <State I={CurrentI}></State> -->
-						<!-- {/if}	
-					{/if}		 -->
-					<!-- {/if} -->
-				<!-- </div> -->
 			</div>
 				<div id="red" class="col panelDiv" style="  height:100%;  align-items: right; display:{showRight?'flex':'none'};">
-					<!-- {#if view === 'data'}
-					<h2>Data</h2>
-					 {#if view === "state"}
-						{#if data && snapshot}  -->
-							<!-- <State I={CurrentI}></State> -->
-						<!-- {/if}	
-					{/if}		 -->
-					
-				<!-- </div> -->
-
 
 				{#if view === "componentTree"} 
-					<h2>Visual</h2>
+
 					<Component component={$fileTree}/>
 					{:else if view === "tidyTree"}
 					<TidyTree2 treeData={$fileTree} {count}/>
-
-					{:else if view === 'state'}
-					
-				
-					<State I={CurrentI}></State>
-				
+					{:else if view === "diffs"}
+					<Diffs I={CurrentI}/>
 					{/if}
+					{#if view === 'state'}
+			
+					<State component={data[parent]}></State>
+				
+				
+			{/if}
 		</div>
 	
 	</main>

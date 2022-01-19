@@ -1,20 +1,27 @@
 <script>
-    import { onMount } from 'svelte';
-    export let I;
-    import {snapshots} from './stores.js';
+ 
+    export let component;
+    // import {snapshots} from './stores.js';
     import Variable from './Variable.svelte';
-    let canvas;
-    $: snapshot = $snapshots[I];
-    $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
-    $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
+    // $: snapshot = $snapshots[I];
+    // $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
+    // $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
+    // // console.log('data  ', data)
+    console.log('data paret ', component)
+    // console.log('data paret.text ', data[parent].text)
+    console.log('data paret ', component.children)
+    console.log('compoenent chilren text', component.children.text)
+    
+    // console.log('component var', component.variables)
     let stateList = false; 
-    const renderedDiffs = {};
-    let i = 0;
+    // let stateList = false; 
+    // const renderedDiffs = {};
+    // let i = 0;
         function clickhandler() {
 
-        console.log('snapshots no s ', snapshot);
-        console.log('snapshots$', $snapshots)
-        console.log('snapshot.diff ', snapshot.diff)
+    //     console.log('snapshots no s ', snapshot);
+    //     console.log('snapshots$', $snapshots)
+    //     console.log('snapshot.diff ', snapshot.diff)
         stateList = true;
 
         // for(let element in snapshot){
@@ -60,7 +67,7 @@
                
             // }
             
-            console.log('outof loop')
+            // console.log('outof loop')
             }
         
         // }
@@ -69,7 +76,7 @@
 
 <main>
    
-    <div id="valuesList">
+    <!-- <div id="valuesList">
         <h2>Data</h2>
         <button on:click={clickhandler}>Log State/Diffs</button>
         {#if stateList}
@@ -88,7 +95,7 @@
                     <li>New Value: {diff.newValue}</li>
                 </ul>
             {/each}
-        {/if}
+        {/if} -->
     <!-- <button on:click={outsideClickHandler}>Log State</button> -->
 <!--    
     {#if snapshot && component}
@@ -130,7 +137,9 @@
     {/if} -->
 
 
-    <h4>{component.tagName}</h4>
+    <!-- {#if snapshot && component} -->
+    <!-- <h3>{snapshot.label.slice(0,13)} </h3>  -->
+    <h4>{component.tagName}</h4> 
     {#if Object.keys(component.variables).length}
         <h5>Variables</h5>
         {#each Object.keys(component.variables) as variable}  
@@ -139,6 +148,7 @@
             {/if}
         {/each}
     {/if}
+    <!-- {/if} -->
     {#if component.children.length} 
     <ol>
         <ul>
@@ -153,9 +163,7 @@
         </ul>
     </ol>
     {/if}
-
-
-    </div>
+    <!-- {/if} -->
     
 </main>
  
