@@ -1,7 +1,9 @@
 <script>
 	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
+	//import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
+	import FileStructure from './FileStructure.svelte';
 	import State from './State.svelte';
 	import Diffs from './Diffs.svelte';
 	
@@ -120,7 +122,7 @@
 					{#if View === "files" && Vis === "tree"}
 						<Component component={$fileTree}/>
 					{:else if View === "files" && Vis === "chart"}
-						<TidyTree2 {view} I={CurrentI}/>
+						<FileStructure treeData={$fileTree}/>
 					{:else if View === "state" && Vis === "tree"}
 						<State I={CurrentI}></State>
 					{:else if View === "state" && Vis === "chart"} 
@@ -174,7 +176,8 @@
 				{#if view === "state"}
 					{#if data && snapshot && $fileTree} 
 						<State I={CurrentI}></State>
-						<TidyTree treeData={$fileTree} {count} I={CurrentI}/>
+						
+						<TidyTree2 treeData={$fileTree} {count} I={CurrentI}/>
 					{/if}	
 				{/if}		
 			</div>

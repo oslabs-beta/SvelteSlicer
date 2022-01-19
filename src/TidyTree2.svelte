@@ -113,19 +113,44 @@ onMount(()=>{
                    return d.data.id;
                })
 
-               /*nodeEnter
+               nodeEnter
                  .append('g:title')
-                 .attr("transform", "translate(10,0)")
+                 .attr("transform", "translate(0,0)")
                  .text(function(d){
+                     console.log('d for mouseover',d)
                 
                   if(Object.keys(d.data.variables).length > 0){
-                      console.log('inside checking variables')
-                      return d.data.variables
+                      console.log('inside checking variables',d.data)
+                      console.log('valuechecking',d.data.variables)
+                      let text = '';
+                      Object.keys(d.data.variables).forEach(item=>{
+                        console.log('item>>',item)
+                        console.log('text pre',d.data.variables[item].name,d.data.variables[item].value)
+                          if(typeof item.value !== 'object'){
+                             console.log('not obj',d.data.variables[item].value)
+                            //  if(typeof d.data.variables[item].value !== 'object'){
+                             text = text + d.data.variables[item].name + ':' + d.data.variables[item].value + "\n"
+                             //}
+                            
+                            
+                          }else{
+                          console.log('is obj',d.data.variables[item].value)
+                          }
+                        //   Object.keys(d.data.variables[item].value).forEach(nestedValue=>{
+                            
+                        //     console.log('in nest')
+                        //     // text = text + d.data.variables[item].value[nestedValue].name + ':' + d.data.variables[item].value[nestedValue].value + "\n"
+                        //   })
+                          
+                        
+                      }) 
+                    
+                      return text;
                   }else{
                    return `There are ${d.data.children.length} children`;
                   }
                })
-               */
+               
             //make transition node/ start from parent position to new position
             let nodeUpdate = nodeEnter.merge(node);
             nodeUpdate
