@@ -1,8 +1,5 @@
 <script>
     export let component;
-    
-    console.log("component.children",component.children);
-    console.log('hierarchical data for tidy tree',component)
 
     const _expansionState = {
 		/* treeNodeId: expanded <boolean> */
@@ -21,7 +18,7 @@
     <ul>
         <li>
             {#if children.length}
-                <span on:click={toggleExpansion}>
+                <span on:click={toggleExpansion} id={id}>
                     <span class="arrow" class:arrowDown>&#x25b6</span>
                   {id}
                     

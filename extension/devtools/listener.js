@@ -15,3 +15,16 @@ window.addEventListener('message', function(event) {
   chrome.runtime.sendMessage(JSON.stringify(data));
 });
 
+chrome.runtime.onMessage.addListener(message => {
+  if (message.name === "rerenderState") {
+    window.postMessage({
+      source: 'listener.js',
+      type: 'rerenderState',
+      index: message.index,
+      parent: message.parent,
+      state: message.state,
+      prevI: message.prevI
+    });
+  }
+});
+

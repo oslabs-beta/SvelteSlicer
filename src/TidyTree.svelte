@@ -1,6 +1,19 @@
 <script>
-
+    export let I;
+    import {snapshots} from './stores.js';
     import * as d3 from 'd3';
+
+    $: snapshot = $snapshots[I];
+    $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
+    $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
+    let state
+    //const {id,children} = component;
+    
+    function clickhandler() {
+        console.log("shot,",snapshot);
+        console.log('cc',component);
+       
+    }
     
     export let treeData;
     console.log('treeData',treeData)
@@ -42,6 +55,7 @@
                let treeData = treemap(root)
                //nodes
                let nodes = treeData.descendants();
+               
     
                //set depth
             //    nodes.forEach(function(d){
@@ -173,7 +187,7 @@
        
            
     </script>
-    
+    <button on:click={clickhandler}>shot</button>
     
     
     <!-- <div class="tidy" on:click> TidyTree {treeData.id}
