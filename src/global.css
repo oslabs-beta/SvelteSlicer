@@ -140,3 +140,90 @@ ul {
 	/* transition: transform 200ms; */
 }
 .arrowDown { transform: rotate(90deg); }
+
+#mainContainer {
+	display: grid;
+	grid-template-columns: 300px auto;
+	grid-template-rows: 50px 50px auto;
+	width: 100vw;
+  	height: 100vh;
+}
+
+#snapshots {
+	grid-column-start: 1;
+	grid-column-end: 2;
+	grid-row-start: 2;
+	grid-row-end: 4;
+	border: 1px solid black;
+}
+
+#banner {
+	grid-column-start: 2;
+	grid-column-end: 3;
+	grid-row-start: 1;
+	grid-row-end: 2;
+	border: 1px solid black;
+}
+
+#title {
+	grid-column-start: 1;
+	grid-column-end: 2;
+	grid-row-start: 1;
+	grid-row-end: 2;
+	border: 1px solid black;
+}
+
+#buttons {
+	grid-column-start: 2;
+	grid-column-end: 3;
+	grid-row-start: 2;
+	grid-row-end: 3;
+}
+
+#presentation {
+	grid-column-start: 2;
+	grid-column-end: 3;
+	grid-row-start: 3;
+	grid-row-end: 4;
+}
+
+.right-align {
+	text-align: right;
+}
+
+
+/* .collapsible {
+	background-color: #777;
+	color: white;
+	cursor: pointer;
+	padding: 18px;
+	width: 100%;
+	border: none;
+	text-align: left;
+	outline: none;
+	font-size: 15px;
+  } */
+  
+  /* .active, .collapsible:hover {
+	background-color: #555;
+  } */
+  
+  /* .collapsible:after {
+	content: '\002B';
+	color: white;
+	font-weight: bold;
+	float: right;
+	margin-left: 5px;
+  } */
+  
+  /* .active:after {
+	content: "\2212";
+  } */
+  
+  /* .content {
+	padding: 0 18px;
+	max-height: 0;
+	overflow: hidden;
+	transition: max-height 0.2s ease-out;
+	background-color: #f1f1f1;
+  } */

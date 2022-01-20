@@ -2,10 +2,8 @@
     export let I;
     import {snapshots} from './stores.js';
     $: snapshot = $snapshots[I];
-
   
         function clickhandler() {
-
         console.log('snapshots no s ', snapshot);
         console.log('snapshots$', $snapshots)
         console.log('snapshot.diff ', snapshot.diff)
@@ -31,7 +29,6 @@
                     {/if}
                     <br>
                     <li>New Value: {diff.newValue}</li>
-                    <br>
                 </ul>
             {/each}
     </div>

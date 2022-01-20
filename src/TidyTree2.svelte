@@ -1,17 +1,14 @@
 <script>
-
+export let I;
+export let view;
+import { fileTree, snapshots } from './stores';
 import * as d3 from 'd3';
 import { onMount } from 'svelte';
 
-export let treeData;
-console.log('treeData',treeData)
-export let count;
-
-console.log("count",count)
+$: parent = $snapshots[I].parent;
+$: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
 
 let margin = {top:20,right:0,bottom:20,left:0}
-    // let width = 700 - margin.left - margin.right;
-    // let height = 700 - margin.top -margin.bottom;
     let width = 500 - margin.left - margin.right;
     let height = 500 - margin.top -margin.bottom;
 //1/3 
@@ -22,8 +19,9 @@ let margin = {top:20,right:0,bottom:20,left:0}
 
 //check if dom already have 1 tidy tree  
 //if(count<2){   
+
 onMount(()=>{
-  
+    if(component){
      
     // svg = d3.select("#chart")
     svg = d3.select("#chart")
@@ -42,7 +40,7 @@ onMount(()=>{
        //d3.tree() is tidy tree layout module
        let treemap = d3.tree().size([width,height]);
        //construct root node
-       root = d3.hierarchy(treeData, function(d){
+       root = d3.hierarchy(component, function(d){
            return d.children;
        });
        console.log('root',root)
@@ -54,8 +52,16 @@ onMount(()=>{
        function update(src){
            let treeData = treemap(root)
            //nodes //return thr arr of descendant nodes, staring with this node then followed by each child
-           let nodes = treeData.descendants();
+        //filter nodes. only show active nodes.
+        let activeNode = treeData.descendants();
+           let nodes = [];
+           activeNode.forEach(item=>{
+               if(item.data.active === true || item.data.active === undefined){
+            nodes.push(item)
+               }
+           })
            console.log('nodes',nodes)
+           console.log('activeNodes',activeNode)
            //set depth
            nodes.forEach(function(d){
                d.y=d.depth*140;
@@ -65,15 +71,20 @@ onMount(()=>{
            let node = svg.selectAll('g.node').data(nodes,function(d){
                return d.id || (d.id= ++i); //return d.id or it has child 
            });
+           console.log('node >>',node)
            //node start at the parent's position
            let nodeEnter = node
                   .enter()
                   .append('g')
                   .attr('class','node')
+                  .attr('id',function(d){
+                   return d.data.id;
+               })
                   .attr('transform',function(d){
                       return "translate(" + src.x0 + ", " + src.y0 +")";
                   })
                   .on('click',click);
+
             //create circles (this might be the place to set the state datas to deliver to data panel )  
               nodeEnter
                 .append('circle')
@@ -98,7 +109,45 @@ onMount(()=>{
                .text(function(d){
                    return d.data.id;
                })
-             
+
+               nodeEnter
+                 .append('g:title')
+                 .attr("transform", "translate(0,0)")
+                 .text(function(d){
+                     console.log('d for mouseover',d)
+                
+                  if(Object.keys(d.data.variables).length > 0){
+                      console.log('inside checking variables',d.data)
+                      console.log('valuechecking',d.data.variables)
+                      let text = '';
+                      Object.keys(d.data.variables).forEach(item=>{
+                        console.log('item>>',item)
+                        console.log('text pre',d.data.variables[item].name,d.data.variables[item].value)
+                          if(typeof item.value !== 'object'){
+                             console.log('not obj',d.data.variables[item].value)
+                            //  if(typeof d.data.variables[item].value !== 'object'){
+                             text = text + d.data.variables[item].name + ':' + d.data.variables[item].value + "\n"
+                             //}
+                            
+                            
+                          }else{
+                          console.log('is obj',d.data.variables[item].value)
+                          }
+                        //   Object.keys(d.data.variables[item].value).forEach(nestedValue=>{
+                            
+                        //     console.log('in nest')
+                        //     // text = text + d.data.variables[item].value[nestedValue].name + ':' + d.data.variables[item].value[nestedValue].value + "\n"
+                        //   })
+                          
+                        
+                      }) 
+                    
+                      return text;
+                  }else{
+                   return `There are ${d.data.children.length} children`;
+                  }
+               })
+               
             //make transition node/ start from parent position to new position
             let nodeUpdate = nodeEnter.merge(node);
             nodeUpdate
@@ -141,8 +190,16 @@ onMount(()=>{
                 return path;
             }
            
-             
-            let links = treeData.descendants().slice(1);
+           let activelinks = treeData.descendants().slice(1);
+           let links = [];
+           activelinks.forEach(item=>{
+               console.log('item for links ',item)
+               if(item.data.active){
+            links.push(item)
+               }
+           })
+            
+            // let links = treeData.descendants().slice(1);
             let link = svg.selectAll('path.link').data(links, function(d){
                 return d.id;
             })
@@ -179,7 +236,7 @@ onMount(()=>{
            d.x0=d.x;
            d.y0=d.y;
        });
-       function click(event, d){
+       function click(event, d,e){
            if(d.children){
                d._children=d.children;
                d.children=null;
@@ -188,16 +245,23 @@ onMount(()=>{
                d._children=null;
            }
            update(d);
+           console.log(`${d.data.id} node is selected`)
        }
        }
     
-   
-})  
-//}    
+    }  
+}) 
+
+//}   
+
+// function nodeClicked(e){
+//    console.log(`${e.target.id} node is selected`)
+// }
 </script>
 
 
 <div bind:this={svg} id='chart'></div>
+
 
 
 
