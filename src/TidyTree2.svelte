@@ -5,6 +5,7 @@ import { fileTree, snapshots } from './stores';
 import * as d3 from 'd3';
 import { onMount } from 'svelte';
 
+$: label = $snapshots[I].label;
 $: parent = $snapshots[I].parent;
 $: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
 
@@ -259,8 +260,12 @@ onMount(()=>{
 // }
 </script>
 
+<main>
+    <h2>Snapshot {I}: {label}</h2>
+    <div bind:this={svg} id='chart'></div>
+</main>
 
-<div bind:this={svg} id='chart'></div>
+
 
 
 
