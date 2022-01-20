@@ -48,7 +48,7 @@
         {#if Object.keys(snapshot.data[componentName].variables).length>0 && snapshot.data[componentName].active}
            
         
-            {#if snapshot.data[componentName].instance == 0}
+            <!-- {#if snapshot.data[componentName].instance == 0} -->
            <span class="collapsible"  on:click={collapsible}>
            
            
@@ -56,7 +56,7 @@
             {snapshot.data[componentName].tagName}
             
            
-            
+           
           </span>
            <br/>
            <div class="content">
@@ -70,7 +70,7 @@
                 {/each}
              
           </div>
-          {:else}
+          <!-- {:else}
           <span class="collapsible" on:click={collapsible}>
            
             
@@ -91,7 +91,7 @@
              
           </div>
 
-          {/if} 
+          {/if}  --> 
           
             
             
@@ -101,7 +101,7 @@
     {/each}
           
 
-   {#if Object.keys(component.variables).length > 0}
+   <!-- {#if Object.keys(component.variables).length > 0}
         <h5>Variables</h5>
         {#each Object.keys(component.variables) as variable}  
             {#if component.variables[variable].value}  
@@ -126,8 +126,8 @@
         {/each}
         </ul>
         
-    {/if} 
-<!-- {/if} -->
+    {/if}  -->
+{/if}
 </main>
 
 <style>
