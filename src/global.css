@@ -41,7 +41,7 @@ label {
 	display: block;
 }
 
-input, button, select, textarea {
+input, select, textarea {
 	font-family: inherit;
 	color: whitesmoke;
 	/* background-color: #f4f4f4; */
@@ -52,6 +52,21 @@ input, button, select, textarea {
 	-webkit-padding: 0.4em 0;
 	padding: 0.4em;
 	box-sizing: border-box;
+	border: none;
+	border-radius: 2px;
+}
+
+button {
+	align-items: right;
+	font-family: inherit;
+	color: whitesmoke;
+	background: #333;
+	outline: none;
+	margin: 2px;
+	font-size: inherit;
+	-webkit-padding: 0.4em 0;
+	padding: 0.4em;
+	/* box-sizing: border-box; */
 	border: none;
 	border-radius: 2px;
 }

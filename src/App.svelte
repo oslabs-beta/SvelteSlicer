@@ -38,17 +38,14 @@
 	
 	</script>
 	<Header/>
-	<!-- border:solid 1px #F1F3F4;  -->
-		<main id="parent" style="height:auto;  border: 1px solid whitesmoke align-item:center">
-			<div id="left" class="flex-grid panelDiv" style=" height:100%; width:100%; align-items; flex:{showLeft?2:0}">
-				<div>
-					<!-- <button on:click={() => selectView("componentTree")}>Tree</button> -->
-					<!-- <button on:click={() => selectView("state")}>State Snapshot</button> -->
-					<button class="optionButtons" on:click={() => selectView("state")}>State Snapshot</button>
+		<main id="parent" style="height:auto; border: 1px solid whitesmoke align-item:center">
+			<!-- <div id="left" class="panelDiv" style=" height:100%; width:100%; flex:{showLeft?2:0}"> -->
+				<div id="left" class="panelDiv" style=" height:100%; width:100%; flex:{showLeft?'column':0}">
+				<div class="buttonOptions">
+					<button on:click={() => selectView("state")}>State Snapshot</button>
 					<button on:click={() => selectView("componentTree")}>Tree</button>
-					<button  on:click={()=>selectView("data")}>Data</button>
-					<button  on:click={()=>selectView("diffs")}>Diffs</button>
-					<!-- <button id="tidy" on:click={()=>selectTree("tidyTree")}>Diff</button> -->
+					<button on:click={()=> selectView("data")}>Data</button>
+					<button on:click={()=> selectView("diffs")}>Diffs</button>
 					<button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
 					<h6>Visual/Data</h6>
 					<label class="switch" style=" text-align:center">
@@ -56,33 +53,27 @@
 						<span class="slider round"></span>
 					</label> 
 				</div>
-				
 			
-			<div id="right" style="display:flex;">
-				<div class="col panelDiv" style="height:fit-content; flex:1;">
-					
-					{#each $snapshots as snapshot, i}
-						<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
-						<br>
-					{/each}
-					
+				<div id="right" class="flex-grid-half" style="display:flex;">
+					<div class="col panelDiv" style="height:fit-content; flex:1;">
+						{#each $snapshots as snapshot, i}
+							<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
+							<br>
+						{/each}
+					</div>
+					<div id="red" class="col panelDiv flex-grid-half" style="  height:100%;  align-items: right; display:{showRight?'flex':'none'};">
+						{#if view === "componentTree"} 
+							<Component component={$fileTree}/>
+							{:else if view === "tidyTree"}
+							<TidyTree2 treeData={$fileTree} {count}/>
+							{:else if view === "diffs"}
+							<Diffs I={CurrentI}/>
+						{/if}
+						{#if view === 'state'}
+							<State component={data[parent]}></State>
+						{/if}
+					</div>
 			</div>
-				<div id="red" class="col panelDiv" style="  height:100%;  align-items: right; display:{showRight?'flex':'none'};">
-
-				{#if view === "componentTree"} 
-
-					<Component component={$fileTree}/>
-					{:else if view === "tidyTree"}
-					<TidyTree2 treeData={$fileTree} {count}/>
-					{:else if view === "diffs"}
-					<Diffs I={CurrentI}/>
-					{/if}
-					{#if view === 'state'}
-			
-					<State component={data[parent]}></State>
-				
-				
-			{/if}
 		</div>
 	
 	</main>
@@ -105,23 +96,27 @@
 			
 
 			}
-			.flex-grid {
-				display: block;
-			}
+			
 		}
 
-		/* .optionButtons {
+		.buttonOptions {
+			align-items: right;
+			flex: 30%;
+		}
 
-		} */
+	.flex-grid-half {
+				/* display: block; */
+				flex-grow: 0;
+				flex-shrink: 0;
+				flex-basis: 50px; 
+	}
 
-	/* .flex-grid-half  {
-		width: 50%;
-		align-items: center;
-		padding: 2px;
-		margin: 2px;
-	} */
+	div:nth-of-type(1) {
+  	flex-basis: 75px;
+	}
+
 	.col {
-		flex: 1;
+		flex: 1 3;
 		width:max-content;
 	} 
 	.switch {
@@ -133,7 +128,7 @@
   margin: 1px;
 }
 
-.slider {
+	.slider {
   /* position: absolute; */
   position: absolute;
   cursor: pointer;

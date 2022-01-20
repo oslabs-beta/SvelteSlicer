@@ -31,6 +31,7 @@
                     {/if}
                     <br>
                     <li>New Value: {diff.newValue}</li>
+                    <br>
                 </ul>
             {/each}
     </div>

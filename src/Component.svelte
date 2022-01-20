@@ -27,16 +27,12 @@
                     
                 </span>
                 {#if expanded}
-                    
                      {#each children as child}
-                    
-                        <svelte:self component={child} />
-                        
-                        
+                        <svelte:self component={child} />     
                     {/each}
                    
                 {/if}
-            {:else}
+             {:else}
                 <span>
                     <span class="no-arrow"/>
                     {id}
