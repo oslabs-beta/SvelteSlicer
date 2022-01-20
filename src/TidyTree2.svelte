@@ -1,32 +1,41 @@
-<script>
+<script defer>
 export let I;
 export let view;
 import { fileTree, snapshots } from './stores';
 import * as d3 from 'd3';
-import { onMount } from 'svelte';
+//import { onMount } from 'svelte';
+import {onMount, beforeUpdate, afterUpdate, onDestroy} from 'svelte';
+
 
 $: label = $snapshots[I].label;
+$: snapshot = $snapshots[I];
 $: parent = $snapshots[I].parent;
 $: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
+let run = 0
+
 
 let margin = {top:20,right:0,bottom:20,left:0}
     let width = 500 - margin.left - margin.right;
-    let height = 500 - margin.top -margin.bottom;
+    let height = 500 - margin.top -margin.bottom; 
 //1/3 
 // const width = document.body.clientWidth;
 // const height = document.body.clientHeight;
 
     let svg;
+    
+    let pre ;
+    let now ;
 
-//check if dom already have 1 tidy tree  
-//if(count<2){   
+   afterUpdate(()=>{
+    console.log('out run',run)
+   // if(component){
+console.log('svg',svg)
 
-onMount(()=>{
-    if(component){
-     
-    svg = d3.select("#chart")
+
+    svg = d3.select('#chart')
        .append('div')
-       .attr('class','container')
+    //    .attr('class','container')
+    .attr('class',I)
        .append("svg")
        .attr('width',width + margin.right + margin.left)
        .attr('height',height+ margin.top + margin.bottom)
@@ -47,7 +56,7 @@ onMount(()=>{
        
     root.x0 = 0;
     root.y0 = width/2;
-
+    
        update(root);
        function update(src){
            let treeData = treemap(root)
@@ -251,21 +260,43 @@ onMount(()=>{
            update(d);
            console.log(`${d.data.id} node is selected`)
        }
+       
        }
     
-    }  
-}) 
+    //}  
+    run++
+    console.log('run again',run)
 
-//}   
+     pre = document.getElementsByClassName(`${I}`)[0].previousSibling
+    console.log('pre',pre)
+     now = document.getElementsByClassName(`${I}`)
+    console.log('now',now)
+   if(svg.previousSibling){
 
-// function nodeClicked(e){
-//    console.log(`${e.target.id} node is selected`)
-// }
+   }
+   if(pre){
+       pre.remove();
+   }
+   
+})
+
+
+
+
+
+
+
+
 </script>
 
 <main>
+    
     <h2>Snapshot {I}: {label}</h2>
-    <div bind:this={svg} id='chart'></div>
+   
+    <div bind:this={svg} id='chart' ></div>
+  
+   
+    
 </main>
 
 

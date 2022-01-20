@@ -10,7 +10,7 @@
 
     let collapse = document.getElementsByClassName("collapsible");
     let i;
-    //let opened = collapse[i] || false;
+   
     function collapsible(){
  
     for (i = 0; i < collapse.length; i++) {
@@ -27,7 +27,7 @@
         }
     
     }
-    //opened =collapse[i]= !opened
+    
     }
     $: arrowDown = true
     
