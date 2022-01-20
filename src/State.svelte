@@ -141,8 +141,8 @@
   border: none;
   text-align: left;
   outline: none;
-  font-size: 15px;
-  font-family: 'Comic Sans MS', cursive;
+  font-size: 12px;
+  /* font-family: 'Comic Sans MS', cursive; */
 }
 
 .collapsible:hover {
