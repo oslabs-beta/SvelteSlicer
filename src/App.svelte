@@ -189,12 +189,12 @@
 			/* text-align: center; */
 			padding: 1em;
 			/* max-width: 240px; */
-			max-width:max-content;
-			margin: 5px;
+			max-width:75%;
+			/* margin: 5px; */
 			align-items: center;
 			color: whitesmoke;
 			background: rgb(83, 81, 81);
-			margin: 0 auto;
+			padding: 1em;
 		}
 	
 		@media (min-width: 640px) {
@@ -206,13 +206,13 @@
 			
 		}
 
-		.buttonOptions {
+		/* .buttonOptions {
 			align-items: right;
 			flex: 30%;
 		}
 
 	.flex-grid-half {
-				/* display: block; */
+			
 				flex-grow: 0;
 				flex-shrink: 0;
 				flex-basis: 50px; 
@@ -225,7 +225,8 @@
 	.col {
 		flex: 1 3;
 		width:max-content;
-	} 
+	}  
+	*/
 
 
 	</style>

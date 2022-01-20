@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@100&display=swap');
 
-html{
+/* html{
 	width: 100%;
 	height: 100%;
-}
+} */
 
 body {
 	
 	background: rgb(83, 81, 81);
-	margin: 0;
-	padding: 0;
+	margin: 1em;
+	padding: 1em;
 	box-sizing: content-box;
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
@@ -53,7 +53,7 @@ input, select, textarea {
 	outline: none;
 	margin: 2px;
 	font-size: inherit;
-	-webkit-padding: 0.4em 0;
+	/* -webkit-padding: 0.4em 0; */
 	padding: 0.4em;
 	box-sizing: border-box;
 	border: none;
@@ -135,7 +135,11 @@ ul {
 	padding-left: 1.2rem; 
 	user-select: none;
 }
-.no-arrow { padding-left: 1.0rem; }
+
+.no-arrow { 
+	padding-left: 1.0rem; 
+}
+
 .arrow {
 	cursor: pointer;
 	display: inline-block;
@@ -149,6 +153,7 @@ ul {
 	grid-template-rows: 50px 50px auto;
 	width: 100vw;
   	height: 100vh;
+	border-right: 1px solid whitesmoke;
 }
 
 #snapshots {
@@ -172,6 +177,7 @@ ul {
 	grid-column-end: 2;
 	grid-row-start: 1;
 	grid-row-end: 2;
+	border-collapse: collapse;
 	border: 1px solid whitesmoke;
 }
 
