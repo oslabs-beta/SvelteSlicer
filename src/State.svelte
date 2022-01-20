@@ -7,96 +7,96 @@
     $: snapshot = $snapshots[I];
     $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
     $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
-    let stateList = false; 
-    const renderedDiffs = {};
-    let i = 0;
-        function clickhandler() {
-
-        console.log('snapshots no s ', snapshot);
-        console.log('snapshots$', $snapshots)
-        console.log('snapshot.diff ', snapshot.diff)
-        stateList = true;
-
-        // for(let element in snapshot){
-        //     if(element === 'diff'){
-        //         console.log('snapshots at diff ', snapshot[element])
-                //this loop is currently appending text to dom but in the far left corner
-                // for(let i = 0; i < snapshot[element].length; i+=1){
-                    //start iterating at 1 to avoid initial undefined val
-                // for(let i = 0; i < snapshot.diff.length; i+=1){
-                // const leDiff = snapshot.diff[i];
-                // console.log('leDiff ', leDiff)
-                // console.log('old val: ', i, leDiff.oldValue)
-                // oldSnapshotVal = leDiff.oldValue
-                // console.log('new val: ', i, leDiff.newValue)
-                // newSnapshotVal = leDiff.newValue
-                
-
-                // const dataSection = document.createElement("SECTION");
-                // dataSection.setAttribute("id", "holdsStateData");
-                //document.body.appendChild(dataSection);
-                //canvas tag --- is this accesbile since declare in below code?
-                // document.getElementById("dataContainer").appendChild(dataSection); 
-
-                // const oList = document.createElement("OL");
-                //create ol to place li
-                // oList.setAttribute("id", "myOl");
-                // document.body.appendChild(oList);
-                // const listItem = document.createElement('LI')
-                // const lBreak = document.createElement('br')
-                // dataContainer may need t be creaed before appending dataSection to it
-                // let snapShotTextOld = document.createTextNode('Old Value: ' + leDiff.oldValue);
-                // let snapShotTextNew = document.createTextNode('New Value: ' + leDiff.newValue);
-                // listItem.appendChild(snapShotTextOld);
-                // oList.appendChild(lBreak);
-                // oList.appendChild(listItem);
-                // listItem.appendChild(snapShotTextNew);
-                // oList.appendChild(listItem);
     
-                // document.getElementById("red").appendChild(oList);
-       
-                // document.getElementById("red").appendChild(oList)
-             
-               
-            // }
-            
-            console.log('outof loop')
-            }
-        
-        // }
-  
+
+    let collapse = document.getElementsByClassName("collapsible");
+    let i;
+    //let opened = collapse[i] || false;
+    function collapsible(){
+ 
+    for (i = 0; i < collapse.length; i++) {
+    
+        this.classList.toggle("active");
+     
+        let content = this.nextElementSibling.nextElementSibling;
+        if (content.style.display === "block") {
+     
+        content.style.display = "none";
+        } else {
+     
+        content.style.display = "block";
+        }
+    
+    }
+    //opened =collapse[i]= !opened
+    }
+    $: arrowDown = true
+    
 </script>
 
 <main>
-   
-    <div id="valuesList">
-        <h2>Data</h2>
-        <button on:click={clickhandler}>Log State/Diffs</button>
-        {#if stateList}
-            {#each snapshot.diff as diff ,i}
-                <ul id="myOl">
-                    <li>Component: {diff.component}</li>
-                    <br>
-                    <li>Variable Name: {diff.name}</li>
-                    <br>
-                    {#if !diff.oldValue}
-                        <li>N/A</li>
-                        {:else}
-                        <li>Old Value: {diff.oldValue}</li>
-                    {/if}
-                    <br>
-                    <li>New Value: {diff.newValue}</li>
-                </ul>
-            {/each}
-        {/if}
-    <!-- <button on:click={outsideClickHandler}>Log State</button> -->
-<!--    
-    {#if snapshot && component}
-    <h3>{snapshot.label.slice(0,13)} </h3> 
-    
+{#if snapshot && component}
+<h2>{snapshot.label}</h2>
+    {#each Object.keys(snapshot.data) as componentName} 
+        {#if Object.keys(snapshot.data[componentName].variables).length>0 && snapshot.data[componentName].active}
+           
+        
+          
+           
+            <!-- {#if snapshot.data[componentName].instance == 0} -->
+           <span class="collapsible"  on:click={collapsible}>
+           
+           
+            <span class="arrow" class:arrowDown> &#x25b6</span>
+            {snapshot.data[componentName].tagName}
+            
+           
+            
+          </span>
+           <br/>
+           <div class="content">
+              
+                {#each Object.keys(snapshot.data[componentName].variables) as variable}  
+                   {#if snapshot.data[componentName].variables[variable].value !==undefined && snapshot.data[componentName].variables[variable].value !== null}  
+                
+                      <Variable variable={snapshot.data[componentName].variables[variable]}/>
+                
+                   {/if}
+                {/each}
+             
+          </div>
+          <!-- {:else}
+          <span class="collapsible" on:click={collapsible}>
+           
+            
+            
+            --{componentName}
+            
+          </span>
+           <br/>
+           <div class="content">
+              
+                {#each Object.keys(snapshot.data[componentName].variables) as variable}  
+                   {#if snapshot.data[componentName].variables[variable].value}  
+                
+                      <Variable variable={snapshot.data[componentName].variables[variable]}/>
+                
+                   {/if}
+                {/each}
+             
+          </div>
 
-    <h4>{component.tagName}</h4>
-    {#if Object.keys(component.variables).length}
+          {/if} -->
+          
+            
+            
+        {/if}
+           
+           
+    {/each}
+          
+
+    <!-- {#if Object.keys(component.variables).length > 0}
         <h5>Variables</h5>
       
         {#each Object.keys(component.variables) as variable}  
@@ -108,7 +108,7 @@
     {/if}
 
     {#if component.children.length} 
-    <ol>
+   
         <ul>
         {#each component.children as child}
             {#if child.active}
@@ -125,15 +125,55 @@
             </canvas>     
         {/each}
         </ul>
-    </ol>
-    {/if}
+    
     {/if} -->
-    </div>
-    
+{/if}
 </main>
- 
-    
+
 <style>
-    
+  .collapsible {
+  /* background-color: #777;
+  color: white; */
+  cursor: pointer;
+  display: inline-block;
+  /* padding: 18px; */
+  /* width: 100%; */
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  font-family: 'Comic Sans MS', cursive;
+}
+
+.collapsible:hover {
+  background-color: rgb(238, 137, 5);
+}
+
+ /* .collapsible:after {
+  content: '\25b6';
+  color: white;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+} */
+
+/* .active {
+  content: "\25bc";
+}  */
+
+.content {
+   padding: 0 18px;
+   display: none;
+   overflow: hidden;
+   /* background-color: #f1f1f1; */
   
+}
+.arrow {
+	cursor: pointer;
+	display: inline-block;
+    color: white;
+	/* transition: transform 200ms; */
+}
+.arrowDown { transform: rotate(90deg); }
+
 </style>

@@ -1,13 +1,14 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { compile } from "svelte/compiler";
 import _ from "lodash";
 
 
 export const snapshots = writable([]);
 export const fileTree = writable({});
+export const backgroundPageConnection = writable(chrome.runtime.connect({name: "panel"}));
 
 // store updateable objects for current component state
-const componentData = {}
+let componentData = {}
 // store ALL nodes and listeners
 const nodes = {};
 const listeners = {};
@@ -17,17 +18,15 @@ const astInfo = {};
 const componentTree = {};
 let parentComponent;
 let domParent;
-let snapshotLabel;
+let snapshotLabel = "Init";
 
 // for debugging, store any AST variables not caught by switch statements
 const uncaughtVariables = [];
 
 // set up background page Connection
-var backgroundPageConnection = chrome.runtime.connect({
-    name: "panel"
-});
+const connection = get(backgroundPageConnection);
 
-backgroundPageConnection.postMessage({
+connection.postMessage({
     name: 'init',
     tabId: chrome.devtools.inspectedWindow.tabId
 });
@@ -40,17 +39,24 @@ chrome.runtime.onMessage.addListener((msg) => {
 
 	if (type === "firstLoad") {
 		snapshots.set([]);
-		const snapshot = buildFirstSnapshot(data);
+		const snapshot = buildSnapshot(data);
 		snapshots.update(array => [...array, snapshot]);
 	}
 	else if (type === "update") {
-		const newSnapshot = buildNewSnapshot(data);
+		const newSnapshot = buildSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
+	}
+	else if (type === "rebuild") {
+		for (let component in componentData) {
+			componentData[component].active = false;
+			componentData[component].nodes = {};
+		}
+		const newSnapshot = buildSnapshot(data);
 	}
 	else if (type === "event") {
 		const listener = listeners[data.nodeId + data.event];
 		const { component, event, name } = listener;
-		const tagName = componentData[listener.component].tagName
+		const tagName = componentData[component].tagName
 		snapshotLabel = tagName + ' - ' + event + " -> " + name;
 	}
 });
@@ -192,9 +198,14 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 	});
 });
 
-function buildFirstSnapshot(data) {
-	const { components, insertedNodes, addedEventListeners } = data;
-	
+function buildSnapshot(data) {
+	const { components, insertedNodes, deletedNodes, addedEventListeners, ctxObject } = data;
+
+	// delete nodes and descendents
+	deletedNodes.forEach(node => {
+		deleteNode(node.id);
+	})
+
 	// build nodes object
 	insertedNodes.forEach(node => {
 		nodes[node.id] = {
@@ -203,7 +214,6 @@ function buildFirstSnapshot(data) {
 			component: node.component, 
 			target: node.target,
 			loc: node.loc,
-			listeners: {}
 		}
 		// add as a child to target node
 		if (typeof node.target === "number") {
@@ -221,14 +231,11 @@ function buildFirstSnapshot(data) {
 			component: listener.component,
 			id: listener.id
 		}
-		// assign to listenerData object
+		// assign to listeners object
 		listeners[listener.id] = listenerData;
-
-		// assign to associated node in nodes
-		nodes[listener.node].listeners[listener.id] = listenerData;
 	});
 
-	// build components and assign nodes, variables and listeners
+	// build components and assign nodes and variables
 	components.forEach(component => {
 		const { ctx, injectState, tagName, id, instance } = component;
 
@@ -236,7 +243,6 @@ function buildFirstSnapshot(data) {
 			tagName,
 			id,
 			nodes: {},
-			listeners: {},
 			variables: {},
 			active: true,
 			instance
@@ -272,12 +278,11 @@ function buildFirstSnapshot(data) {
 		data.parentNode = parentNode;
 		data.targets = targets;
 
+		// add event listeners
 		addedEventListeners.forEach(listener => {
 			if (data.nodes.hasOwnProperty(listener.node)) {
 				// update listener object to include full component id with instance number
 				listeners[listener.id].component = id;
-				// assign to component 
-				data.listeners[listener.id] = listeners[listener.id];
 			}
 		})
 
@@ -289,7 +294,8 @@ function buildFirstSnapshot(data) {
 			const varData = {
 				name: astVariable.name,
 				type: astVariable.type,
-				component: id
+				component: id,
+				initValue: astVariable.value ? astVariable.value : null
 			}
 			if (astVariable.ctxVariable) {
 				if (injectState.hasOwnProperty(astVariable.name)) {
@@ -319,140 +325,6 @@ function buildFirstSnapshot(data) {
 		componentData[id] = data;
 	});
 
-	// determine and assign the DOM parent (can't happen until all components are built and have nodes assigned)
-	for (let component in componentData) {
-		const { parentNode } = componentData[component];
-		componentData[component].parent = (nodes.hasOwnProperty(parentNode)) ? nodes[parentNode].component : ((component === domParent) ? null : domParent);
-		componentData[component].children = [];
-	}
-
-	// assign DOM children to components (can't happen until all components know their parents)
-	for (let i in componentData) {
-		const component = componentData[i];
-		const parent = component.parent;
-		if (parent) {
-			componentData[parent].children.push(component);
-			
-		}
-	}
-
-	// assign component children
-	for (let file in astInfo) {
-		for (let childFile in astInfo[file].components) {
-			componentTree[file].children.push(componentTree[childFile]);
-			componentTree[childFile].parent = file;
-		}
-	}
-
-	// determine top-level parent component
-	for (let file in astInfo) {
-		if (!componentTree[file].parent) {
-			parentComponent = file;
-		}
-	}
-	
-	const snapshot = {
-		data: componentData,
-		parent: domParent,
-		label: 'Initial State'
-	}
-
-	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
-
-	fileTree.set(componentTree[parentComponent]);
-
-	return deepCloneSnapshot; // deep clone to "freeze" state
-}
-
-function buildNewSnapshot(data) {
-	const { components, insertedNodes, deletedNodes, addedEventListeners, deletedEventListeners, ctxObject } = data;
-
-	// delete event listeners
-	deletedEventListeners.forEach(listener => {
-		const { component } = listeners[listener.id];
-		delete componentData[component].listeners[listener.id];
-		delete componentData[component].nodes[listener.node].listeners[listener.id];
-	})
-
-	// delete nodes and descendents
-	deletedNodes.forEach(node => {
-		deleteNode(node.id);
-	})
-
-	// insert nodes into nodeTree
-	insertedNodes.forEach(node => {
-		nodes[node.id] = {
-			children: [],
-			id: node.id,
-			component: node.component, 
-			target: node.target,
-			loc: node.loc,
-			listeners: {}
-		}
-		// add as a child to target node
-		if (typeof node.target === "number") {
-			nodes[node.target].children.push({id: node.id});
-		}
-	})
-
-	// add new components
-	components.forEach(component => {
-		const { ctx, injectState, captureState, tagName, id, instance } = component;
-
-		// create object with all associated variables
-		const variables = {};
-		captureState.forEach(variable => {
-			const varObj = {
-				name: variable
-			}
-
-			for (let variableName in injectState) {
-				if (variableName === variable) {
-					varObj.index = injectState[variableName];
-					varObj.value = ctx[injectState[variableName]].value;
-				}
-			}
-			variables[variable] = varObj;
-		})
-
-		const data = {
-			tagName,
-			id,
-			variables,
-			nodes: {},
-			listeners: {},
-			active: true,
-			instance
-		};
-		
-		// create object with all associated nodes
-		const targets = {};
-		const nodeLocations = {}; // store nodes by code location and parent to ensure they get assigned to correct component
-		insertedNodes.forEach((node, i) => {
-		// make sure node belongs to this component - component name should match, should be only node in component from that location OR if same location, must share a target
-			if (node.component === tagName && (!nodeLocations.hasOwnProperty(node.loc) || nodeLocations[node.loc] === node.target)) {
-				// update node component to include full component id with instance number
-				nodes[node.id].component = id;
-				// assign node by reference to component data
-				data.nodes[node.id] = nodes[node.id];
-				// mark the node location as taken for this component and store target node
-				nodeLocations[node.loc] = node.target;
-				// remove node from insertedNodes array so it can't be assigned to another component
-				delete insertedNodes[i];
-				// push node target and node to targetArray for later reference
-				targets[node.target] = true;
-				targets[node.id] = true;
-			}
-		})
-
-		// identify the target node for the component
-		const parentNode = (targets.hasOwnProperty("body")) ? "body" : Math.min(...Object.keys(targets));
-		data.parentNode = parentNode;
-		data.targets = targets;
-
-		componentData[id] = data;
-	})
-
 	// assign any remaining inserted Nodes that didn't go to new components
 	insertedNodes.forEach(node => {
 		// loop through components in case there are multiple instances
@@ -469,34 +341,12 @@ function buildNewSnapshot(data) {
 		}
 	})
 
-	// determine and assign the parent component
+	// determine and assign the DOM parent (can't happen until all components are built and have nodes assigned)
 	for (let component in componentData) {
 		const { parentNode } = componentData[component];
 		componentData[component].parent = (nodes.hasOwnProperty(parentNode)) ? nodes[parentNode].component : ((component === domParent) ? null : domParent);
 		componentData[component].children = [];
 	}
-
-	// update listeners object and assign listeners to nodes and components
-	addedEventListeners.forEach(listener => {
-		const { component } = nodes[listener.node]
-		const listenerData = {
-			node: listener.node,
-			event: listener.event,
-			name: listener.handlerName,
-			string: listener.handlerString,
-			component: component,
-			id: listener.id
-		}
-		// assign to listenerData object
-		listeners[listener.id] = listenerData;
-
-		// assign to associated node in nodes
-		nodes[listener.node].listeners[listener.id] = listenerData;
-
-		// assign to associated component
-		componentData[component].listeners[listener.id] = listenerData;
-		componentData[component].nodes[listener.node].listeners[listener.id] = listeners[listener.id];
-	});
 
 	// re-assign children to components and determine if component is active in the DOM
 	for (let i in componentData) {
@@ -535,6 +385,26 @@ function buildNewSnapshot(data) {
 		}
 	}
 
+	let currentTree = get(fileTree);
+	if (_.isEmpty(currentTree)) {
+		// assign component children
+		for (let file in astInfo) {
+			for (let childFile in astInfo[file].components) {
+				componentTree[file].children.push(componentTree[childFile]);
+				componentTree[childFile].parent = file;
+			}
+		}
+
+		// determine top-level parent component
+		for (let file in astInfo) {
+			if (!componentTree[file].parent) {
+				parentComponent = file;
+			}
+		}
+
+	 	fileTree.set(componentTree[parentComponent]);
+	};
+
 	const snapshot = {
 		data: componentData,
 		parent: domParent,
@@ -546,16 +416,16 @@ function buildNewSnapshot(data) {
 
 	snapshotLabel = undefined;
 
-	return deepCloneSnapshot;  // deep copy to "freeze" state
+	return deepCloneSnapshot; // deep clone to "freeze" state
+}
 
 	// recursively delete node and all descendents
-	function deleteNode (nodeId) {
-		const { children, component, id } = nodes[nodeId];
-		if (children.length) {
-			children.forEach(child => {
-				deleteNode(child.id);
-			})
-		}
-		delete componentData[component].nodes[id];
+function deleteNode (nodeId) {
+	const { children, component, id } = nodes[nodeId];
+	if (children.length) {
+		children.forEach(child => {
+			deleteNode(child.id);
+		})
 	}
+	delete componentData[component].nodes[id];
 }
