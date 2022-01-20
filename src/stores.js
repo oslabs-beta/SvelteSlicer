@@ -200,6 +200,11 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 
 function buildSnapshot(data) {
 	const { components, insertedNodes, deletedNodes, addedEventListeners, ctxObject } = data;
+	const diff = {
+		newComponents: [],
+		deletedComponents: [],
+		changedVariables: []
+	};
 
 	// delete nodes and descendents
 	deletedNodes.forEach(node => {
@@ -321,6 +326,7 @@ function buildSnapshot(data) {
 				}
 			}
 		})
+		diff.newComponents.push({component: id, variables: data.variables});
 
 		componentData[id] = data;
 	});
@@ -357,7 +363,10 @@ function buildSnapshot(data) {
 		}
 		// if no current nodes, mark component as not active
 		if (!Object.keys(component.nodes).length && component.id !== domParent) {
-			component.active = false;
+			if (component.active === true) {
+				component.active = false;
+				diff.deletedComponents.push({component: component.id, variables: component.variables});
+			}
 		}
 		else {
 			component.active = true;
@@ -365,8 +374,8 @@ function buildSnapshot(data) {
 	}
 
 	// update ctx variables
-	const diff = [];
 	for (let component in componentData) {
+		const componentDiff = [];
 		for(let i in componentData[component].variables) {
 			const variable = componentData[component].variables[i];
 			if (variable.ctxIndex) {
@@ -378,10 +387,13 @@ function buildSnapshot(data) {
 						component: variable.component,
 						type: variable.type
 					}
-					diff.push(data);
+					componentDiff.push(data);
 					variable.value = ctxObject[component][variable.ctxIndex].value;
 				}
 			}
+		}
+		if (componentDiff.length) {
+			diff.changedVariables.push(componentDiff);
 		}
 	}
 
@@ -415,6 +427,8 @@ function buildSnapshot(data) {
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
 	snapshotLabel = undefined;
+
+	console.log(deepCloneSnapshot);
 
 	return deepCloneSnapshot; // deep clone to "freeze" state
 }
