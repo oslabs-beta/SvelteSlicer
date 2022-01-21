@@ -270,13 +270,6 @@ let margin = {top:50,right:0,bottom:20,left:50}
    
 })
 
-
-
-
-
-
-
-
 </script>
 
 <main>
@@ -285,8 +278,6 @@ let margin = {top:50,right:0,bottom:20,left:50}
    
     <div bind:this={svg} id='chart' ></div>
   
-   
-    
 </main>
 
 

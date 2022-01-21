@@ -2,7 +2,6 @@
 	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
 	import Header from './Header.svelte';
-	import Tabs from './Header.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import FileStructure from './FileStructure.svelte';
 	import State from './State.svelte';
@@ -11,7 +10,6 @@
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
 	let I;
-	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree
 	let filtered = [];
 	let input = "";
 	
@@ -76,11 +74,11 @@
 				<h2>Svelte Slicer</h2>
 			</div>
 			<div id="snapshots">
-				<div class="filter" style="display:flex; flex-flow:row">
+					<div class="filter" style="display:flex; flex-flow:row">
 					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
-					  	<input type="text" bind:value={input} placeholder="Filter..." class="search-field" />
-					  	<button type="submit" class="search-button">
-							<i class="fas fa-search"></i>
+					  	<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
+					   <button type="submit" class="search-button"> 
+							<i class="fa fa-search"></i>
 					  	</button>
 					</form>
 				</div>
@@ -92,7 +90,7 @@
 						</div>
 						<br>
 					{/each}
-					<hr>
+					<!-- <hr> -->
 				{:else if filtered.length}
 					{#each filtered as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
@@ -108,16 +106,17 @@
 				<button on:click={() => selectView("state")}>State</button>
 				<button on:click={() => selectView("diff")}>Diff</button>				
 			</div>
-			<div id="buttons">
-				{#if View === "files"}
-					<button on:click={() => selectVis("tree")}>Tree</button>
-					<button on:click={() => selectVis("chart")}>Chart</button>
-				{:else if View === "state"}
-					<button on:click={() => selectVis("tree")}>Tree</button>
-					<button on:click={() => selectVis("chart")}>Chart</button>
-				{/if}
-			</div>
+			
 			<div id="presentation">
+				<div id="buttons">
+					{#if View === "files"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{:else if View === "state"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{/if}
+				</div>
 				{#if $snapshots.length} 
 					{#if View === "files" && Vis === "tree"}
 						<Component component={$fileTree}/>
@@ -134,9 +133,6 @@
                         <TidyTree2 {view} I={CurrentI}/>
 						{/if}
 					
-						
-
-
 					{:else if View === "diff"}
 						<Diffs I={CurrentI}/>
 					{/if}
@@ -147,7 +143,6 @@
 	
 	<style>
 		main {
-			/* text-align: center; */
 			padding: 1em;
 			/* max-width: 240px; */
 			max-width:75%;
@@ -157,7 +152,22 @@
 			background: rgb(83, 81, 81);
 			padding: 1em;
 		}
+
 	
+
+		.search-button {
+			color: rgb(162, 159, 159);
+			background: transparent;
+			border: none;
+			outline: none;
+			margin-right: -35px;
+		}
+
+		form.form button:hover {
+  		background: rgb(238, 137, 5);
+		
+		}
+		
 		@media (min-width: 640px) {
 			main {
 				max-width: none;
@@ -167,28 +177,9 @@
 			
 		}
 
-		/* .buttonOptions {
-			align-items: right;
-			flex: 30%;
-		}
 
-	.flex-grid-half {
-			
-				flex-grow: 0;
-				flex-shrink: 0;
-				flex-basis: 50px; 
-	}
-
-	div:nth-of-type(1) {
-  	flex-basis: 75px;
-	}
-
-	.col {
-		flex: 1 3;
-		width:max-content;
-	}  
-	*/
-
+			/* } */
+		/* } */
 
 	</style>
 	

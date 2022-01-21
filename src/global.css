@@ -10,7 +10,7 @@ body {
 	background: rgb(83, 81, 81);
 	margin: 1em;
 	padding: 1em;
-	box-sizing: content-box;
+	/* box-sizing: content-box; */
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
 	/* border: 1px solid whitesmoke; */
@@ -18,6 +18,7 @@ body {
 
 h2 {
 	align-content: center;
+	font-weight: bolder;
 }
 
 .panelDiv {
@@ -53,9 +54,8 @@ input, select, textarea {
 	outline: none;
 	margin: 2px;
 	font-size: inherit;
-	/* -webkit-padding: 0.4em 0; */
 	padding: 0.4em;
-	box-sizing: border-box;
+	/* box-sizing: border-box; */
 	border: none;
 	border-radius: 2px;
 }
@@ -168,6 +168,7 @@ ul {
 	grid-column-start: 2;
 	grid-column-end: 3;
 	grid-row-start: 1;
+	/* grid-row-end: 2; */
 	grid-row-end: 2;
 	border: 1px solid whitesmoke;
 }
@@ -185,7 +186,8 @@ ul {
 	grid-column-start: 2;
 	grid-column-end: 3;
 	grid-row-start: 2;
-	grid-row-end: 3;
+	/* grid-row-end: 3; */
+	grid-row-end: 2;
 }
 
 #presentation {
