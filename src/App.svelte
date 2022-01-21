@@ -24,7 +24,6 @@
 
 	function selectState(index) {
 		I = index === $snapshots.length - 1 ? undefined : index;
-		count += 1;
 	}
 
 	function selectView(selection) {
@@ -125,10 +124,17 @@
 						<Component component={$fileTree}/>
 					{:else if View === "files" && Vis === "chart"}
 						<FileStructure treeData={$fileTree}/>
-					{:else if View === "state" && Vis === "tree"}
+					<!-- {:else if View === "state" && Vis === "tree"}
 						<State I={CurrentI}></State>
 					{:else if View === "state" && Vis === "chart"} 
-						<TidyTree2 {view} I={CurrentI}/>
+						<TidyTree2 {view} I={CurrentI}/> -->
+					{:else if View === "state"}
+					   {#if Vis === "tree"}
+					    <State I={CurrentI}></State>
+						{:else if Vis === "chart"}
+                        <TidyTree2 {view} I={CurrentI}/>
+						{/if}
+					
 					{:else if View === "diff"}
 						<Diffs I={CurrentI}/>
 					{/if}
@@ -136,55 +142,6 @@
 			</div>
 		</div>
 	</main>
-		
-		
-		
-		
-		
-		
-		<!--
-		<div id="left" class="center" style="background-color:#2D3436; height:100%; width:100%; border:solid 3px #F1F3F4; flex:{showLeft?3:0}">
-			<h2>Svelte Slicer</h2>
-			<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
-			<hr>
-			<label style="color:#F1F3F4; text-align:center">
-			Reduce LeftPanel <input type="checkbox" bind:checked={showLeft}>
-			</label>
-			<label style="color:#F1F3F4; text-align:center">
-			Toggle Data <input type="checkbox" bind:checked={showRight}>
-			</label>
-			{#if view === "state"}
-				{#each $snapshots as snapshot, i}
-					<p style="color: white">Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</p>
-					<button on:click={() => selectState(i)}>Data</button>
-					<button on:click={() => rerenderState(i)}>Render</button>
-					<br>
-				{/each}
-				<hr>
-			{/if}
-		</div>
-		
-			<div id="right" style="flex:10; display:flex; flex-flow:row">
-				<div id="red" class="center" style="background-color:orangered; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
-					<h2>Visual</h2>
-					{#if view === "componentTree" && $fileTree} 
-					<Component component={$fileTree}/>
-					{:else if view === "tidyTree" && $fileTree}
-					<TidyTree2 treeData={$fileTree} {count} I={CurrentI}/>
-					{/if}
-			</div>
-				<div id="red" class="col panelDiv" style="  height:100%;  align-items: right; display:{showRight?'flex':'none'};">
-					 {#if view === 'data'}
-					<h2>Data</h2>
-				{#if view === "state"}
-					{#if data && snapshot && $fileTree} 
-						<State I={CurrentI}></State>
-						
-						<TidyTree2 treeData={$fileTree} {count} I={CurrentI}/>
-					{/if}	
-				{/if}		
-			</div>
-		</div>	-->
 	
 	<style>
 		main {
@@ -199,86 +156,7 @@
 			
 
 			}
-			.flex-grid {
-				display: block;
-			}
 		}
 
-		/* .optionButtons {
-
-		} */
-
-	/* .flex-grid-half  {
-		width: 50%;
-		align-items: center;
-		padding: 2px;
-		margin: 2px;
-	} */
-	.col {
-		flex: 1;
-		width:max-content;
-	} 
-	.switch {
-  position: relative;
-  /* display: inline-block; */
-  display:flexbox;
-  width: 47px;
-  height: 21px;
-  margin: 1px;
-}
-
-.slider {
-  /* position: absolute; */
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  -webkit-tap-highlight-color: transparent;
-  outline:#2196F3;
-	margin:1px;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  /* content: "visual/data"; */
-  content: "";
-  height: 18px;
-  width: 20px;
-  left: 7px;
-  bottom: 3px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-  align-items: center;
-}
-
-.slider.round {
-  border-radius: 30px;
-  
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: teal;
-  /* background-color: none; */
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 2px #2196F3;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(23px);
-  -ms-transform: translateX(23px);
-  transform: translateX(23px);
-}
 	</style>
 	

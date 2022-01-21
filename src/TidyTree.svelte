@@ -17,9 +17,7 @@
     
     export let treeData;
     console.log('treeData',treeData)
-    export let count;
-
-    console.log("count",count)
+    
     
     let margin = {top:20,right:90,bottom:20,left:90}
         let width = 960 - margin.left - margin.right;
@@ -28,7 +26,7 @@
         let svg;
     
     //check if dom already have 1 tidy tree    
-     if(count<2){  
+     //if(count<2){  
          
         svg = d3.select("body")
            .append('div')
@@ -183,7 +181,7 @@
                update(d);
            }
            }
-        }
+        //}
        
            
     </script>
