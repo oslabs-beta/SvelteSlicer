@@ -17,7 +17,7 @@
             {#if newComponents.length} 
                 <h3>New Components</h3>
                 {#each newComponents as component}
-                    <h4>{component.component}</h4>
+                    <h4 class='diffComponentName'>{component.component}</h4>
                     {#each Object.keys(component.variables) as variable}
                         {#if component.variables[variable].value !== undefined}
                             <Variable variable={component.variables[variable]}/>
@@ -28,7 +28,7 @@
             {#if deletedComponents.length} 
                 <h3>Deleted Components</h3>
                 {#each deletedComponents as component}
-                    <h4>{component.component}</h4>
+                    <h4 class='deletedComponent'>{component.component}</h4>
                     {#each Object.keys(component.variables) as variable}
                         {#if component.variables[variable].value !== undefined}
                             <Variable variable={component.variables[variable]}/>
@@ -39,9 +39,10 @@
             {#if changedVariables.length} 
                 <h3>Changed Variables</h3>
                 {#each changedVariables as component}
-                    <h4>{component[0].component}</h4>
+                    <h4 class='diffComponentName'>{component[0].component}</h4>
                     {#each component as variable} 
-                        <p>{variable.name}: {variable.oldValue} => {variable.newValue}</p>
+                       
+                        <p>{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span>--> {variable.newValue}</span></p>
                     {/each}
                 {/each}
             {/if}
