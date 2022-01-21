@@ -57,6 +57,21 @@
 		renderState(i);
 	}
 
+	function jumpState(index) {
+		I = index === $snapshots.length - 1 ? undefined : index;
+		connection.postMessage({
+    		source: 'panel',
+			name: 'jumpState',
+    		index,
+			tabId: chrome.devtools.inspectedWindow.tabId
+		});
+	}
+
+	function jumpFilteredState(snapshot) {
+		let i = $snapshots.indexOf(snapshot);
+		jumpState(i);
+	}
+
 	function filterEventHandler() {
 		input = input.trim().toLowerCase();
 		console.log("filterInput", input);
@@ -109,6 +124,7 @@
 						<div class="right-align">
 							<button on:click={() => selectState(i)}>Data</button>
 							<button on:click={() => renderState(i)}>Render</button>
+							<button on:click={() => jumpState(i)}>Render</button>
 						</div>
 						<br>
 					{/each}
@@ -119,6 +135,7 @@
 						<div class="right-align">
 							<button on:click={() => filterState(snapshot)}>Data</button>
 							<button on:click={() => renderFilteredState(snapshot)}>Render</button>
+							<button on:click={() => jumpFilteredState(snapshot)}>Render</button>
 						</div>
 						<br>
 					{/each}
