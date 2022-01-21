@@ -15,7 +15,7 @@
 <main>
     <div id="valuesList">
         <h2>Data</h2>
-        <button on:click={clickhandler}>Log State/Diffs</button>
+        <h3>Diffs</h3>
             {#each snapshot.diff as diff ,i}
                 <ul id="myOl">
                     <li>Component: {diff.component}</li>

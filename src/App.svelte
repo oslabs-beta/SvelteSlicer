@@ -2,7 +2,6 @@
 	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
 	import Header from './Header.svelte';
-	import Tabs from './Header.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import FileStructure from './FileStructure.svelte';
 	import State from './State.svelte';
@@ -11,7 +10,8 @@
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
 	let I;
-	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree
+	//control tidt tree render time on the dom. set render condition in TidyTree
+	let count=0;
 	let filtered = [];
 	let input = "";
 	
@@ -77,11 +77,13 @@
 				<h2>Svelte Slicer</h2>
 			</div>
 			<div id="snapshots">
-				<div class="filter" style="display:flex; flex-flow:row">
-					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
-					  	<input type="text" bind:value={input} placeholder="Filter..." class="search-field" />
-					  	<button type="submit" class="search-button">
-							<i class="fas fa-search"></i>
+				<!-- <div class="filter" style="display:flex; flex-flow:row"> -->
+					<div class="filter" style="display:flex; flex-flow:row wrap">
+					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="filterForm">
+					  	<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
+						  <!-- <input type="text" bind:value={input} placeholder="Filter..." name="search"/> -->
+					   <button type="submit" class="search-button"> 
+							<i class="fa fa-search"></i>
 					  	</button>
 					</form>
 				</div>
@@ -93,7 +95,7 @@
 						</div>
 						<br>
 					{/each}
-					<hr>
+					<!-- <hr> -->
 				{:else if filtered.length}
 					{#each filtered as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
@@ -109,16 +111,17 @@
 				<button on:click={() => selectView("state")}>State</button>
 				<button on:click={() => selectView("diff")}>Diff</button>				
 			</div>
-			<div id="buttons">
-				{#if View === "files"}
-					<button on:click={() => selectVis("tree")}>Tree</button>
-					<button on:click={() => selectVis("chart")}>Chart</button>
-				{:else if View === "state"}
-					<button on:click={() => selectVis("tree")}>Tree</button>
-					<button on:click={() => selectVis("chart")}>Chart</button>
-				{/if}
-			</div>
+			
 			<div id="presentation">
+				<div id="buttons">
+					{#if View === "files"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{:else if View === "state"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{/if}
+				</div>
 				{#if $snapshots.length} 
 					{#if View === "files" && Vis === "tree"}
 						<Component component={$fileTree}/>
@@ -135,58 +138,10 @@
 			</div>
 		</div>
 	</main>
-		
-		
-		
-		
-		
-		
-		<!--
-		<div id="left" class="center" style="background-color:#2D3436; height:100%; width:100%; border:solid 3px #F1F3F4; flex:{showLeft?3:0}">
-			<h2>Svelte Slicer</h2>
-			<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
-			<hr>
-			<label style="color:#F1F3F4; text-align:center">
-			Reduce LeftPanel <input type="checkbox" bind:checked={showLeft}>
-			</label>
-			<label style="color:#F1F3F4; text-align:center">
-			Toggle Data <input type="checkbox" bind:checked={showRight}>
-			</label>
-			{#if view === "state"}
-				{#each $snapshots as snapshot, i}
-					<p style="color: white">Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</p>
-					<button on:click={() => selectState(i)}>Data</button>
-					<button on:click={() => rerenderState(i)}>Render</button>
-					<br>
-				{/each}
-				<hr>
-			{/if}
-		</div>
-		
-			<div id="right" style="flex:10; display:flex; flex-flow:row">
-				<div id="red" class="center" style="background-color:orangered; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
-					<h2>Visual</h2>
-					{#if view === "componentTree" && $fileTree} 
-					<Component component={$fileTree}/>
-					{:else if view === "tidyTree" && $fileTree}
-					<TidyTree2 treeData={$fileTree} {count} I={CurrentI}/>
-					{/if}
-			</div>
-			<div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
-					<h2>Data</h2>
-				{#if view === "state"}
-					{#if data && snapshot && $fileTree} 
-						<State I={CurrentI}></State>
-						
-						<TidyTree2 treeData={$fileTree} {count} I={CurrentI}/>
-					{/if}	
-				{/if}		
-			</div>
-		</div>	-->
+	
 	
 	<style>
 		main {
-			/* text-align: center; */
 			padding: 1em;
 			/* max-width: 240px; */
 			max-width:75%;
@@ -195,6 +150,50 @@
 			color: whitesmoke;
 			background: rgb(83, 81, 81);
 			padding: 1em;
+		}
+
+		.filterForm {
+			box-sizing: border-box;
+		}
+
+		form.filterForm button:hover {
+  		background: rgb(238, 137, 5);
+		
+		}
+/* 
+		form.filterForm input[type=text] {
+
+		font-size: 12px;
+		float:left;
+		width: 80%;
+		
+		}
+
+
+		form.filterForm::after {
+		content: "";
+		clear: both;
+		display: table;
+		} */
+
+		.search-field {
+			width: 100%;
+			padding: 10px 35px 10px 15px;
+			border: none;
+			border-radius: 2px;
+			outline: none;
+		}
+		.search-button {
+			color: gray;
+			background: transparent;
+			border: none;
+			outline: none;
+			margin-right: -33px;
+		}
+		.search-button i {
+			width: 20px;
+			height: 20px;
+			object-fit: cover;
 		}
 	
 		@media (min-width: 640px) {
@@ -205,28 +204,6 @@
 			}
 			
 		}
-
-		/* .buttonOptions {
-			align-items: right;
-			flex: 30%;
-		}
-
-	.flex-grid-half {
-			
-				flex-grow: 0;
-				flex-shrink: 0;
-				flex-basis: 50px; 
-	}
-
-	div:nth-of-type(1) {
-  	flex-basis: 75px;
-	}
-
-	.col {
-		flex: 1 3;
-		width:max-content;
-	}  
-	*/
 
 
 	</style>
