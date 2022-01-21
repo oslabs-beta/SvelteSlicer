@@ -169,6 +169,13 @@ ul {
 	text-align: right;
 }
 
+.oldValue{
+	text-decoration: line-through;
+	color:pink
+}
+.diffComponentName{
+	color:blue
+}
 
 /* .collapsible {
 	background-color: #777;

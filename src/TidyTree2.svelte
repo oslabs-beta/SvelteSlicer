@@ -3,7 +3,6 @@ export let I;
 export let view;
 import { fileTree, snapshots } from './stores';
 import * as d3 from 'd3';
-//import { onMount } from 'svelte';
 import {onMount, beforeUpdate, afterUpdate, onDestroy} from 'svelte';
 
 
@@ -11,31 +10,27 @@ $: label = $snapshots[I].label;
 $: snapshot = $snapshots[I];
 $: parent = $snapshots[I].parent;
 $: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
-let run = 0
 
 
-let margin = {top:20,right:0,bottom:20,left:0}
-    let width = 500 - margin.left - margin.right;
-    let height = 500 - margin.top -margin.bottom; 
+
+let margin = {top:50,right:0,bottom:20,left:50}
+    let width = 700 - margin.left - margin.right;
+    let height = 700 - margin.top -margin.bottom; 
 //1/3 
 // const width = document.body.clientWidth;
 // const height = document.body.clientHeight;
 
     let svg;
     
-    let pre ;
-    let now ;
+    let preElement ;
+    let currElement ;
 
    afterUpdate(()=>{
-    console.log('out run',run)
-   // if(component){
-console.log('svg',svg)
-
+   
 
     svg = d3.select('#chart')
        .append('div')
-    //    .attr('class','container')
-    .attr('class',I)
+       .attr('class',I)
        .append("svg")
        .attr('width',width + margin.right + margin.left)
        .attr('height',height+ margin.top + margin.bottom)
@@ -73,7 +68,7 @@ console.log('svg',svg)
            console.log('activeNodes',activeNode)
            //set depth
            nodes.forEach(function(d){
-               d.y=d.depth*140;
+               d.y=d.depth*180;
               
            });
 
@@ -212,7 +207,7 @@ console.log('svg',svg)
                }
            })
             
-            // let links = treeData.descendants().slice(1);
+            
             let link = svg.selectAll('path.link').data(links, function(d){
                 return d.id;
             })
@@ -222,7 +217,7 @@ console.log('svg',svg)
               .insert('path','g')
               .attr('class','link')
               .attr('d',function(){
-                  let o={x:src.x0, y:src.y0}//y0 or y? 12/22
+                  let o={x:src.x0, y:src.y0}
                   return diagonal(o,o);
               });
             
@@ -263,19 +258,18 @@ console.log('svg',svg)
        
        }
     
-    //}  
-    run++
-    console.log('run again',run)
+      
+    
 
-     pre = document.getElementsByClassName(`${I}`)[0].previousSibling
-    console.log('pre',pre)
-     now = document.getElementsByClassName(`${I}`)
-    console.log('now',now)
+    preElement = document.getElementsByClassName(`${I}`)[0].previousSibling
+    //console.log('pre',preElement)
+    currElement= document.getElementsByClassName(`${I}`)
+    //console.log('curr',currElement)
    if(svg.previousSibling){
 
    }
-   if(pre){
-       pre.remove();
+   if(preElement){
+       preElement.remove();
    }
    
 })

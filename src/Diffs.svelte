@@ -18,17 +18,18 @@
         <button on:click={clickhandler}>Log State/Diffs</button>
             {#each snapshot.diff as diff ,i}
                 <ul id="myOl">
-                    <li>Component: {diff.component}</li>
-                    <br>
-                    <li>Variable Name: {diff.name}</li>
+                    <li class='diffComponentName'>Component: {diff.component}</li>
+
                     <br>
                     {#if !diff.oldValue}
-                        <li>N/A</li>
+                        <li>{diff.name}: N/A</li>
                         {:else}
-                        <li>Old Value: {diff.oldValue}</li>
+                        <p>{diff.name}: <span class='oldValue'>{diff.oldValue}</span> <span>--> {diff.newValue}</span></p>
+
+
                     {/if}
-                    <br>
-                    <li>New Value: {diff.newValue}</li>
+
+
                 </ul>
             {/each}
     </div>
