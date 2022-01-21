@@ -23,5 +23,13 @@ chrome.runtime.onMessage.addListener(message => {
       index: message.index
     });
   }
+
+  if (message.name === "jumpState") {
+    window.postMessage({
+      source: 'listener.js',
+      type: 'jumpState',
+      index: message.index
+    });
+  }
 });
 

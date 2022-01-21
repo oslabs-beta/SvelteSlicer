@@ -124,7 +124,7 @@
 						<div class="right-align">
 							<button on:click={() => selectState(i)}>Data</button>
 							<button on:click={() => renderState(i)}>Render</button>
-							<button on:click={() => jumpState(i)}>Render</button>
+							<button on:click={() => jumpState(i)}>Jump</button>
 						</div>
 						<br>
 					{/each}
@@ -135,7 +135,7 @@
 						<div class="right-align">
 							<button on:click={() => filterState(snapshot)}>Data</button>
 							<button on:click={() => renderFilteredState(snapshot)}>Render</button>
-							<button on:click={() => jumpFilteredState(snapshot)}>Render</button>
+							<button on:click={() => jumpFilteredState(snapshot)}>Jump</button>
 						</div>
 						<br>
 					{/each}

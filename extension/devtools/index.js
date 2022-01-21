@@ -17,6 +17,8 @@ chrome.devtools.panels.create(
                     let node_id = 0;
                     let firstLoadSent = false;
                     const domHistory = [];
+                    const ctxHistory = [];
+                    const rebuildingDom = false;
 
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
@@ -210,6 +212,45 @@ chrome.devtools.panels.create(
                         });
                     }
 
+                    function rebuildDom(index, parent, state) {
+                        rebuildingDom = true;
+
+                        // store old component counts
+                        const componentCountsHistory = JSON.parse(JSON.stringify(componentCounts));
+
+                        // erase dom and build new app
+                        const parentNode = document.body.parentNode;
+                        parentNode.removeChild(document.body);
+                        let body = document.createElement("body");
+                        parentNode.appendChild(body);
+                        const appConstructor = componentObject[parent].constructor;
+                        const app = new appConstructor({
+                            target: document.body
+                        })
+
+                        for (let component in componentCountsHistory) {
+                            const count = componentCountsHistory[component];
+                            for (let componentInstance in ctxHistory[index]) {
+                                const {tagName, instance } = ctxHistory[index][componentInstance];
+                                if (tagName === component && instance > count) {
+                                    const oldInstance = tagName + (instance - (count + 1));
+                                    const { variables } = state[oldInstance];
+                                    for (let variable in variables) {
+                                        const { name, ctxIndex, initValue } = variables[variable];
+                                        if (ctxIndex && initValue) {
+                                            injectState(componentInstance, name, ctxHistory[index][oldInstance].ctx[ctxIndex]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    function injectState(componentId, key, value) {
+                        const component = componentObject[componentId];
+                        component.$inject_state({ [key]: value })
+                    }
+
                     function repaintDom(index) {
                         const newDomDoc = domHistory[index];
                         document.body.parentNode.replaceChild(newDomDoc, document.body);
@@ -241,6 +282,7 @@ chrome.devtools.panels.create(
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
                             const domNode = document.body;
                             domHistory.push(domNode.cloneNode(true));
+                            ctxHistory.push(JSON.parse(JSON.stringify(ctxObject)));
                             firstLoadSent = true;
                             // parse the ctxObject for messaging purposes
                             
@@ -316,6 +358,11 @@ chrome.devtools.panels.create(
                           
                         if (event.data.type === 'rerenderState') {
                             repaintDom(event.data.index);
+                        }
+
+                        if (event.data.type === 'jumpState') {
+                            const { index, parent, state } = event.data;
+                            rebuildDom(index, parent, state);
                         }
                     })
                     `
