@@ -63,6 +63,8 @@
     		source: 'panel',
 			name: 'jumpState',
     		index,
+			parent: $snapshots[CurrentI].parent,
+			state: $snapshots[CurrentI].data,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
 	}

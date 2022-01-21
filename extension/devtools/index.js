@@ -18,7 +18,7 @@ chrome.devtools.panels.create(
                     let firstLoadSent = false;
                     const domHistory = [];
                     const ctxHistory = [];
-                    const rebuildingDom = false;
+                    let rebuildingDom = false;
 
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);

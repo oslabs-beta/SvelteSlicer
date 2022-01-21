@@ -29,7 +29,7 @@
 
 <style>
 	.content {
-		background-color: #f4f4f4;
+		background: rgb(83, 81, 81);
 		padding: 0.5em;
 	}
 </style>
