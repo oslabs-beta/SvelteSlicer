@@ -1,5 +1,6 @@
 <script>
-	import {snapshots, fileTree} from './stores.js';
+	import {snapshots, fileTree, backgroundPageConnection} from './stores.js';
+	import { get } from 'svelte/store';
 	import Component from './Component.svelte';
 	import Header from './Header.svelte';
 	import Tabs from './Header.svelte';
@@ -21,6 +22,8 @@
 	let vis = "tree";
 	$: Vis = vis;
 
+	const connection = get(backgroundPageConnection);
+
 	function selectState(index) {
 		I = index === $snapshots.length - 1 ? undefined : index;
 	}
@@ -39,9 +42,19 @@
 		selectState(i);
 	}
 
-	function renderState(i) {
+	function renderState(index) {
 		I = index === $snapshots.length - 1 ? undefined : index;
+		connection.postMessage({
+    		source: 'panel',
+			name: 'rerenderState',
+    		index,
+			tabId: chrome.devtools.inspectedWindow.tabId
+		});
+	}
 
+	function renderFilteredState(snapshot) {
+		let i = $snapshots.indexOf(snapshot);
+		renderState(i);
 	}
 
 	function filterEventHandler() {
