@@ -20,10 +20,7 @@ chrome.runtime.onMessage.addListener(message => {
     window.postMessage({
       source: 'listener.js',
       type: 'rerenderState',
-      index: message.index,
-      parent: message.parent,
-      state: message.state,
-      prevI: message.prevI
+      index: message.index
     });
   }
 });

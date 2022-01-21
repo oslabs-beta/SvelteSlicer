@@ -13,14 +13,10 @@ chrome.devtools.panels.create(
                     const addedEventListeners = [];
                     const nodes = new Map();
                     const ctxObject = {};
-                    componentObject = {};
                     const componentCounts = {};
                     let node_id = 0;
                     let firstLoadSent = false;
                     const domHistory = [];
-                    const listeners = {};
-                    const activeDom = [];
-                    let rebuildingDom = false;
 
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
@@ -54,8 +50,9 @@ chrome.devtools.panels.create(
                             injectState[varName] = varIndex;
                             string = string.slice(varNameEnd);
                         }
-                        componentObject[id] = component;
+
                         ctxObject[id] = {ctx: component.$$.ctx, tagName, instance};
+                        
                         // parse ctx for messaging purposes
                         const ctx = {};
                         component.$$.ctx.forEach((element, index) => {
@@ -110,10 +107,6 @@ chrome.devtools.panels.create(
 
                         id = nodeData.id + event;
 
-                        // store listener data to be added back to DOM after re-renders
-                        listeners[node] = listeners[node] ? listeners[node] : [];
-                        listeners[node].push({event, handler});
-
                         node.addEventListener(event, () => eventAlert(nodeData.id, event));
                             
                         addedEventListeners.push({
@@ -131,13 +124,7 @@ chrome.devtools.panels.create(
                         nodeData = nodes.get(node);
                         const id = nodeData.id + event;
 
-                        node.removeEventListener(event, () => eventAlert(nodeData.id, event));
-                        
-                        listeners[node].forEach((listener, index) => {
-                            if (listener.event === event) {
-                                listeners[node].splice(index, 1);
-                            }
-                        })                       
+                        node.removeEventListener(event, () => eventAlert(nodeData.id, event));                      
                     }
 
                     function getComponentName(file) {
@@ -221,45 +208,6 @@ chrome.devtools.panels.create(
                                 event
                             }
                         });
-                    }
-
-                    function rebuildDom(parent, state) {
-                        rebuildingDom = true;
-
-                        // store old component counts
-                        const componentCountsHistory = JSON.parse(JSON.stringify(componentCounts));
-
-                        // erase dom and build new app
-                        const parentNode = document.body.parentNode;
-                        parentNode.removeChild(document.body);
-                        let body = document.createElement("body");
-                        parentNode.appendChild(body);
-                        const appConstructor = componentObject[parent].constructor;
-                        const app = new appConstructor({
-                            target: document.body
-                        })
-
-                        for (let component in componentCountsHistory) {
-                            const count = componentCountsHistory[component];
-                            for (let componentInstance in ctxObject) {
-                                const {tagName, instance } = ctxObject[componentInstance];
-                                if (tagName === component && instance > count) {
-                                    const oldInstance = tagName + (instance - (count + 1));
-                                    const { variables } = state[oldInstance];
-                                    for (let variable in variables) {
-                                        const { name, ctxIndex, initValue } = variables[variable];
-                                        if (ctxIndex && initValue) {
-                                            injectState(componentInstance, name, ctxObject[oldInstance].ctx[ctxIndex]);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    function injectState(componentId, key, value) {
-                        const component = componentObject[componentId];
-                        component.$inject_state({ [key]: value })
                     }
 
                     function repaintDom(index) {
@@ -353,20 +301,6 @@ chrome.devtools.panels.create(
                         addedEventListeners.splice(0, addedEventListeners.length);
                     });
 
-                    window.document.addEventListener('rebuild', () => {
-                        window.postMessage({
-                            source: 'panel.js',
-                            type: 'rebuild',
-                            data: {
-                                components,
-                                insertedNodes,
-                                deletedNodes,
-                                addedEventListeners,
-                                ctxObject: parseCtxObject()
-                            }
-                        });
-                    })
-
                     // listen for devTool requesting state injections 
                     window.addEventListener('message', function () {
                         // Only accept messages from the same frame
@@ -381,13 +315,7 @@ chrome.devtools.panels.create(
                         }
                           
                         if (event.data.type === 'rerenderState') {
-                            const { index, parent, state, prevI } = event.data;
-                            if (index === domHistory.length - 1) {
-                                rebuildDom(parent, state);
-                            }
-                            else if (index !== domHistory.length) {
-                                repaintDom(index);
-                            }
+                            repaintDom(event.data.index);
                         }
                     })
                     `

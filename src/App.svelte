@@ -30,13 +30,18 @@
 		filtered = [];
 	}
 
-	function selectVis(selection){
+	function selectVis(selection) {
         vis = selection;
 	}
 
-	function filterState(snapshot){
+	function filterState(snapshot) {
 		let i = $snapshots.indexOf(snapshot);
 		selectState(i);
+	}
+
+	function renderState(i) {
+		I = index === $snapshots.length - 1 ? undefined : index;
+		
 	}
 
 	function filterEventHandler() {
@@ -89,6 +94,7 @@
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
 						<div class="right-align">
 							<button on:click={() => selectState(i)}>Data</button>
+							<button on:click={() => renderState(i)}>Render</button>
 						</div>
 						<br>
 					{/each}
@@ -98,6 +104,7 @@
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
 						<div class="right-align">
 							<button on:click={() => filterState(snapshot)}>Data</button>
+							<button on:click={() => renderFilteredState(snapshot)}>Render</button>
 						</div>
 						<br>
 					{/each}
