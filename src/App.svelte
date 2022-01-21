@@ -74,11 +74,9 @@
 				<h2>Svelte Slicer</h2>
 			</div>
 			<div id="snapshots">
-				<!-- <div class="filter" style="display:flex; flex-flow:row"> -->
-					<div class="filter" style="display:flex; flex-flow:row wrap">
-					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="filterForm">
+					<div class="filter" style="display:flex; flex-flow:row">
+					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
 					  	<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
-						  <!-- <input type="text" bind:value={input} placeholder="Filter..." name="search"/> -->
 					   <button type="submit" class="search-button"> 
 							<i class="fa fa-search"></i>
 					  	</button>
@@ -155,50 +153,21 @@
 			padding: 1em;
 		}
 
-		/* .filterForm {
-			box-sizing: border-box;
-		} */
+	
 
-		form.filterForm button:hover {
-  		background: rgb(238, 137, 5);
-		
-		}
-/* 
-		form.filterForm input[type=text] {
-
-		font-size: 12px;
-		float:left;
-		width: 80%;
-		
-		}
-
-
-		form.filterForm::after {
-		content: "";
-		clear: both;
-		display: table;
-		} */
-
-		.search-field {
-			width: 100%;
-			padding: 10px 35px 10px 15px;
-			border: none;
-			border-radius: 2px;
-			outline: none;
-		}
 		.search-button {
-			color: gray;
+			color: rgb(162, 159, 159);
 			background: transparent;
 			border: none;
 			outline: none;
-			margin-right: -33px;
+			margin-right: -35px;
 		}
-		.search-button i {
-			width: 20px;
-			height: 20px;
-			object-fit: cover;
+
+		form.form button:hover {
+  		background: rgb(238, 137, 5);
+		
 		}
-	
+		
 		@media (min-width: 640px) {
 			main {
 				max-width: none;
