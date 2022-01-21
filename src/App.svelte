@@ -41,7 +41,7 @@
 
 	function renderState(i) {
 		I = index === $snapshots.length - 1 ? undefined : index;
-		
+
 	}
 
 	function filterEventHandler() {
@@ -54,11 +54,12 @@
         		let j;
 				for (j = 0; j < S; j++) {
 					if (s2[i + j] != s1[j]) break;
-					}
-					if (j == S) return i;
+				}
+				if (j == S) return i;
     		}
   			return -1;
 		}
+
     	for (let snapshot of $snapshots) {
         	let label = snapshot.label
 			label = label.toLowerCase();
@@ -68,10 +69,10 @@
 			if(res > -1){
 				filtered.push(snapshot);
 			}
+		}	
+		input = " ";
+		console.log("filtered", filtered);
 	}
-	input = " ";
-	console.log("filtered", filtered);
-}
 	
 	</script>
 	
