@@ -202,6 +202,17 @@ ul {
 	text-align: right;
 } */
 
+.oldValue{
+	text-decoration: line-through;
+	color:pink
+}
+.diffComponentName{
+	color:blue
+}
+.deletedComponent{
+	text-decoration: line-through;
+	color:blueviolet
+}
 
 /* .collapsible {
 	background-color: #777;

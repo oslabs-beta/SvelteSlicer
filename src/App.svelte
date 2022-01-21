@@ -10,8 +10,6 @@
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
 	let I;
-	//control tidt tree render time on the dom. set render condition in TidyTree
-	let count=0;
 	let filtered = [];
 	let input = "";
 	
@@ -23,7 +21,6 @@
 
 	function selectState(index) {
 		I = index === $snapshots.length - 1 ? undefined : index;
-		count += 1;
 	}
 
 	function selectView(selection) {
@@ -127,10 +124,17 @@
 						<Component component={$fileTree}/>
 					{:else if View === "files" && Vis === "chart"}
 						<FileStructure treeData={$fileTree}/>
-					{:else if View === "state" && Vis === "tree"}
+					<!-- {:else if View === "state" && Vis === "tree"}
 						<State I={CurrentI}></State>
 					{:else if View === "state" && Vis === "chart"} 
-						<TidyTree2 {view} I={CurrentI}/>
+						<TidyTree2 {view} I={CurrentI}/> -->
+					{:else if View === "state"}
+					   {#if Vis === "tree"}
+					    <State I={CurrentI}></State>
+						{:else if Vis === "chart"}
+                        <TidyTree2 {view} I={CurrentI}/>
+						{/if}
+					
 					{:else if View === "diff"}
 						<Diffs I={CurrentI}/>
 					{/if}
@@ -138,7 +142,6 @@
 			</div>
 		</div>
 	</main>
-	
 	
 	<style>
 		main {
@@ -152,9 +155,9 @@
 			padding: 1em;
 		}
 
-		.filterForm {
+		/* .filterForm {
 			box-sizing: border-box;
-		}
+		} */
 
 		form.filterForm button:hover {
   		background: rgb(238, 137, 5);
@@ -205,6 +208,9 @@
 			
 		}
 
+
+			/* } */
+		/* } */
 
 	</style>
 	
