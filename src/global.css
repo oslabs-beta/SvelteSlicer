@@ -176,6 +176,10 @@ ul {
 .diffComponentName{
 	color:blue
 }
+.deletedComponent{
+	text-decoration: line-through;
+	color:blueviolet
+}
 
 /* .collapsible {
 	background-color: #777;
