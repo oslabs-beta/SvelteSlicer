@@ -122,10 +122,20 @@
 						<Component component={$fileTree}/>
 					{:else if View === "files" && Vis === "chart"}
 						<FileStructure treeData={$fileTree}/>
-					{:else if View === "state" && Vis === "tree"}
+					<!-- {:else if View === "state" && Vis === "tree"}
 						<State I={CurrentI}></State>
 					{:else if View === "state" && Vis === "chart"} 
-						<TidyTree2 {view} I={CurrentI}/>
+						<TidyTree2 {view} I={CurrentI}/> -->
+					{:else if View === "state"}
+					   {#if Vis === "tree"}
+					    <State I={CurrentI}></State>
+						{:else if Vis === "chart"}
+                        <TidyTree2 {view} I={CurrentI}/>
+						{/if}
+					
+						
+
+
 					{:else if View === "diff"}
 						<Diffs I={CurrentI}/>
 					{/if}
