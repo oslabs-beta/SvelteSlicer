@@ -1,7 +1,6 @@
 <script>
 	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
-	import Header from './Header.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import FileStructure from './FileStructure.svelte';
 	import State from './State.svelte';
