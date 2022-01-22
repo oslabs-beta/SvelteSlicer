@@ -30,16 +30,10 @@
 
 	function selectView(selection) {
 		view = selection;
-		filtered = [];
 	}
 
 	function selectVis(selection) {
         vis = selection;
-	}
-
-	function filterState(snapshot) {
-		let i = $snapshots.indexOf(snapshot);
-		selectState(i);
 	}
 
 	function renderState(index) {
@@ -50,11 +44,6 @@
     		index,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
-	}
-
-	function renderFilteredState(snapshot) {
-		let i = $snapshots.indexOf(snapshot);
-		renderState(i);
 	}
 
 	function jumpState(index) {
@@ -68,11 +57,6 @@
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
 		console.log('JumpState clicked and sent');
-	}
-
-	function jumpFilteredState(snapshot) {
-		let i = $snapshots.indexOf(snapshot);
-		jumpState(i);
 	}
 
 	function filterEventHandler() {
@@ -91,18 +75,22 @@
   			return -1;
 		}
 
-    	for (let snapshot of $snapshots) {
+    	$snapshots.forEach((snapshot, index) => {
         	let label = snapshot.label
 			label = label.toLowerCase();
 			console.log("label", label);
     
         	let res = isSubstring(input, label);
 			if(res > -1){
-				filtered.push(snapshot);
+				filtered.push({snapshot, index});
 			}
-		}	
+		});	
 		input = " ";
 		console.log("filtered", filtered);
+	}
+
+	function resetFilter() {
+		filtered = [];
 	}
 	
 	</script>
@@ -119,6 +107,7 @@
 					  	<button type="submit" class="search-button">
 							<i class="fas fa-search"></i>
 					  	</button>
+						<button on:click={resetFilter}>Reset Filter</button>
 					</form>
 				</div>
 				{#if !filtered.length}
@@ -133,12 +122,12 @@
 					{/each}
 					<hr>
 				{:else if filtered.length}
-					{#each filtered as snapshot, i}
-						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
+					{#each filtered as snapshot}
+						<span>Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
 						<div class="right-align">
-							<button on:click={() => filterState(snapshot)}>Data</button>
-							<button on:click={() => renderFilteredState(snapshot)}>Render</button>
-							<button on:click={() => jumpFilteredState(snapshot)}>Jump</button>
+							<button on:click={() => selectState(snapshot.index)}>Data</button>
+							<button on:click={() => renderState(snapshot.index)}>Render</button>
+							<button on:click={() => jumpState(snapshot.index)}>Jump</button>
 						</div>
 						<br>
 					{/each}
