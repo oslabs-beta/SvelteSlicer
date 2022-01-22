@@ -54,7 +54,7 @@ chrome.devtools.panels.create(
                             string = string.slice(varNameEnd);
                         }
 
-                        componentObject[id] = component;
+                        componentObject[id] = {component, tagName};
                         ctxObject[id] = {ctx: component.$$.ctx, tagName, instance};
                         
                         // parse ctx for messaging purposes
@@ -216,8 +216,8 @@ chrome.devtools.panels.create(
 
                     function rebuildDom(index, state, fileTree) {
                         rebuildingDom = true;
-                        const toBeDeleted = [];
-                        const toBeAdded = [];
+                        const toBeDeleted = new Set();
+                        const toBeAdded = new Set();
 
                         for (let component in componentObject) {
                             if (ctxHistory[index].hasOwnProperty(component)) {
@@ -231,29 +231,114 @@ chrome.devtools.panels.create(
                             }
                             // if component not in ctxHistory, needs to be deleted
                             else {
-                                toBeDeleted.push(component);
+                                toBeDeleted.add(component);
                             }
                         }
                         // check for components that need to be re-added to the DOM
                         for (let component in ctxHistory[index]) {
-                            if (!componentObject.hasOwnProperty(component)) {
-                                toBeAdded.push(component);
+                            if (!state[component].active) {
+                                toBeAdded.add(component);
                             }
                         }
 
-                        console.log(fileTree);
+                        trimDeleteTree(fileTree);
+                        trimAddTree(fileTree);
 
+                        toBeDeleted.forEach(component => {
+                            removeComponent(component);
+                        });
+
+                        toBeAdded.forEach(component => {
+                            addComponent(component, index, state);
+                        })
+
+                        function trimDeleteTree(tree) {
+                            toBeDeleted.forEach(component => {
+                                if (componentObject[component].tagName === tree.id) {
+                                    removeDeleteChildren(tree);
+                                    return;
+                                }
+                                else {
+                                    if (tree.children.length) {
+                                        tree.children.forEach(child => {
+                                            trimDeleteTree(child);
+                                        })
+                                    }
+                                }
+                            })
+                        }
+    
+                        function removeDeleteChildren(tree) {
+                            if(tree.children.length) {
+                                tree.children.forEach(child => {
+                                    toBeDeleted.forEach(component => {
+                                        if (child.id === componentObject[component].tagName) {
+                                            toBeDeleted.delete(component);
+                                        }
+                                    })
+                                    removeDeleteChildren(child);
+                                })
+                            }
+                        }
+
+                        function trimAddTree(tree) {
+                            toBeAdded.forEach(component => {
+                                if (componentObject[component].tagName === tree.id) {
+                                    removeAddChildren(tree);
+                                    return;
+                                }
+                                else {
+                                    if (tree.children.length) {
+                                        tree.children.forEach(child => {
+                                            trimAddTree(child);
+                                        })
+                                    }
+                                }
+                            })
+                        }
+    
+                        function removeAddChildren(tree) {
+                            if(tree.children.length) {
+                                tree.children.forEach(child => {
+                                    toBeAdded.forEach(component => {
+                                        if (child.id === componentObject[component].tagName) {
+                                            toBeAdded.delete(component);
+                                        }
+                                    })
+                                    removeAddChildren(child);
+                                })
+                            }
+                        }
                     }
 
                     function injectState(componentId, key, value) {
-                        const component = componentObject[componentId];
+                        const component = componentObject[componentId].component;
                         component.$inject_state({ [key]: value })
                     }
 
                     function removeComponent(componentId) {
-                        const component = componentObject[componentId];
+                        const component = componentObject[componentId].component;
                         const destroy = component.$$.fragment.d;
                         destroy(true);
+                        delete componentObject[componentId];
+                    }
+
+                    function addComponent(componentId, index, state) {
+                        const component = componentObject[componentId].component;
+                        const constructor = component.constructor;
+                        const target = component.$$.root;
+                        const props = component.$$.props;
+                        const newComponent = new constructor({target, props});
+                        componentObject[componentId].component = newComponent;
+                        
+                        // inject state into new component
+                        const { variables } = state[componentId];
+                        for (let variable in variables) {
+                            const { name, ctxIndex } = variables[variable];
+                            if (ctxIndex) {
+                                injectState(componentId, name, ctxHistory[index][componentId].ctx[ctxIndex]);
+                            }
+                        }
                     }
 
                     function repaintDom(index) {
@@ -368,7 +453,6 @@ chrome.devtools.panels.create(
 
                         if (event.data.type === 'jumpState') {
                             const { index, state, fileTree } = event.data;
-                            console.log(fileTree);
                             rebuildDom(index, state, fileTree);
                         }
                     })
