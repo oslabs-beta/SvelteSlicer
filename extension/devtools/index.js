@@ -216,8 +216,7 @@ chrome.devtools.panels.create(
 
                     function rebuildDom(index, state, fileTree) {
                         rebuildingDom = true;
-                        const toBeDeleted = new Set();
-                        const toBeAdded = new Set();
+                        const toBeDeleted = new Set;
 
                         for (let component in componentObject) {
                             if (ctxHistory[index].hasOwnProperty(component)) {
@@ -234,23 +233,12 @@ chrome.devtools.panels.create(
                                 toBeDeleted.add(component);
                             }
                         }
-                        // check for components that need to be re-added to the DOM
-                        for (let component in ctxHistory[index]) {
-                            if (!state[component].active) {
-                                toBeAdded.add(component);
-                            }
-                        }
 
                         trimDeleteTree(fileTree);
-                        trimAddTree(fileTree);
 
                         toBeDeleted.forEach(component => {
                             removeComponent(component);
                         });
-
-                        toBeAdded.forEach(component => {
-                            addComponent(component, index, state);
-                        })
 
                         function trimDeleteTree(tree) {
                             toBeDeleted.forEach(component => {
@@ -277,35 +265,6 @@ chrome.devtools.panels.create(
                                         }
                                     })
                                     removeDeleteChildren(child);
-                                })
-                            }
-                        }
-
-                        function trimAddTree(tree) {
-                            toBeAdded.forEach(component => {
-                                if (componentObject[component].tagName === tree.id) {
-                                    removeAddChildren(tree);
-                                    return;
-                                }
-                                else {
-                                    if (tree.children.length) {
-                                        tree.children.forEach(child => {
-                                            trimAddTree(child);
-                                        })
-                                    }
-                                }
-                            })
-                        }
-    
-                        function removeAddChildren(tree) {
-                            if(tree.children.length) {
-                                tree.children.forEach(child => {
-                                    toBeAdded.forEach(component => {
-                                        if (child.id === componentObject[component].tagName) {
-                                            toBeAdded.delete(component);
-                                        }
-                                    })
-                                    removeAddChildren(child);
                                 })
                             }
                         }
