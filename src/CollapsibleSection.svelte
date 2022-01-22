@@ -21,7 +21,7 @@
 
 <style>
   .collapsible {
-    border-bottom: 1px solid var(--gray-light, #eee);
+    /* border-bottom: 1px solid var(--gray-light, #eee); */
   }
 	
 	h3 {
