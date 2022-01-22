@@ -14,8 +14,8 @@
 </script>
 
 <main>
-   
-    <ul>
+   <div>
+       <ul>
         <li>
             {#if children.length}
                 <span on:click={toggleExpansion} id={id}>
@@ -37,6 +37,8 @@
             {/if}
         </li>
     </ul>
+   </div>
+    
 
 </main>
 

@@ -1,7 +1,6 @@
 <script>
 	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
-	import Header from './Header.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import FileStructure from './FileStructure.svelte';
 	import State from './State.svelte';
@@ -75,17 +74,18 @@
 			</div>
 			<div id="snapshots">
 					<div class="filter" style="display:flex; flex-flow:row">
-					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
-					  	<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
-					   <button type="submit" class="search-button"> 
-							<i class="fa fa-search"></i>
-					  	</button>
-					</form>
-				</div>
+						<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
+							<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
+						<button type="submit" class="search-button"> 
+								<i class="fa fa-search"></i>
+							</button>
+						</form>
+					</div>
 				{#if !filtered.length}
 					{#each $snapshots as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
-						<div class="right-align">
+						<!-- <div class="right-align"> -->
+								<div class="right-align">
 							<button on:click={() => selectState(i)}>Data</button>
 						</div>
 						<br>
@@ -142,18 +142,8 @@
 	</main>
 	
 	<style>
-		main {
-			padding: 1em;
-			/* max-width: 240px; */
-			max-width:75%;
-			/* margin: 5px; */
-			align-items: center;
-			color: whitesmoke;
-			background: rgb(83, 81, 81);
-			padding: 1em;
-		}
+		
 
-	
 
 		.search-button {
 			color: rgb(162, 159, 159);
@@ -168,14 +158,14 @@
 		
 		}
 		
-		@media (min-width: 640px) {
+		/* @media (min-width: 640px) {
 			main {
 				max-width: none;
 			
 
 			}
 			
-		}
+		} */
 
 
 			/* } */
