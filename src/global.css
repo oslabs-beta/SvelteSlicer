@@ -162,7 +162,7 @@ span {
 #mainContainer {
 	display: grid;
 	grid-template-columns: 300px auto;
-	/* grid-template-rows: 50px 50px; */
+	grid-template-rows: 50px 50px auto;
 	width: 100vw;
   	height: 100vh;
 }

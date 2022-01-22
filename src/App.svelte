@@ -106,8 +106,7 @@
 				<button on:click={() => selectView("state")}>State</button>
 				<button on:click={() => selectView("diff")}>Diff</button>				
 			</div>
-			
-			<div id="presentation">
+		
 				<div id="buttons">
 					{#if View === "files"}
 						<button on:click={() => selectVis("tree")}>Tree</button>
@@ -117,6 +116,7 @@
 						<button on:click={() => selectVis("chart")}>Chart</button>
 					{/if}
 				</div>
+				<div id="presentation">
 				{#if $snapshots.length} 
 					{#if View === "files" && Vis === "tree"}
 						<Component component={$fileTree}/>
