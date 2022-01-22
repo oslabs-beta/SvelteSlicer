@@ -51,9 +51,9 @@
         outline: 2px solid;
     }
 
-    button [aria-expanded="true"] rect {
+    /* button [aria-expanded="true"] rect {
         fill: currentColor;
-    }
+    } */
 
     svg {
         height: 0.7em;

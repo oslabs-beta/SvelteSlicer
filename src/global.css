@@ -10,15 +10,18 @@ body {
 	background: rgb(83, 81, 81);
 	margin: 1em;
 	padding: 1em;
-	/* box-sizing: content-box; */
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
-	/* border: 1px solid whitesmoke; */
+	
 }
 
 h2 {
 	align-content: center;
-	font-weight: bolder;
+	font-weight:bold;
+}
+
+div {
+	padding: 1em;
 }
 
 .panelDiv {
@@ -143,17 +146,31 @@ ul {
 .arrow {
 	cursor: pointer;
 	display: inline-block;
-	/* transition: transform 200ms; */
+	transition: transform 200ms;
 }
 .arrowDown { transform: rotate(90deg); }
+main {
+			padding: 1em;
+			max-width: 240px;
+			/* max-width:75%; */
+			/* margin: 5px; */
+			align-items: center;
+			color: whitesmoke;
+			background: rgb(83, 81, 81);
+			padding: 1em;
+		}
+
+span {
+	padding: 1em;
+}
 
 #mainContainer {
 	display: grid;
 	grid-template-columns: 300px auto;
-	grid-template-rows: 50px 50px auto;
+	/* grid-template-rows: 50px 50px; */
 	width: 100vw;
   	height: 100vh;
-	border-right: 1px solid whitesmoke;
+	/* border-right: 1px solid whitesmoke; */
 }
 
 #snapshots {
@@ -161,15 +178,15 @@ ul {
 	grid-column-end: 2;
 	grid-row-start: 2;
 	grid-row-end: 4;
-	border: 1px solid whitesmoke;
+	/* border: 1px solid whitesmoke; */
 }
 
 #banner {
 	grid-column-start: 2;
 	grid-column-end: 3;
 	grid-row-start: 1;
-	/* grid-row-end: 2; */
 	grid-row-end: 2;
+	border-collapse: collapse;
 	border: 1px solid whitesmoke;
 }
 
