@@ -14,11 +14,12 @@ chrome.devtools.panels.create(
                     const nodes = new Map();
                     const ctxObject = {};
                     const componentCounts = {};
+                    const componentObject = {};
                     let node_id = 0;
                     let firstLoadSent = false;
                     const domHistory = [];
                     const ctxHistory = [];
-                    let rebuildingDom = false;
+                    let rebuildingState = false;
 
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
@@ -53,6 +54,7 @@ chrome.devtools.panels.create(
                             string = string.slice(varNameEnd);
                         }
 
+                        componentObject[id] = component;
                         ctxObject[id] = {ctx: component.$$.ctx, tagName, instance};
                         
                         // parse ctx for messaging purposes
@@ -230,8 +232,8 @@ chrome.devtools.panels.create(
 
                         for (let component in componentCountsHistory) {
                             const count = componentCountsHistory[component];
-                            for (let componentInstance in ctxHistory[index]) {
-                                const {tagName, instance } = ctxHistory[index][componentInstance];
+                            for (let componentInstance in ctxObject) {
+                                const {tagName, instance } = ctxObject[componentInstance];
                                 if (tagName === component && instance > count) {
                                     const oldInstance = tagName + (instance - (count + 1));
                                     const { variables } = state[oldInstance];

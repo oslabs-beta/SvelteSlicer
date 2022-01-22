@@ -67,6 +67,7 @@
 			state: $snapshots[CurrentI].data,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
+		console.log('JumpState clicked and sent');
 	}
 
 	function jumpFilteredState(snapshot) {
