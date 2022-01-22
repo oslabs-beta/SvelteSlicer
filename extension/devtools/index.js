@@ -214,36 +214,22 @@ chrome.devtools.panels.create(
                         });
                     }
 
-                    function rebuildDom(index, parent, state) {
+                    function rebuildDom(index, state) {
                         rebuildingDom = true;
 
-                        // store old component counts
-                        const componentCountsHistory = JSON.parse(JSON.stringify(componentCounts));
-
-                        // erase dom and build new app
-                        const parentNode = document.body.parentNode;
-                        parentNode.removeChild(document.body);
-                        let body = document.createElement("body");
-                        parentNode.appendChild(body);
-                        const appConstructor = componentObject[parent].constructor;
-                        const app = new appConstructor({
-                            target: document.body
-                        })
-
-                        for (let component in componentCountsHistory) {
-                            const count = componentCountsHistory[component];
-                            for (let componentInstance in ctxObject) {
-                                const {tagName, instance } = ctxObject[componentInstance];
-                                if (tagName === component && instance > count) {
-                                    const oldInstance = tagName + (instance - (count + 1));
-                                    const { variables } = state[oldInstance];
-                                    for (let variable in variables) {
-                                        const { name, ctxIndex, initValue } = variables[variable];
-                                        if (ctxIndex && initValue) {
-                                            injectState(componentInstance, name, ctxHistory[index][oldInstance].ctx[ctxIndex]);
-                                        }
+                        for (let component in componentObject) {
+                            if (ctxHistory[index].hasOwnProperty(component)) {
+                                const { variables } = state[component];
+                                for (let variable in variables) {
+                                    const { name, ctxIndex } = variables[variable];
+                                    if (ctxIndex) {
+                                        console.log(ctxHistory[index])
+                                        //injectState(component, name, ctxHistory[index][component].ctx[ctxIndex]);
                                     }
                                 }
+                            }
+                            else {
+                                removeComponent(component);
                             }
                         }
                     }
@@ -251,6 +237,12 @@ chrome.devtools.panels.create(
                     function injectState(componentId, key, value) {
                         const component = componentObject[componentId];
                         component.$inject_state({ [key]: value })
+                    }
+
+                    function removeComponent(componentId) {
+                        const component = componentObject[componentId];
+                        const destroy = component.$$.fragment.d;
+                        destroy(true);
                     }
 
                     function repaintDom(index) {
@@ -317,6 +309,7 @@ chrome.devtools.panels.create(
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
                             const domNode = document.body;
                             domHistory.push(domNode.cloneNode(true));
+                            ctxHistory.push(JSON.parse(JSON.stringify(ctxObject)));
                             let type;
                             // make sure the first load has already been sent; if not, this is the first load
                             if (!firstLoadSent) {
@@ -363,8 +356,8 @@ chrome.devtools.panels.create(
                         }
 
                         if (event.data.type === 'jumpState') {
-                            const { index, parent, state } = event.data;
-                            rebuildDom(index, parent, state);
+                            const { index, state } = event.data;
+                            rebuildDom(index, state);
                         }
                     })
                     `

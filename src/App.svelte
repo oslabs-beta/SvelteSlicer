@@ -12,7 +12,6 @@
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
 	let I;
-	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree
 	let filtered = [];
 	let input = "";
 	
