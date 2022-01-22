@@ -30,7 +30,8 @@ chrome.runtime.onMessage.addListener(message => {
       type: 'jumpState',
       index: message.index,
       parent: message.parent,
-      state: message.state
+      state: message.state,
+      fileTree: message.fileTree
     });
   }
 });

@@ -53,6 +53,7 @@
     		index,
 			parent: $snapshots[CurrentI].parent,
 			state: $snapshots[CurrentI].data,
+			fileTree: $fileTree,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
 		console.log('JumpState clicked and sent');

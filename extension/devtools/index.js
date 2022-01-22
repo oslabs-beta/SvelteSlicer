@@ -214,8 +214,10 @@ chrome.devtools.panels.create(
                         });
                     }
 
-                    function rebuildDom(index, state) {
+                    function rebuildDom(index, state, fileTree) {
                         rebuildingDom = true;
+                        const toBeDeleted = [];
+                        const toBeAdded = [];
 
                         for (let component in componentObject) {
                             if (ctxHistory[index].hasOwnProperty(component)) {
@@ -223,15 +225,24 @@ chrome.devtools.panels.create(
                                 for (let variable in variables) {
                                     const { name, ctxIndex } = variables[variable];
                                     if (ctxIndex) {
-                                        console.log(ctxHistory[index])
-                                        //injectState(component, name, ctxHistory[index][component].ctx[ctxIndex]);
+                                        injectState(component, name, ctxHistory[index][component].ctx[ctxIndex]);
                                     }
                                 }
                             }
+                            // if component not in ctxHistory, needs to be deleted
                             else {
-                                removeComponent(component);
+                                toBeDeleted.push(component);
                             }
                         }
+                        // check for components that need to be re-added to the DOM
+                        for (let component in ctxHistory[index]) {
+                            if (!componentObject.hasOwnProperty(component)) {
+                                toBeAdded.push(component);
+                            }
+                        }
+
+                        console.log(fileTree);
+
                     }
 
                     function injectState(componentId, key, value) {
@@ -356,8 +367,9 @@ chrome.devtools.panels.create(
                         }
 
                         if (event.data.type === 'jumpState') {
-                            const { index, state } = event.data;
-                            rebuildDom(index, state);
+                            const { index, state, fileTree } = event.data;
+                            console.log(fileTree);
+                            rebuildDom(index, state, fileTree);
                         }
                     })
                     `
