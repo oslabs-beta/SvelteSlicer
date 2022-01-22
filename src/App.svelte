@@ -84,7 +84,8 @@
 				{#if !filtered.length}
 					{#each $snapshots as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
-						<div class="right-align">
+						<!-- <div class="right-align"> -->
+								<div class="right-align">
 							<button on:click={() => selectState(i)}>Data</button>
 						</div>
 						<br>

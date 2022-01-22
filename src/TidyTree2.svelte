@@ -12,8 +12,11 @@ $: parent = $snapshots[I].parent;
 $: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
 
 
+// can we give an inherit property to the margin here so that 
+// the chart inherits the margin of the parent?
 
-let margin = {top:50,right:0,bottom:20,left:50}
+let margin = {top:40,right:60,bottom:20,left:60}
+// let margin = {top:50,right:0,bottom:20,left:50}
     let width = 700 - margin.left - margin.right;
     let height = 700 - margin.top -margin.bottom; 
 //1/3 
