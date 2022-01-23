@@ -16,22 +16,12 @@ window.addEventListener('message', function(event) {
 });
 
 chrome.runtime.onMessage.addListener(message => {
-  if (message.name === "rerenderState") {
-    window.postMessage({
-      source: 'listener.js',
-      type: 'rerenderState',
-      index: message.index
-    });
-  }
-
-  else if (message.name === "jumpState") {
+  if (message.name === "jumpState") {
     window.postMessage({
       source: 'listener.js',
       type: 'jumpState',
       index: message.index,
-      parent: message.parent,
       state: message.state,
-      fileTree: message.fileTree
     });
   }
 });

@@ -214,58 +214,24 @@ chrome.devtools.panels.create(
                         });
                     }
 
-                    function rebuildDom(index, state, fileTree) {
+                    function rebuildDom(index, state) {
                         rebuildingDom = true;
-                        const toBeDeleted = new Set;
-
-                        for (let component in componentObject) {
-                            if (ctxHistory[index].hasOwnProperty(component)) {
-                                const { variables } = state[component];
+                        
+                        for (let componentInstance in ctxObject) {
+                            // if component exists in history at index, inject historical state
+                            if (ctxHistory[index].hasOwnProperty(componentInstance)) {
+                                const { variables } = state[componentInstance];
                                 for (let variable in variables) {
-                                    const { name, ctxIndex } = variables[variable];
+                                    const { name, ctxIndex, type } = variables[variable];
                                     if (ctxIndex) {
-                                        injectState(component, name, ctxHistory[index][component].ctx[ctxIndex]);
-                                    }
-                                }
-                            }
-                            // if component not in ctxHistory, needs to be deleted
-                            else {
-                                toBeDeleted.add(component);
-                            }
-                        }
-
-                        trimDeleteTree(fileTree);
-
-                        toBeDeleted.forEach(component => {
-                            removeComponent(component);
-                        });
-
-                        function trimDeleteTree(tree) {
-                            toBeDeleted.forEach(component => {
-                                if (componentObject[component].tagName === tree.id) {
-                                    removeDeleteChildren(tree);
-                                    return;
-                                }
-                                else {
-                                    if (tree.children.length) {
-                                        tree.children.forEach(child => {
-                                            trimDeleteTree(child);
-                                        })
-                                    }
-                                }
-                            })
-                        }
-    
-                        function removeDeleteChildren(tree) {
-                            if(tree.children.length) {
-                                tree.children.forEach(child => {
-                                    toBeDeleted.forEach(component => {
-                                        if (child.id === componentObject[component].tagName) {
-                                            toBeDeleted.delete(component);
+                                        if (type === 'store') {
+                                            updateStore(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
                                         }
-                                    })
-                                    removeDeleteChildren(child);
-                                })
+                                        else {
+                                            injectState(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -275,34 +241,11 @@ chrome.devtools.panels.create(
                         component.$inject_state({ [key]: value })
                     }
 
-                    function removeComponent(componentId) {
+                    function updateStore(componentId, storeVariable, value) {
                         const component = componentObject[componentId].component;
-                        const destroy = component.$$.fragment.d;
-                        destroy(true);
-                        delete componentObject[componentId];
-                    }
-
-                    function addComponent(componentId, index, state) {
-                        const component = componentObject[componentId].component;
-                        const constructor = component.constructor;
-                        const target = component.$$.root;
-                        const props = component.$$.props;
-                        const newComponent = new constructor({target, props});
-                        componentObject[componentId].component = newComponent;
-                        
-                        // inject state into new component
-                        const { variables } = state[componentId];
-                        for (let variable in variables) {
-                            const { name, ctxIndex } = variables[variable];
-                            if (ctxIndex) {
-                                injectState(componentId, name, ctxHistory[index][componentId].ctx[ctxIndex]);
-                            }
-                        }
-                    }
-
-                    function repaintDom(index) {
-                        const newDomDoc = domHistory[index];
-                        document.body.parentNode.replaceChild(newDomDoc, document.body);
+                        const stateObject = component.$capture_state();
+                        const store = stateObject[storeVariable];
+                        store.set(value);
                     }
 
                     setup(window.document);
@@ -405,14 +348,10 @@ chrome.devtools.panels.create(
                           !event.data.source === 'panel.js') {
                           return;
                         }
-                          
-                        if (event.data.type === 'rerenderState') {
-                            repaintDom(event.data.index);
-                        }
 
                         if (event.data.type === 'jumpState') {
-                            const { index, state, fileTree } = event.data;
-                            rebuildDom(index, state, fileTree);
+                            const { index, state } = event.data;
+                            rebuildDom(index, state);
                         }
                     })
                     `

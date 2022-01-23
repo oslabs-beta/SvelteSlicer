@@ -35,33 +35,19 @@
         vis = selection;
 	}
 
-	function renderState(index) {
-		I = index === $snapshots.length - 1 ? undefined : index;
-		connection.postMessage({
-    		source: 'panel',
-			name: 'rerenderState',
-    		index,
-			tabId: chrome.devtools.inspectedWindow.tabId
-		});
-	}
-
 	function jumpState(index) {
 		I = index === $snapshots.length - 1 ? undefined : index;
 		connection.postMessage({
     		source: 'panel',
 			name: 'jumpState',
-    		index,
-			parent: $snapshots[CurrentI].parent,
-			state: $snapshots[CurrentI].data,
-			fileTree: $fileTree,
+			index,
+			state: $snapshots[index].data,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
-		console.log('JumpState clicked and sent');
 	}
 
 	function filterEventHandler() {
 		input = input.trim().toLowerCase();
-		console.log("filterInput", input);
 		function isSubstring(s1, s2) {
 			let S = s1.length;
 			let L = s2.length;
@@ -78,7 +64,6 @@
     	$snapshots.forEach((snapshot, index) => {
         	let label = snapshot.label
 			label = label.toLowerCase();
-			console.log("label", label);
     
         	let res = isSubstring(input, label);
 			if(res > -1){
@@ -86,7 +71,6 @@
 			}
 		});	
 		input = " ";
-		console.log("filtered", filtered);
 	}
 
 	function resetFilter() {
@@ -115,7 +99,6 @@
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
 						<div class="right-align">
 							<button on:click={() => selectState(i)}>Data</button>
-							<button on:click={() => renderState(i)}>Render</button>
 							<button on:click={() => jumpState(i)}>Jump</button>
 						</div>
 						<br>
@@ -126,7 +109,6 @@
 						<span>Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
 						<div class="right-align">
 							<button on:click={() => selectState(snapshot.index)}>Data</button>
-							<button on:click={() => renderState(snapshot.index)}>Render</button>
 							<button on:click={() => jumpState(snapshot.index)}>Jump</button>
 						</div>
 						<br>

@@ -12,7 +12,7 @@ chrome.runtime.onConnect.addListener(function (port) {
       return;
     }
     
-    if (message.name === "rerenderState" || message.name === "jumpState") {
+    if (message.name === "jumpState") {
       chrome.tabs.sendMessage(message.tabId, message);
     }
   }
