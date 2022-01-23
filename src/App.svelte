@@ -5,7 +5,7 @@
 	import FileStructure from './FileStructure.svelte';
 	import State from './State.svelte';
 	import Diffs from './Diffs.svelte';
-	import logo from '../extension/devtools/public/images/svelt_slicer_logo_64X64.png';
+	import logo from '../extension/devtools/public/images/svelte_slicer_logo_64X64.png';
 
 	
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
@@ -71,10 +71,9 @@
 	
 	<main>
 		<div id="mainContainer">
-			<!-- title div bleeds into snapshots div here -->
 			<div id="title">
-				<h2> <img src={logo} alt='logo'/> Svelte Slicer</h2> 
-		</div>
+				<h2> <img src={logo} id="slicerImg" alt='logo'/> Svelte Slicer</h2> 
+			</div>
 			
 			<div id="snapshots">
 				
@@ -109,8 +108,6 @@
 				<button on:click={() => selectView("state")}>State</button>
 				<button on:click={() => selectView("diff")}>Diff</button>				
 			</div>
-			<div id="presentation">
-				
 			<div id="buttons">
 				{#if View === "files"}
 					<button on:click={() => selectVis("tree")}>Tree</button>
@@ -120,6 +117,16 @@
 					<button on:click={() => selectVis("chart")}>Chart</button>
 				{/if}
 			</div>
+			<div id="presentation">
+				<!-- <div id="buttons">
+					{#if View === "files"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{:else if View === "state"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{/if}
+				</div> -->
 				{#if $snapshots.length} 
 					{#if View === "files" && Vis === "tree"}
 						<Component component={$fileTree}/>
