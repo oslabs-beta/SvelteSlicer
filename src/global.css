@@ -172,7 +172,7 @@ span {
 	grid-column-end: 2;
 	grid-row-start: 2;
 	grid-row-end: 4;
-	/* border: 1px solid whitesmoke; */
+	border: 1px solid whitesmoke;
 	align-items: center;
 }
 
@@ -222,7 +222,7 @@ span {
 }
 .deletedComponent{
 	text-decoration: line-through;
-	color:blueviolet
+	color:red;
 }
 
 /* .collapsible {
