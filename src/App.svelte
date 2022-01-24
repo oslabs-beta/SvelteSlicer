@@ -74,17 +74,17 @@
 			<div id="title">
 				<h2> <img src={logo} id="slicerImg" alt='logo'/> Svelte Slicer</h2> 
 			</div>
-			
+			<div id="filter">
+				<div class="filter" style="display:flex; flex-flow:row">
+					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
+						<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
+					<button type="submit" class="search-button"> 
+							<i class="fa fa-search"></i>
+						</button>
+					</form>
+				</div>
+			</div>
 			<div id="snapshots">
-				
-					<div class="filter" style="display:flex; flex-flow:row">
-						<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
-							<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
-						<button type="submit" class="search-button"> 
-								<i class="fa fa-search"></i>
-							</button>
-						</form>
-					</div>
 				{#if !filtered.length}
 					{#each $snapshots as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>

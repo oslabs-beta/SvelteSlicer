@@ -186,10 +186,21 @@ height: 30px;
 #snapshots {
 	grid-column-start: 1;
 	grid-column-end: 2;
-	grid-row-start: 2;
+	grid-row-start: 3;
 	grid-row-end: 4;
+	overflow-y: scroll;
 	border: 1px solid whitesmoke;
 	/* align-items: center; */
+}
+
+#filter {
+	grid-column-start: 1;
+	grid-column-end: 2;
+	grid-row-start: 2;
+	grid-row-end: 3;
+	border: 1px solid whitesmoke;
+	padding-top: 0px;
+	padding-bottom: 0px;
 }
 
 #banner {
@@ -228,6 +239,8 @@ height: 30px;
 	grid-column-end: 3;
 	grid-row-start: 3;
 	grid-row-end: 4;
+	overflow-x: scroll;
+	overflow-y: scroll;
 	border: 1px solid whitesmoke;
 }
 
