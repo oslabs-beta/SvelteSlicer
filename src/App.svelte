@@ -1,5 +1,5 @@
 <script>
-	import {snapshots, fileTree, backgroundPageConnection} from './stores.js';
+	import {snapshots, fileTree, flatFileTree, backgroundPageConnection} from './stores.js';
 	import { get } from 'svelte/store';
 	import Component from './Component.svelte';
 	import Header from './Header.svelte';
@@ -42,6 +42,7 @@
 			name: 'jumpState',
 			index,
 			state: $snapshots[index].data,
+			tree: $flatFileTree,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		});
 	}

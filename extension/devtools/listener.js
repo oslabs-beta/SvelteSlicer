@@ -22,6 +22,7 @@ chrome.runtime.onMessage.addListener(message => {
       type: 'jumpState',
       index: message.index,
       state: message.state,
+      tree: message.tree
     });
   }
 });

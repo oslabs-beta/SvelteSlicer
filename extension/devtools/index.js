@@ -17,9 +17,8 @@ chrome.devtools.panels.create(
                     const componentObject = {};
                     let node_id = 0;
                     let firstLoadSent = false;
-                    const domHistory = [];
                     const ctxHistory = [];
-                    let rebuildingState = false;
+                    let rebuildingDom = false;
 
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
@@ -214,26 +213,29 @@ chrome.devtools.panels.create(
                         });
                     }
 
-                    function rebuildDom(index, state) {
+                    function rebuildDom(index, state, tree) {
                         rebuildingDom = true;
                         
-                        for (let componentInstance in ctxObject) {
-                            // if component exists in history at index, inject historical state
-                            if (ctxHistory[index].hasOwnProperty(componentInstance)) {
-                                const { variables } = state[componentInstance];
-                                for (let variable in variables) {
-                                    const { name, ctxIndex, type } = variables[variable];
-                                    if (ctxIndex) {
-                                        if (type === 'store') {
-                                            updateStore(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
-                                        }
-                                        else {
-                                            injectState(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
+                        tree.forEach(componentFile => {
+                            for (let componentInstance in ctxObject) {
+                                if (ctxObject[componentInstance].tagName === componentFile) {
+                                    if (ctxHistory[index].hasOwnProperty(componentInstance)) {
+                                        const { variables } = state[componentInstance];
+                                        for (let variable in variables) {
+                                            const { name, ctxIndex, type } = variables[variable];
+                                            if (ctxIndex) {
+                                                if (type === 'store') {
+                                                    updateStore(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
+                                                }
+                                                else {
+                                                    injectState(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
+                        })
                     }
 
                     function injectState(componentId, key, value) {
@@ -272,8 +274,6 @@ chrome.devtools.panels.create(
                     window.onload = () => {
                         // make sure that data is being sent
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
-                            const domNode = document.body;
-                            domHistory.push(domNode.cloneNode(true));
                             ctxHistory.push(JSON.parse(JSON.stringify(ctxObject)));
                             firstLoadSent = true;
                             // parse the ctxObject for messaging purposes
@@ -305,8 +305,6 @@ chrome.devtools.panels.create(
                     window.document.addEventListener('dom-changed', (e) => {
                         // only send message if something changed in SvelteDOM
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
-                            const domNode = document.body;
-                            domHistory.push(domNode.cloneNode(true));
                             ctxHistory.push(JSON.parse(JSON.stringify(ctxObject)));
                             let type;
                             // make sure the first load has already been sent; if not, this is the first load
@@ -350,8 +348,8 @@ chrome.devtools.panels.create(
                         }
 
                         if (event.data.type === 'jumpState') {
-                            const { index, state } = event.data;
-                            rebuildDom(index, state);
+                            const { index, state, tree} = event.data;
+                            rebuildDom(index, state, tree);
                         }
                     })
                     `

@@ -2,9 +2,9 @@ import { writable, get } from 'svelte/store';
 import { compile } from "svelte/compiler";
 import _ from "lodash";
 
-
 export const snapshots = writable([]);
 export const fileTree = writable({});
+export const flatFileTree = writable([]);
 export const backgroundPageConnection = writable(chrome.runtime.connect({name: "panel"}));
 
 // store updateable objects for current component state
@@ -407,7 +407,24 @@ function buildSnapshot(data) {
 			}
 		}
 
+		// set fileTree for hierarchical displays
 	 	fileTree.set(componentTree[parentComponent]);
+
+		//create depth-first ordering of tree for state injections
+		const flatTreeArray = [];
+
+		depthFirstTraverse(componentTree[parentComponent]);
+		
+		function depthFirstTraverse(tree) {
+			flatTreeArray.push(tree.id);
+			if (tree.children.length) {
+				tree.children.forEach(child => {
+					depthFirstTraverse(child);
+				})
+			}
+		}
+
+		flatFileTree.set(flatTreeArray);	
 	};
 
 	const snapshot = {
