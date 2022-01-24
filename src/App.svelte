@@ -5,6 +5,8 @@
 	import FileStructure from './FileStructure.svelte';
 	import State from './State.svelte';
 	import Diffs from './Diffs.svelte';
+	import logo from '../extension/devtools/public/images/svelte_slicer_logo_64X64.png';
+
 	
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
@@ -70,9 +72,11 @@
 	<main>
 		<div id="mainContainer">
 			<div id="title">
-				<h2>Svelte Slicer</h2>
+				<h2> <img src={logo} id="slicerImg" alt='logo'/> Svelte Slicer</h2> 
 			</div>
+			
 			<div id="snapshots">
+				
 					<div class="filter" style="display:flex; flex-flow:row">
 						<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
 							<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
@@ -84,13 +88,11 @@
 				{#if !filtered.length}
 					{#each $snapshots as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
-						<!-- <div class="right-align"> -->
 								<div class="right-align">
 							<button on:click={() => selectState(i)}>Data</button>
 						</div>
 						<br>
 					{/each}
-					<!-- <hr> -->
 				{:else if filtered.length}
 					{#each filtered as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
@@ -106,8 +108,17 @@
 				<button on:click={() => selectView("state")}>State</button>
 				<button on:click={() => selectView("diff")}>Diff</button>				
 			</div>
-		
-				<div id="buttons">
+			<div id="buttons">
+				{#if View === "files"}
+					<button on:click={() => selectVis("tree")}>Tree</button>
+					<button on:click={() => selectVis("chart")}>Chart</button>
+				{:else if View === "state"}
+					<button on:click={() => selectVis("tree")}>Tree</button>
+					<button on:click={() => selectVis("chart")}>Chart</button>
+				{/if}
+			</div>
+			<div id="presentation">
+				<!-- <div id="buttons">
 					{#if View === "files"}
 						<button on:click={() => selectVis("tree")}>Tree</button>
 						<button on:click={() => selectVis("chart")}>Chart</button>
@@ -115,8 +126,7 @@
 						<button on:click={() => selectVis("tree")}>Tree</button>
 						<button on:click={() => selectVis("chart")}>Chart</button>
 					{/if}
-				</div>
-				<div id="presentation">
+				</div> -->
 				{#if $snapshots.length} 
 					{#if View === "files" && Vis === "tree"}
 						<Component component={$fileTree}/>
@@ -144,32 +154,8 @@
 	<style>
 		
 
-
-		.search-button {
-			color: rgb(162, 159, 159);
-			background: transparent;
-			border: none;
-			outline: none;
-			margin-right: -35px;
-		}
-
-		form.form button:hover {
-  		background: rgb(238, 137, 5);
 		
-		}
-		
-		/* @media (min-width: 640px) {
-			main {
-				max-width: none;
-			
 
-			}
-			
-		} */
-
-
-			/* } */
-		/* } */
 
 	</style>
 	

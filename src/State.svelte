@@ -28,8 +28,5 @@
 </main>
 
 <style>
-	.content {
-		background-color: #f4f4f4;
-		padding: 0.5em;
-	}
+
 </style>
