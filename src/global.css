@@ -2,7 +2,6 @@
 
 
 body {
-	background: rgb(83, 81, 81);
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
 }
@@ -101,7 +100,6 @@ main {
 	margin: 0px;
 	align-items: center;
 	color: whitesmoke;
-	background: rgb(83, 81, 81);
 }
 
 span {
@@ -179,6 +177,7 @@ height: 30px;
 	width: 100vw;
   	height: 100vh;
 	padding: 0;
+	border: 1px solid #dddcdc;
 }
 
 #snapshots {
@@ -187,8 +186,8 @@ height: 30px;
 	grid-row-start: 3;
 	grid-row-end: 4;
 	overflow-y: scroll;
-	border: 1px solid whitesmoke;
-	/* align-items: center; */
+	border-top: 1px solid #dddcdc;
+	background-color: #757474;
 }
 
 #filter {
@@ -196,12 +195,12 @@ height: 30px;
 	grid-column-end: 2;
 	grid-row-start: 2;
 	grid-row-end: 3;
-	border: 1px solid whitesmoke;
 	padding-top: 0px;
 	padding-bottom: 0px;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	background-color: #646262;
 }
 
 #banner {
@@ -209,10 +208,10 @@ height: 30px;
 	grid-column-end: 3;
 	grid-row-start: 1;
 	grid-row-end: 2;
-	border-collapse: collapse;
-	border: 1px solid whitesmoke;
+	border-left: 1px solid #dddcdc;
 	display: flex;
 	align-items: center;
+	background-color: #535151;
 }
 
 
@@ -221,9 +220,9 @@ height: 30px;
 	grid-column-end: 2;
 	grid-row-start: 1;
 	grid-row-end: 2;
-	border: 1px solid whitesmoke;
 	display: flex;
 	align-items: center;
+	background-color: #535151;
 }
 
 
@@ -232,10 +231,11 @@ height: 30px;
 	grid-column-end: 3;
 	grid-row-start: 2;
 	grid-row-end: 3;
-	border: 1px solid whitesmoke;
+	border-left: 1px solid #dddcdc;
 	padding: 1em;
 	display: flex;
 	align-items: center;
+	background-color: #646262;
 }
 
 
@@ -246,7 +246,9 @@ height: 30px;
 	grid-row-end: 4;
 	overflow-x: scroll;
 	overflow-y: scroll;
-	border: 1px solid whitesmoke;
+	border-top: 1px solid #dddcdc;
+	border-left: 1px solid #dddcdc;
+	background-color: #757474;
 }
 
 .oldValue{
