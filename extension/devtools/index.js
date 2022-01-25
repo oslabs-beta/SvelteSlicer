@@ -11,13 +11,15 @@ chrome.devtools.panels.create(
                     const deletedNodes = [];
                     const insertedNodes = [];
                     const addedEventListeners = [];
-                    const deletedEventListeners = [];
                     const nodes = new Map();
                     const ctxObject = {};
                     const componentCounts = {};
+                    const componentObject = {};
                     let node_id = 0;
                     let firstLoadSent = false;
-        
+                    const ctxHistory = [];
+                    let rebuildingDom = false;
+
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
                         root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
@@ -50,27 +52,94 @@ chrome.devtools.panels.create(
                             injectState[varName] = varIndex;
                             string = string.slice(varNameEnd);
                         }
-                        ctxObject[id] = component.$$.ctx;
+
+                        componentObject[id] = {component, tagName};
+                        ctxObject[id] = {ctx: component.$$.ctx, tagName, instance};
+                        
                         // parse ctx for messaging purposes
                         const ctx = {};
                         component.$$.ctx.forEach((element, index) => {
                             ctx[index] = parseCtx(element);
                         })
-                        // parse out elements of $capture_state
-                        const captureStateString = component.$capture_state.toString().slice(8, -2);
-                        const captureState = captureStateString.split(',').map(string => string.trim());
+
                         data = {
                             id,
                             ctx,
                             injectState,
                             tagName,
-                            captureState,
                             instance,
                             target: (options.target) ? options.target.nodeName + options.target.id : null
                         }
                         components.push(data);
                     }
-                  
+
+                    function svelteDOMRemove(e) {
+                        
+                        const { node } = e.detail;
+                        const nodeData = nodes.get(node);
+                        if (nodeData) {
+                            deletedNodes.push({
+                                id: nodeData.id,
+                                component: nodeData.component
+                            })
+                        }
+                    }
+
+                    function svelteDOMInsert(e) {
+                        
+                        const { node, target } = e.detail;
+                        if (node.__svelte_meta) {
+                            let id = nodes.get(node);
+                            if (!id) {
+                                id = node_id++;
+                                componentName = getComponentName(node.__svelte_meta.loc.file)
+                                nodes.set(node, {id, componentName});
+                            }
+                            insertedNodes.push({
+                                target: ((nodes.get(target)) ? nodes.get(target).id : target.nodeName + target.id),
+                                id,
+                                component: componentName, 
+                                loc: node.__svelte_meta.loc.char
+                            });
+                        }
+                    }
+
+                    function svelteDOMAddEventListener(e) {
+                        const { node, event, handler } = e.detail;
+                        const nodeData = nodes.get(node);
+
+                        id = nodeData.id + event;
+
+                        node.addEventListener(event, () => eventAlert(nodeData.id, event));
+                            
+                        addedEventListeners.push({
+                            node: nodeData.id,
+                            event,
+                            handlerName: e.detail.handler.name,
+                            handlerString: e.detail.handler.toString(),
+                            component: nodeData.component,
+                            id
+                        })
+                    }
+
+                    function svelteDOMRemoveEventListener(e) {
+                        const { node, event } = e.detail;
+                        nodeData = nodes.get(node);
+                        const id = nodeData.id + event;
+
+                        node.removeEventListener(event, () => eventAlert(nodeData.id, event));                      
+                    }
+
+                    function getComponentName(file) {
+                        if (file.indexOf('/') === -1) {
+                            tagName = file.slice((file.lastIndexOf('\\\\') + 1), -7);
+                        }
+                        else {
+                            tagName = file.slice((file.lastIndexOf('/') + 1), -7);
+                        }
+                        return tagName;
+                    }
+
                     function parseCtx(element, name = null) {
                         if (typeof element === "function") {
                             return {
@@ -120,76 +189,20 @@ chrome.devtools.panels.create(
                         }
                     }
 
-                    function svelteDOMRemove(e) {
-                        
-                        const { node } = e.detail;
-                        const nodeData = nodes.get(node);
-                        if (nodeData) {
-                            deletedNodes.push({
-                                id: nodeData.id,
-                                component: nodeData.component
+                    function parseCtxObject() {
+                        parsedCtx = {};
+                        for (let component in ctxObject) {
+                            const ctxData = {};
+                            ctxObject[component].ctx.forEach((element, index) => {
+                                ctxData[index] = parseCtx(element);
                             })
+                            parsedCtx[component] = ctxData;
                         }
-                    }
-
-                    function svelteDOMInsert(e) {
-                        
-                        const { node, target } = e.detail;
-                        if (node.__svelte_meta) {
-                            let id = nodes.get(node);
-                            if (!id) {
-                                id = node_id++;
-                                componentName = getComponentName(node.__svelte_meta.loc.file)
-                                nodes.set(node, {id, componentName});
-                            }
-                            insertedNodes.push({
-                                target: ((nodes.get(target)) ? nodes.get(target).id : target.nodeName + target.id),
-                                id,
-                                component: componentName, 
-                                loc: node.__svelte_meta.loc.char
-                            });
-                        }
-                    }
-
-                    function svelteDOMAddEventListener(e) {
-                        const { node, event } = e.detail;
-                        const nodeData = nodes.get(node);
-                        node.addEventListener(event, () => eventAlert(nodeData.id, event));
-                            
-                        addedEventListeners.push({
-                            node: nodeData.id,
-                            event,
-                            handlerName: e.detail.handler.name,
-                            handlerString: e.detail.handler.toString(),
-                            component: nodeData.component,
-                            id: nodeData.id + event
-                        })
-                    }
-
-                    function svelteDOMRemoveEventListener(e) {
-                        const { node, event } = e.detail;
-                        nodeData = nodes.get(node);
-                        node.removeEventListener(event, () => eventAlert(nodeData.id, event));
-                        
-                        deletedEventListeners.push({
-                            node: nodeData.id,
-                            event: event,
-                            component: nodeData.component,
-                            id: nodeData.id + event
-                        })
-                    }
-
-                    function getComponentName(file) {
-                        if (file.indexOf('/') === -1) {
-                            tagName = file.slice((file.lastIndexOf('\\\\') + 1), -7);
-                        }
-                        else {
-                            tagName = file.slice((file.lastIndexOf('/') + 1), -7);
-                        }
-                        return tagName;
+                        return parsedCtx;
                     }
 
                     function eventAlert(nodeId, event) {
+                        rebuildingDom = false;
                         window.postMessage({
                             source: 'panel.js',
                             type: 'event',
@@ -200,6 +213,42 @@ chrome.devtools.panels.create(
                         });
                     }
 
+                    function rebuildDom(index, state, tree) {
+                        rebuildingDom = true;
+                        
+                        tree.forEach(componentFile => {
+                            for (let componentInstance in ctxObject) {
+                                if (ctxObject[componentInstance].tagName === componentFile) {
+                                    if (ctxHistory[index].hasOwnProperty(componentInstance)) {
+                                        const { variables } = state[componentInstance];
+                                        for (let variable in variables) {
+                                            const { name, ctxIndex, type } = variables[variable];
+                                            if (ctxIndex) {
+                                                if (type === 'store') {
+                                                    updateStore(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
+                                                }
+                                                else {
+                                                    injectState(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        })
+                    }
+
+                    function injectState(componentId, key, value) {
+                        const component = componentObject[componentId].component;
+                        component.$inject_state({ [key]: value })
+                    }
+
+                    function updateStore(componentId, storeVariable, value) {
+                        const component = componentObject[componentId].component;
+                        const stateObject = component.$capture_state();
+                        const store = stateObject[storeVariable];
+                        store.set(value);
+                    }
 
                     setup(window.document);
                   
@@ -211,26 +260,35 @@ chrome.devtools.panels.create(
 
                     // observe for changes to the DOM
                     const observer = new MutationObserver( list => {
-                        const evt = new CustomEvent('dom-changed', {detail: list});
-                        window.document.dispatchEvent(evt)
+                        if (!rebuildingDom){
+                            const domChange = new CustomEvent('dom-changed');
+                            window.document.dispatchEvent(domChange)
+                        }
+                        else {
+                            const rebuild = new CustomEvent('rebuild');
+                            window.document.dispatchEvent(rebuild);
+                        }
                     });
         
                     // capture initial DOM load as one snapshot
                     window.onload = () => {
                         // make sure that data is being sent
-                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
+                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
+                            ctxHistory.push(JSON.parse(JSON.stringify(ctxObject)));
                             firstLoadSent = true;
+                            // parse the ctxObject for messaging purposes
+                            
                             window.postMessage({
                                 source: 'panel.js',
                                 type: 'firstLoad',
                                 data: {
+                                    ctxObject: parseCtxObject(),
                                     components,
                                     insertedNodes,
                                     deletedNodes,
                                     addedEventListeners,
-                                    deletedEventListeners
                                 }
-                            });
+                            })
                         }
 
                         // reset arrays
@@ -238,7 +296,7 @@ chrome.devtools.panels.create(
                         insertedNodes.splice(0, insertedNodes.length);
                         deletedNodes.splice(0, deletedNodes.length);
                         addedEventListeners.splice(0, addedEventListeners.length);
-                        deletedEventListeners.splice(0, deletedEventListeners.length);
+
                         // start MutationObserver
                         observer.observe(window.document, {attributes: true, childList: true, subtree: true});
                     }   
@@ -246,7 +304,8 @@ chrome.devtools.panels.create(
                     // capture subsequent DOM changes to update snapshots
                     window.document.addEventListener('dom-changed', (e) => {
                         // only send message if something changed in SvelteDOM
-                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length || deletedEventListeners.length) {
+                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
+                            ctxHistory.push(JSON.parse(JSON.stringify(ctxObject)));
                             let type;
                             // make sure the first load has already been sent; if not, this is the first load
                             if (!firstLoadSent) {
@@ -255,26 +314,15 @@ chrome.devtools.panels.create(
                             }
                             else type = "update";
                             
-                            // parse the ctxObject for messaging purposes
-                            parsedCtx = {};
-                            for (let component in ctxObject) {
-                                const ctxData = {};
-                                ctxObject[component].forEach((element, index) => {
-                                    ctxData[index] = parseCtx(element);
-                                })
-                                parsedCtx[component] = ctxData;
-                            }
-                            
                             window.postMessage({
                                 source: 'panel.js',
                                 type,
                                 data: {
-                                    ctxObject: parsedCtx,
+                                    ctxObject: parseCtxObject(),
                                     components,
                                     insertedNodes,
                                     deletedNodes,
                                     addedEventListeners,
-                                    deletedEventListeners
                                 }
                             });
                         }
@@ -284,8 +332,26 @@ chrome.devtools.panels.create(
                         insertedNodes.splice(0, insertedNodes.length);
                         deletedNodes.splice(0, deletedNodes.length);
                         addedEventListeners.splice(0, addedEventListeners.length);
-                        deletedEventListeners.splice(0, deletedEventListeners.length);
                     });
+
+                    // listen for devTool requesting state injections 
+                    window.addEventListener('message', function () {
+                        // Only accept messages from the same frame
+                        if (event.source !== window) {
+                            return;
+                        }
+                        
+                        // Only accept messages that we know are ours
+                        if (typeof event.data !== 'object' || event.data === null ||
+                          !event.data.source === 'panel.js') {
+                          return;
+                        }
+
+                        if (event.data.type === 'jumpState') {
+                            const { index, state, tree} = event.data;
+                            rebuildDom(index, state, tree);
+                        }
+                    })
                     `
                 }
             ); 

@@ -1,94 +1,174 @@
 <script>
-	import {snapshots, fileTree} from './stores.js';
+	import {snapshots, fileTree, flatFileTree, backgroundPageConnection} from './stores.js';
+	import { get } from 'svelte/store';
 	import Component from './Component.svelte';
-	//import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
+	import FileStructure from './FileStructure.svelte';
 	import State from './State.svelte';
+	import Diffs from './Diffs.svelte';
+	import logo from '../extension/devtools/public/images/svelte_slicer_logo_64X64.png';
 
-	let count=0;//control tidt tree render time on the dom. set render condition in TidyTree
-
-	$: snapshot = $snapshots[CurrentI];
-	$: data = (snapshot ? snapshot.data : undefined);
-	$: parent = (snapshot ? snapshot.parent : undefined);
-
-	let CurrentI;
 	
-	$: view = selection;
-	let selection;
+	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
+
+	let I;
+	let filtered = [];
+	let input = "";
 	
+	let view = "state";
+	$: View = view;
+
+	let vis = "tree";
+	$: Vis = vis;
+
+	const connection = get(backgroundPageConnection);
+
 	function selectState(index) {
-		CurrentI = index;
-		console.log($snapshots[CurrentI]);
-	}
-	
-	function selectView(view) {
-		selection = view;
+		I = index === $snapshots.length - 1 ? undefined : index;
 	}
 
-	function selectTree(view){
-        selection = view;
-		//when button is clicked (function is called)
-		count+=1
+	function selectView(selection) {
+		view = selection;
 	}
 
-	let showLeft = true
-	let showRight = true
+	function selectVis(selection) {
+        vis = selection;
+	}
+
+	function jumpState(index) {
+		I = index === $snapshots.length - 1 ? undefined : index;
+		connection.postMessage({
+    		source: 'panel',
+			name: 'jumpState',
+			index,
+			state: $snapshots[index].data,
+			tree: $flatFileTree,
+			tabId: chrome.devtools.inspectedWindow.tabId
+		});
+	}
+
+	function filterEventHandler() {
+		input = input.trim().toLowerCase();
+		function isSubstring(s1, s2) {
+			let S = s1.length;
+			let L = s2.length;
+    		for (let i = 0; i <= L - S; i++) {
+        		let j;
+				for (j = 0; j < S; j++) {
+					if (s2[i + j] != s1[j]) break;
+				}
+				if (j == S) return i;
+    		}
+  			return -1;
+		}
+
+    	$snapshots.forEach((snapshot, index) => {
+        	let label = snapshot.label
+			label = label.toLowerCase();
+    
+        	let res = isSubstring(input, label);
+			if(res > -1){
+				filtered.push({snapshot, index});
+			}
+		});	
+		input = " ";
+	}
+
+	function resetFilter() {
+		filtered = [];
+	}
 	
 	</script>
 	
-	<main id="parent" style="display:flex; height:auto; box-sizing:content-box">
-		<div id="left" class="center" style="background-color:#2D3436; height:100%; width:100%; border:solid 3px #F1F3F4; flex:{showLeft?3:0}">
-			<h2>Svelte Slicer</h2>
-			<button on:click={() => selectView("componentTree")}>Component Tree</button><button on:click={() => selectView("state")}>State</button><button id="tidy" on:click={()=>selectTree("tidyTree")}>Chart</button>
-			<hr>
-			<label style="color:#F1F3F4; text-align:center">
-			Reduce LeftPanel <input type="checkbox" bind:checked={showLeft}>
-			</label>
-			<label style="color:#F1F3F4; text-align:center">
-			Toggle Data <input type="checkbox" bind:checked={showRight}>
-			</label>
-			{#if view === "state"}
-				{#each $snapshots as snapshot, i}
-					<button on:click={() => selectState(i)}>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</button>
-					<br>
-				{/each}
-				<hr>
-			{/if}
-		</div>
-		
-			<div id="right" style="flex:10; display:flex; flex-flow:row">
-				<div id="red" class="center" style="background-color:orangered; height:100%; width:100%; border:solid 3px #F1F3F4; flex:1;">
-					<h2>Visual</h2>
-					{#if view === "componentTree"} 
-					<Component component={$fileTree}/>
-					{:else if view === "tidyTree"}
-					<TidyTree2 treeData={$fileTree} {count}/>
-					{/if}
+	<main>
+		<div id="mainContainer">
+			<div id="title">
+				<h2> <img src={logo} id="slicerImg" alt='logo'/> Svelte Slicer</h2> 
 			</div>
-			<div id="red" class="center" style="background-color:silver; border:solid 3px #F1F3F4; height:100%; width:100%; flex:1;display:{showRight?'flex':'none'};">
-					<h2>Data</h2>
-				{#if view === "state"}
-					{#if data} 
-						<State component={data[parent]}></State>
-					{/if}	
-				{/if}		
-			</div>
-		</div>	
 			
+			<div id="snapshots">
+				<div class="filter" style="display:flex; flex-flow:row">
+					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
+					  	<input type="text" bind:value={input} placeholder="Filter..." class="search-field" />
+					  	<button type="submit" class="search-button">
+							<i class="fas fa-search"></i>
+					  	</button>
+						<button on:click={resetFilter}>Reset Filter</button>
+					</form>
+				</div>
+				{#if !filtered.length}
+					{#each $snapshots as snapshot, i}
+						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
+								<div class="right-align">
+							<button on:click={() => selectState(i)}>Data</button>
+							<button on:click={() => jumpState(i)}>Jump</button>
+						</div>
+						<br>
+					{/each}
+				{:else if filtered.length}
+					{#each filtered as snapshot}
+						<span>Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
+						<div class="right-align">
+							<button on:click={() => selectState(snapshot.index)}>Data</button>
+							<button on:click={() => jumpState(snapshot.index)}>Jump</button>
+						</div>
+						<br>
+					{/each}
+				{/if}
+			</div>
+			<div id="banner">
+				<button on:click={() => selectView("files")}>File Structure</button>
+				<button on:click={() => selectView("state")}>State</button>
+				<button on:click={() => selectView("diff")}>Diff</button>				
+			</div>
+			<div id="buttons">
+				{#if View === "files"}
+					<button on:click={() => selectVis("tree")}>Tree</button>
+					<button on:click={() => selectVis("chart")}>Chart</button>
+				{:else if View === "state"}
+					<button on:click={() => selectVis("tree")}>Tree</button>
+					<button on:click={() => selectVis("chart")}>Chart</button>
+				{/if}
+			</div>
+			<div id="presentation">
+				<!-- <div id="buttons">
+					{#if View === "files"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{:else if View === "state"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{/if}
+				</div> -->
+				{#if $snapshots.length} 
+					{#if View === "files" && Vis === "tree"}
+						<Component component={$fileTree}/>
+					{:else if View === "files" && Vis === "chart"}
+						<FileStructure treeData={$fileTree}/>
+					<!-- {:else if View === "state" && Vis === "tree"}
+						<State I={CurrentI}></State>
+					{:else if View === "state" && Vis === "chart"} 
+						<TidyTree2 {view} I={CurrentI}/> -->
+					{:else if View === "state"}
+					   {#if Vis === "tree"}
+					    <State I={CurrentI}></State>
+						{:else if Vis === "chart"}
+                        <TidyTree2 {view} I={CurrentI}/>
+						{/if}
+					
+					{:else if View === "diff"}
+						<Diffs I={CurrentI}/>
+					{/if}
+				{/if}
+			</div>
+		</div>
 	</main>
 	
 	<style>
-		main {
-			/* text-align: center; */
-			padding: 1em;
-			max-width: 240px;
-			margin: 0 auto;
-		}
-	
-		@media (min-width: 640px) {
-			main {
-				max-width: none;
-			}
-		}
+		
+
+		
+
+
 	</style>
 	

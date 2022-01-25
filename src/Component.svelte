@@ -1,8 +1,5 @@
 <script>
     export let component;
-    
-    console.log("component.children",component.children);
-    console.log('hierarchical data for tidy tree',component)
 
     const _expansionState = {
 		/* treeNodeId: expanded <boolean> */
@@ -17,26 +14,23 @@
 </script>
 
 <main>
-   
-    <ul>
+   <div>
+       <ul >
         <li>
             {#if children.length}
-                <span on:click={toggleExpansion}>
+                <span on:click={toggleExpansion} id={id}>
                     <span class="arrow" class:arrowDown>&#x25b6</span>
                   {id}
                     
                 </span>
                 {#if expanded}
-                    
                      {#each children as child}
-                    
-                        <svelte:self component={child} />
-                        
-                        
+
+                        <svelte:self component={child} />     
                     {/each}
                    
                 {/if}
-            {:else}
+             {:else}
                 <span>
                     <span class="no-arrow"/>
                     {id}
@@ -44,6 +38,8 @@
             {/if}
         </li>
     </ul>
+   </div>
+    
 
 </main>
 

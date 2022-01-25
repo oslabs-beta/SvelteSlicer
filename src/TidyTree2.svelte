@@ -1,31 +1,39 @@
-<script>
-
+<script defer>
+export let I;
+export let view;
+import { fileTree, snapshots } from './stores';
 import * as d3 from 'd3';
-import { onMount } from 'svelte';
+import {onMount, beforeUpdate, afterUpdate, onDestroy} from 'svelte';
 
-export let treeData;
-console.log('treeData',treeData)
-export let count;
 
-console.log("count",count)
+$: label = $snapshots[I].label;
+$: snapshot = $snapshots[I];
+$: parent = $snapshots[I].parent;
+$: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
 
-let margin = {top:20,right:0,bottom:20,left:0}
+
+// can we give an inherit property to the margin here so that 
+// the chart inherits the margin of the parent?
+
+let margin = {top:40,right:60,bottom:20,left:60}
+// let margin = {top:50,right:0,bottom:20,left:50}
     let width = 700 - margin.left - margin.right;
-    let height = 700 - margin.top -margin.bottom;
+    let height = 700 - margin.top -margin.bottom; 
 //1/3 
 // const width = document.body.clientWidth;
 // const height = document.body.clientHeight;
 
     let svg;
+    
+    let preElement ;
+    let currElement ;
 
-//check if dom already have 1 tidy tree  
-//if(count<2){   
-onMount(()=>{
-  
-     
-    svg = d3.select("#chart")
+   afterUpdate(()=>{
+   
+
+    svg = d3.select('#chart')
        .append('div')
-       .attr('class','container')
+       .attr('class',I)
        .append("svg")
        .attr('width',width + margin.right + margin.left)
        .attr('height',height+ margin.top + margin.bottom)
@@ -39,38 +47,51 @@ onMount(()=>{
        //d3.tree() is tidy tree layout module
        let treemap = d3.tree().size([width,height]);
        //construct root node
-       root = d3.hierarchy(treeData, function(d){
+       root = d3.hierarchy(component, function(d){
            return d.children;
        });
        console.log('root',root)
        
     root.x0 = 0;
     root.y0 = width/2;
-
+    
        update(root);
        function update(src){
            let treeData = treemap(root)
            //nodes //return thr arr of descendant nodes, staring with this node then followed by each child
-           let nodes = treeData.descendants();
+        //filter nodes. only show active nodes.
+        let activeNode = treeData.descendants();
+           let nodes = [];
+           activeNode.forEach(item=>{
+               if(item.data.active === true || item.data.active === undefined){
+            nodes.push(item)
+               }
+           })
            console.log('nodes',nodes)
+           console.log('activeNodes',activeNode)
            //set depth
            nodes.forEach(function(d){
-               d.y=d.depth*140;
+               d.y=d.depth*180;
               
            });
 
            let node = svg.selectAll('g.node').data(nodes,function(d){
                return d.id || (d.id= ++i); //return d.id or it has child 
            });
+           console.log('node >>',node)
            //node start at the parent's position
            let nodeEnter = node
                   .enter()
                   .append('g')
                   .attr('class','node')
+                  .attr('id',function(d){
+                   return d.data.id;
+               })
                   .attr('transform',function(d){
                       return "translate(" + src.x0 + ", " + src.y0 +")";
                   })
                   .on('click',click);
+
             //create circles (this might be the place to set the state datas to deliver to data panel )  
               nodeEnter
                 .append('circle')
@@ -84,11 +105,7 @@ onMount(()=>{
              nodeEnter
                .append('text')
                .attr('dx','.35em')
-            //    .attr('dx',function(d){
-            //        console.log('d',d)
-            //        return  d.children ||d._children? `.${d.data.id.length/0.2}em`:`.${d.data.id.length/0.2}em`
-            //    })
-               //.attr('y',-20)
+   
                .attr('y',function(d){
                     //return d.children ||d._children? -20:0;//has childern text on the left(not nesserary)
                     return -12
@@ -99,7 +116,45 @@ onMount(()=>{
                .text(function(d){
                    return d.data.id;
                })
-             
+
+               nodeEnter
+                 .append('g:title')
+                 .attr("transform", "translate(0,0)")
+                 .text(function(d){
+                     console.log('d for mouseover',d)
+                
+                  if(Object.keys(d.data.variables).length > 0){
+                      console.log('inside checking variables',d.data)
+                      console.log('valuechecking',d.data.variables)
+                      let text = '';
+                      Object.keys(d.data.variables).forEach(item=>{
+                        console.log('item>>',item)
+                        console.log('text pre',d.data.variables[item].name,d.data.variables[item].value)
+                          if(typeof item.value !== 'object'){
+                             console.log('not obj',d.data.variables[item].value)
+                            //  if(typeof d.data.variables[item].value !== 'object'){
+                             text = text + d.data.variables[item].name + ':' + d.data.variables[item].value + "\n"
+                             //}
+                            
+                            
+                          }else{
+                          console.log('is obj',d.data.variables[item].value)
+                          }
+                        //   Object.keys(d.data.variables[item].value).forEach(nestedValue=>{
+                            
+                        //     console.log('in nest')
+                        //     // text = text + d.data.variables[item].value[nestedValue].name + ':' + d.data.variables[item].value[nestedValue].value + "\n"
+                        //   })
+                          
+                        
+                      }) 
+                    
+                      return text;
+                  }else{
+                   return `There are ${d.data.children.length} children`;
+                  }
+               })
+               
             //make transition node/ start from parent position to new position
             let nodeUpdate = nodeEnter.merge(node);
             nodeUpdate
@@ -142,8 +197,16 @@ onMount(()=>{
                 return path;
             }
            
-             
-            let links = treeData.descendants().slice(1);
+           let activelinks = treeData.descendants().slice(1);
+           let links = [];
+           activelinks.forEach(item=>{
+               console.log('item for links ',item)
+               if(item.data.active){
+            links.push(item)
+               }
+           })
+            
+            
             let link = svg.selectAll('path.link').data(links, function(d){
                 return d.id;
             })
@@ -153,7 +216,7 @@ onMount(()=>{
               .insert('path','g')
               .attr('class','link')
               .attr('d',function(){
-                  let o={x:src.x0, y:src.y0}//y0 or y? 12/22
+                  let o={x:src.x0, y:src.y0}
                   return diagonal(o,o);
               });
             
@@ -180,7 +243,7 @@ onMount(()=>{
            d.x0=d.x;
            d.y0=d.y;
        });
-       function click(event, d){
+       function click(event, d,e){
            if(d.children){
                d._children=d.children;
                d.children=null;
@@ -189,16 +252,39 @@ onMount(()=>{
                d._children=null;
            }
            update(d);
+           console.log(`${d.data.id} node is selected`)
        }
+       
        }
     
+      
+    
+
+    preElement = document.getElementsByClassName(`${I}`)[0].previousSibling
+    //console.log('pre',preElement)
+    currElement= document.getElementsByClassName(`${I}`)
+    //console.log('curr',currElement)
+   if(svg.previousSibling){
+
+   }
+   if(preElement){
+       preElement.remove();
+   }
    
-})  
-//}    
+})
+
 </script>
 
+<main>
+    
+    <h2>Snapshot {I}: {label}</h2>
+   
+    <div bind:this={svg} id='chart' ></div>
+  
+</main>
 
-<div bind:this={svg} id='chart'></div>
+
+
 
 
 

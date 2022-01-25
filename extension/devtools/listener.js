@@ -15,3 +15,15 @@ window.addEventListener('message', function(event) {
   chrome.runtime.sendMessage(JSON.stringify(data));
 });
 
+chrome.runtime.onMessage.addListener(message => {
+  if (message.name === "jumpState") {
+    window.postMessage({
+      source: 'listener.js',
+      type: 'jumpState',
+      index: message.index,
+      state: message.state,
+      tree: message.tree
+    });
+  }
+});
+

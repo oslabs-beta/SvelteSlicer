@@ -1,12 +1,23 @@
 <script>
-
+    export let I;
+    import {snapshots} from './stores.js';
     import * as d3 from 'd3';
+
+    $: snapshot = $snapshots[I];
+    $: parent = (I !== undefined ? $snapshots[I].parent : undefined);
+    $: component = (I !== undefined ? $snapshots[I].data[parent] : undefined);
+    let state
+    //const {id,children} = component;
+    
+    function clickhandler() {
+        console.log("shot,",snapshot);
+        console.log('cc',component);
+       
+    }
     
     export let treeData;
     console.log('treeData',treeData)
-    export let count;
-
-    console.log("count",count)
+    
     
     let margin = {top:20,right:90,bottom:20,left:90}
         let width = 960 - margin.left - margin.right;
@@ -15,7 +26,7 @@
         let svg;
     
     //check if dom already have 1 tidy tree    
-     if(count<2){  
+     //if(count<2){  
          
         svg = d3.select("body")
            .append('div')
@@ -42,6 +53,7 @@
                let treeData = treemap(root)
                //nodes
                let nodes = treeData.descendants();
+               
     
                //set depth
             //    nodes.forEach(function(d){
@@ -169,49 +181,13 @@
                update(d);
            }
            }
-        }
+        //}
        
            
     </script>
+    <button on:click={clickhandler}>shot</button>
     
-    
-    
-    <!-- <div class="tidy" on:click> TidyTree {treeData.id}
-       
-    </div> -->
-    <!-- <p class="test">Test CSS</p> -->
     
     <style>
-        /* .xAxis path,
-        .xAxis line {
-            stroke:teal;
-            shape-rendering: crispEdges;
-        }
-        .xAxis text {
-            font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            font-weight: bold;
-            font-size: 14px;
-            fill:teal;
-        }
-        
-        .node circle {
-            fill:green;
-            stroke: steelblue;
-            stroke-width: 3px;
-        }
-    
-        .node text {
-            font:12px sans-serif;
-        }
-        .link{
-            fill:none;
-            stroke:rgb(153, 5, 5);
-            stroke-width: 2px;
-        } */
-    
-    
-    /* .test{
-        color: tomato;
-        font:100px;
-    } */
+       
     </style>    
