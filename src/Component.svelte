@@ -14,8 +14,8 @@
 </script>
 
 <main>
-   
-    <ul>
+   <div>
+       <ul >
         <li>
             {#if children.length}
                 <span on:click={toggleExpansion} id={id}>
@@ -24,16 +24,13 @@
                     
                 </span>
                 {#if expanded}
-                    
                      {#each children as child}
-                    
-                        <svelte:self component={child} />
-                        
-                        
+
+                        <svelte:self component={child} />     
                     {/each}
                    
                 {/if}
-            {:else}
+             {:else}
                 <span>
                     <span class="no-arrow"/>
                     {id}
@@ -41,6 +38,8 @@
             {/if}
         </li>
     </ul>
+   </div>
+    
 
 </main>
 

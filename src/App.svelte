@@ -1,16 +1,16 @@
 <script>
 	import {snapshots, fileTree} from './stores.js';
 	import Component from './Component.svelte';
-	//import TidyTree from './TidyTree.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import FileStructure from './FileStructure.svelte';
 	import State from './State.svelte';
 	import Diffs from './Diffs.svelte';
+	import logo from '../extension/devtools/public/images/svelte_slicer_logo_64X64.png';
+
 	
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
 	let I;
-
 	let filtered = [];
 	let input = "";
 	
@@ -72,26 +72,27 @@
 	<main>
 		<div id="mainContainer">
 			<div id="title">
-				<h2>Svelte Slicer</h2>
+				<h2> <img src={logo} id="slicerImg" alt='logo'/> Svelte Slicer</h2> 
 			</div>
+			
 			<div id="snapshots">
-				<div class="filter" style="display:flex; flex-flow:row">
-					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
-					  	<input type="text" bind:value={input} placeholder="Filter..." class="search-field" />
-					  	<button type="submit" class="search-button">
-							<i class="fas fa-search"></i>
-					  	</button>
-					</form>
-				</div>
+				
+					<div class="filter" style="display:flex; flex-flow:row">
+						<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
+							<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
+						<button type="submit" class="search-button"> 
+								<i class="fa fa-search"></i>
+							</button>
+						</form>
+					</div>
 				{#if !filtered.length}
 					{#each $snapshots as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
-						<div class="right-align">
+								<div class="right-align">
 							<button on:click={() => selectState(i)}>Data</button>
 						</div>
 						<br>
 					{/each}
-					<hr>
 				{:else if filtered.length}
 					{#each filtered as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
@@ -117,6 +118,15 @@
 				{/if}
 			</div>
 			<div id="presentation">
+				<!-- <div id="buttons">
+					{#if View === "files"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{:else if View === "state"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{/if}
+				</div> -->
 				{#if $snapshots.length} 
 					{#if View === "files" && Vis === "tree"}
 						<Component component={$fileTree}/>
@@ -133,9 +143,6 @@
                         <TidyTree2 {view} I={CurrentI}/>
 						{/if}
 					
-						
-
-
 					{:else if View === "diff"}
 						<Diffs I={CurrentI}/>
 					{/if}
@@ -145,16 +152,10 @@
 	</main>
 	
 	<style>
-		main {
-			/* text-align: center; */
-			padding: 1em;
-			margin: 0 auto;
-		}
-	
-		@media (min-width: 640px) {
-			main {
-				max-width: none;
-			}
-		}
+		
+
+		
+
+
 	</style>
 	

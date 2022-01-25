@@ -12,8 +12,11 @@ $: parent = $snapshots[I].parent;
 $: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
 
 
+// can we give an inherit property to the margin here so that 
+// the chart inherits the margin of the parent?
 
-let margin = {top:50,right:0,bottom:20,left:50}
+let margin = {top:40,right:60,bottom:20,left:60}
+// let margin = {top:50,right:0,bottom:20,left:50}
     let width = 700 - margin.left - margin.right;
     let height = 700 - margin.top -margin.bottom; 
 //1/3 
@@ -102,11 +105,7 @@ let margin = {top:50,right:0,bottom:20,left:50}
              nodeEnter
                .append('text')
                .attr('dx','.35em')
-            //    .attr('dx',function(d){
-            //        console.log('d',d)
-            //        return  d.children ||d._children? `.${d.data.id.length/0.2}em`:`.${d.data.id.length/0.2}em`
-            //    })
-               //.attr('y',-20)
+   
                .attr('y',function(d){
                     //return d.children ||d._children? -20:0;//has childern text on the left(not nesserary)
                     return -12
@@ -274,13 +273,6 @@ let margin = {top:50,right:0,bottom:20,left:50}
    
 })
 
-
-
-
-
-
-
-
 </script>
 
 <main>
@@ -289,8 +281,6 @@ let margin = {top:50,right:0,bottom:20,left:50}
    
     <div bind:this={svg} id='chart' ></div>
   
-   
-    
 </main>
 
 

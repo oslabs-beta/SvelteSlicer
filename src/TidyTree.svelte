@@ -188,42 +188,6 @@
     <button on:click={clickhandler}>shot</button>
     
     
-    <!-- <div class="tidy" on:click> TidyTree {treeData.id}
-       
-    </div> -->
-    <!-- <p class="test">Test CSS</p> -->
-    
     <style>
-        /* .xAxis path,
-        .xAxis line {
-            stroke:teal;
-            shape-rendering: crispEdges;
-        }
-        .xAxis text {
-            font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            font-weight: bold;
-            font-size: 14px;
-            fill:teal;
-        }
-        
-        .node circle {
-            fill:green;
-            stroke: steelblue;
-            stroke-width: 3px;
-        }
-    
-        .node text {
-            font:12px sans-serif;
-        }
-        .link{
-            fill:none;
-            stroke:rgb(153, 5, 5);
-            stroke-width: 2px;
-        } */
-    
-    
-    /* .test{
-        color: tomato;
-        font:100px;
-    } */
+       
     </style>    

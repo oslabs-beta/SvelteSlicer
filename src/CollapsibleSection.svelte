@@ -20,9 +20,9 @@
 </div>
 
 <style>
-  .collapsible {
+  /* .collapsible {
     border-bottom: 1px solid var(--gray-light, #eee);
-  }
+  } */
 	
 	h3 {
 		margin: 0;
@@ -39,21 +39,21 @@
 		padding: 1em 0.5em;
   }
 
-  button[aria-expanded="true"] {
+  /* button[aria-expanded="true"] {
     border-bottom: 1px solid var(--gray-light, #eee);
-  }
+  } */
 
     button[aria-expanded="true"] .vert {
         display: none;
     }
 
-    button:focus svg{
+    /* button:focus svg{
         outline: 2px solid;
-    }
+    } */
 
-    button [aria-expanded="true"] rect {
+    /* button [aria-expanded="true"] rect {
         fill: currentColor;
-    }
+    } */
 
     svg {
         height: 0.7em;
