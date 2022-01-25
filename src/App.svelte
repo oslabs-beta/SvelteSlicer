@@ -2,12 +2,12 @@
 	import {snapshots, fileTree, flatFileTree, backgroundPageConnection} from './stores.js';
 	import { get } from 'svelte/store';
 	import Component from './Component.svelte';
-	import Header from './Header.svelte';
-	import Tabs from './Header.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import FileStructure from './FileStructure.svelte';
 	import State from './State.svelte';
 	import Diffs from './Diffs.svelte';
+	import logo from '../extension/devtools/public/images/svelte_slicer_logo_64X64.png';
+
 	
 	$: CurrentI = (I !== undefined ? I : $snapshots.length - 1);
 
@@ -83,8 +83,9 @@
 	<main>
 		<div id="mainContainer">
 			<div id="title">
-				<h2>Svelte Slicer</h2>
+				<h2> <img src={logo} id="slicerImg" alt='logo'/> Svelte Slicer</h2> 
 			</div>
+			
 			<div id="snapshots">
 				<div class="filter" style="display:flex; flex-flow:row">
 					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
@@ -98,13 +99,12 @@
 				{#if !filtered.length}
 					{#each $snapshots as snapshot, i}
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
-						<div class="right-align">
+								<div class="right-align">
 							<button on:click={() => selectState(i)}>Data</button>
 							<button on:click={() => jumpState(i)}>Jump</button>
 						</div>
 						<br>
 					{/each}
-					<hr>
 				{:else if filtered.length}
 					{#each filtered as snapshot}
 						<span>Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
@@ -131,6 +131,15 @@
 				{/if}
 			</div>
 			<div id="presentation">
+				<!-- <div id="buttons">
+					{#if View === "files"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{:else if View === "state"}
+						<button on:click={() => selectVis("tree")}>Tree</button>
+						<button on:click={() => selectVis("chart")}>Chart</button>
+					{/if}
+				</div> -->
 				{#if $snapshots.length} 
 					{#if View === "files" && Vis === "tree"}
 						<Component component={$fileTree}/>
@@ -147,9 +156,6 @@
                         <TidyTree2 {view} I={CurrentI}/>
 						{/if}
 					
-						
-
-
 					{:else if View === "diff"}
 						<Diffs I={CurrentI}/>
 					{/if}
@@ -159,48 +165,9 @@
 	</main>
 	
 	<style>
-		main {
-			/* text-align: center; */
-			padding: 1em;
-			/* max-width: 240px; */
-			max-width:75%;
-			/* margin: 5px; */
-			align-items: center;
-			color: whitesmoke;
-			background: rgb(83, 81, 81);
-			padding: 1em;
-		}
-	
-		@media (min-width: 640px) {
-			main {
-				max-width: none;
-			
+		
 
-			}
-			
-		}
-
-		/* .buttonOptions {
-			align-items: right;
-			flex: 30%;
-		}
-
-	.flex-grid-half {
-			
-				flex-grow: 0;
-				flex-shrink: 0;
-				flex-basis: 50px; 
-	}
-
-	div:nth-of-type(1) {
-  	flex-basis: 75px;
-	}
-
-	.col {
-		flex: 1 3;
-		width:max-content;
-	}  
-	*/
+		
 
 
 	</style>

@@ -1,23 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@100&display=swap');
 
-/* html{
-	width: 100%;
-	height: 100%;
-} */
 
 body {
 	
 	background: rgb(83, 81, 81);
 	margin: 1em;
 	padding: 1em;
-	box-sizing: content-box;
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
-	/* border: 1px solid whitesmoke; */
+	
 }
 
 h2 {
-	align-content: center;
+
+	font-weight: Bold 700;
+	font-size: 25px;
+	margin: 2px;;
+	/* padding: 0.5em; */
+}
+
+
+div {
+	padding: 1em;
 }
 
 .panelDiv {
@@ -28,6 +32,12 @@ h2 {
 a {
 	color: rgb(0,100,200);
 	text-decoration: none;
+}
+
+span {
+	padding-left: 1em;
+	padding-right: 1em;
+	font-size: 18px;
 }
 
 ol li::marker {
@@ -48,29 +58,27 @@ label {
 
 input, select, textarea {
 	color: whitesmoke;
-	/* background-color: #f4f4f4; */
 	background: #333;
 	outline: none;
 	margin: 2px;
-	font-size: inherit;
-	/* -webkit-padding: 0.4em 0; */
+	font-size: 18px;
 	padding: 0.4em;
-	box-sizing: border-box;
 	border: none;
 	border-radius: 2px;
 }
 
 button {
-	align-items: right;
 	color: whitesmoke;
 	background: #333;
 	outline: none;
 	margin: 2px;
-	-webkit-padding: 0.4em 0;
-	padding: 0.5em;
+	font-size: 16px;
+	font-weight: bold;
+	font-family: 'Overpass', sans-serif;
+	padding: 5px;
 	border: none;
 	border-radius: 2px;
-	font-family: 'Overpass', sans-serif;
+	
 }
 
 input:disabled {
@@ -89,13 +97,26 @@ button:focus {
 	border-color: #666;
 }
 
+main {
+	padding: 1em;
+	margin: 0px;
+	align-items: center;
+	color: whitesmoke;
+	background: rgb(83, 81, 81);
+	padding: 1em;
+}
+
+span {
+padding: 1em;
+/* padding-left: 1.0rem;  */
+}
+
 .xAxis path,
 .xAxis line {
   stroke: teal;
   shape-rendering: crispEdges;
 }
 .xAxis text {
-  /* font-family: Optima, Futura, sans-serif; */
   font-weight: bold;
   font-size: 14px;
   fill: teal;
@@ -109,7 +130,8 @@ button:focus {
 }
 
 .node text {
-  font: 12px sans-serif;
+  font: 12px Overpass;
+  
 }
 
 .link {
@@ -118,34 +140,39 @@ button:focus {
   stroke-width: 2px;
 }
 
-ul {
-	margin: 0;
-	list-style: none;
-	/* padding-left: 1.2rem;  */
-	user-select: none;
+#slicerImg{
+width: 30px;
+height: 30px;
 }
 
 .test {
 	content: "▼";
   }
 
-ul {
+/* .componentUl {
 	margin: 0;
-	list-style: none;
-	padding-left: 1.2rem; 
+	list-style: decimal;
 	user-select: none;
-}
+	font-size: 18px;
+} */
 
 .no-arrow { 
 	padding-left: 1.0rem; 
+	font-size: 16px;
 }
 
 .arrow {
 	cursor: pointer;
+	font-weight: bold;
 	display: inline-block;
-	/* transition: transform 200ms; */
+	transition: transform 200ms;
+	text-align: center;
+	
 }
-.arrowDown { transform: rotate(90deg); }
+
+.arrowDown { 
+	transform: rotate(90deg); 
+}
 
 #mainContainer {
 	display: grid;
@@ -153,7 +180,6 @@ ul {
 	grid-template-rows: 50px 50px auto;
 	width: 100vw;
   	height: 100vh;
-	border-right: 1px solid whitesmoke;
 }
 
 #snapshots {
@@ -162,6 +188,7 @@ ul {
 	grid-row-start: 2;
 	grid-row-end: 4;
 	border: 1px solid whitesmoke;
+	/* align-items: center; */
 }
 
 #banner {
@@ -169,24 +196,31 @@ ul {
 	grid-column-end: 3;
 	grid-row-start: 1;
 	grid-row-end: 2;
+	border-collapse: collapse;
 	border: 1px solid whitesmoke;
 }
+
 
 #title {
 	grid-column-start: 1;
 	grid-column-end: 2;
 	grid-row-start: 1;
 	grid-row-end: 2;
-	border-collapse: collapse;
 	border: 1px solid whitesmoke;
+	
 }
+
 
 #buttons {
 	grid-column-start: 2;
 	grid-column-end: 3;
 	grid-row-start: 2;
 	grid-row-end: 3;
+	border: 1px solid whitesmoke;
+	padding: 1em;
+
 }
+
 
 #presentation {
 	grid-column-start: 2;
@@ -196,21 +230,33 @@ ul {
 	border: 1px solid whitesmoke;
 }
 
-/* .right-align {
-	text-align: right;
-} */
-
 .oldValue{
 	text-decoration: line-through;
-	color:pink
+	color:white;
 }
 .diffComponentName{
 	color:blue
 }
 .deletedComponent{
 	text-decoration: line-through;
-	color:blueviolet
+	color:red;
 }
+
+.search-button {
+	color: rgb(162, 159, 159);
+	background: transparent;
+	border: none;
+	outline: none;
+	margin-right: -25px;
+}
+form.form button:hover {
+  background: rgb(238, 137, 5);
+
+}
+/* 
+.right-align {
+	text-align: right;
+} */
 
 /* .collapsible {
 	background-color: #777;
@@ -240,10 +286,10 @@ ul {
 	content: "\2212";
   } */
   
-  /* .content {
-	padding: 0 18px;
-	max-height: 0;
-	overflow: hidden;
+   .content {
+	padding: 2px;
+	font-size: 18px;
+	font-weight: bold;
+	border: none;
 	transition: max-height 0.2s ease-out;
-	background-color: #f1f1f1;
-  } */
+  } 
