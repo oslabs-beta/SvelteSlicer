@@ -184,10 +184,10 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 				componentTree[componentName] = {
 					id: componentName,
 					children: []
-					
 				}
 			}	
 	  	});
+		console.log(uncaughtVariables);
 	});
 });
 
