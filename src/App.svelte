@@ -97,19 +97,23 @@
 			<div id="snapshots">
 				{#if !filtered.length}
 					{#each $snapshots as snapshot, i}
-						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
-								<div class="right-align">
-							<button on:click={() => selectState(i)}>Data</button>
-							<button on:click={() => jumpState(i)}>Jump</button>
+						<div class="snapshotList">
+							<span class="snapshotText">Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
+							<div class="snapshotButtonGroup">
+								<button class="snapshotButton" on:click={() => selectState(i)}>Data</button>
+								<button class="snapshotButton" on:click={() => jumpState(i)}>Jump</button>
+							</div>
 						</div>
 						<br>
 					{/each}
 				{:else if filtered.length}
 					{#each filtered as snapshot}
-						<span>Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
-						<div class="right-align">
-							<button on:click={() => selectState(snapshot.index)}>Data</button>
-							<button on:click={() => jumpState(snapshot.index)}>Jump</button>
+						<div class="snapshotList">
+							<span class="snapshotText">Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
+							<div class="snapshotButtonGroup">
+								<button class="snapshotButton" on:click={() => selectState(snapshot.index)}>Data</button>
+								<button class="snapshotButton" on:click={() => jumpState(snapshot.index)}>Jump</button>
+							</div>
 						</div>
 						<br>
 					{/each}
@@ -165,5 +169,6 @@
 	
 	<style>
 		
+
 	</style>
 	
