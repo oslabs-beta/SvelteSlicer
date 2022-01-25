@@ -2,9 +2,9 @@ import { writable, get } from 'svelte/store';
 import { compile } from "svelte/compiler";
 import _ from "lodash";
 
-
 export const snapshots = writable([]);
 export const fileTree = writable({});
+export const flatFileTree = writable([]);
 export const backgroundPageConnection = writable(chrome.runtime.connect({name: "panel"}));
 
 // store updateable objects for current component state
@@ -101,11 +101,11 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 									data.parent = componentName;
 									components[data.name] = data;
 								}
-								else if (variable.source.value.endsWith('.js') && variable.source.value.includes('/store')) {
+								else if (variable.source.value.includes('/store')) {
 									data.type = "store"
 									variables[data.name] = data;
 								}
-								else if (variable.source.value.endsWith('.js') && variable.source.value.includes('/action')) {
+								else if (variable.source.value.includes('/action')) {
 									data.type = "action"
 									functions[data.name] = data;
 								}
@@ -184,10 +184,10 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 				componentTree[componentName] = {
 					id: componentName,
 					children: []
-					
 				}
 			}	
 	  	});
+		console.log(uncaughtVariables);
 	});
 });
 
@@ -407,7 +407,24 @@ function buildSnapshot(data) {
 			}
 		}
 
+		// set fileTree for hierarchical displays
 	 	fileTree.set(componentTree[parentComponent]);
+
+		//create depth-first ordering of tree for state injections
+		const flatTreeArray = [];
+
+		depthFirstTraverse(componentTree[parentComponent]);
+		
+		function depthFirstTraverse(tree) {
+			flatTreeArray.push(tree.id);
+			if (tree.children.length) {
+				tree.children.forEach(child => {
+					depthFirstTraverse(child);
+				})
+			}
+		}
+
+		flatFileTree.set(flatTreeArray);	
 	};
 
 	const snapshot = {
@@ -417,13 +434,9 @@ function buildSnapshot(data) {
 		diff
 	}
 
-	console.log(snapshot);
-
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
 	snapshotLabel = undefined;
-
-	console.log(deepCloneSnapshot);
 
 	return deepCloneSnapshot; // deep clone to "freeze" state
 }

@@ -1,5 +1,6 @@
 <script>
-	import {snapshots, fileTree} from './stores.js';
+	import {snapshots, fileTree, flatFileTree, backgroundPageConnection} from './stores.js';
+	import { get } from 'svelte/store';
 	import Component from './Component.svelte';
 	import TidyTree2 from './TidyTree2.svelte';
 	import FileStructure from './FileStructure.svelte';
@@ -20,27 +21,34 @@
 	let vis = "tree";
 	$: Vis = vis;
 
+	const connection = get(backgroundPageConnection);
+
 	function selectState(index) {
 		I = index === $snapshots.length - 1 ? undefined : index;
 	}
 
 	function selectView(selection) {
 		view = selection;
-		filtered = [];
 	}
 
-	function selectVis(selection){
+	function selectVis(selection) {
         vis = selection;
 	}
 
-	function filterState(snapshot){
-		let i = $snapshots.indexOf(snapshot);
-		selectState(i);
+	function jumpState(index) {
+		I = index === $snapshots.length - 1 ? undefined : index;
+		connection.postMessage({
+    		source: 'panel',
+			name: 'jumpState',
+			index,
+			state: $snapshots[index].data,
+			tree: $flatFileTree,
+			tabId: chrome.devtools.inspectedWindow.tabId
+		});
 	}
 
 	function filterEventHandler() {
 		input = input.trim().toLowerCase();
-		console.log("filterInput", input);
 		function isSubstring(s1, s2) {
 			let S = s1.length;
 			let L = s2.length;
@@ -48,24 +56,27 @@
         		let j;
 				for (j = 0; j < S; j++) {
 					if (s2[i + j] != s1[j]) break;
-					}
-					if (j == S) return i;
+				}
+				if (j == S) return i;
     		}
   			return -1;
 		}
-    	for (let snapshot of $snapshots) {
+
+    	$snapshots.forEach((snapshot, index) => {
         	let label = snapshot.label
 			label = label.toLowerCase();
-			console.log("label", label);
     
         	let res = isSubstring(input, label);
 			if(res > -1){
-				filtered.push(snapshot);
+				filtered.push({snapshot, index});
 			}
+		});	
+		input = " ";
 	}
-	input = " ";
-	console.log("filtered", filtered);
-}
+
+	function resetFilter() {
+		filtered = [];
+	}
 	
 	</script>
 	
@@ -82,6 +93,7 @@
 							<i class="fa fa-search"></i>
 						</button>
 					</form>
+					<button on:click={resetFilter}>Reset</button>
 				</div>
 			</div>
 			<div id="snapshots">
@@ -90,14 +102,16 @@
 						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
 								<div class="right-align">
 							<button on:click={() => selectState(i)}>Data</button>
+							<button on:click={() => jumpState(i)}>Jump</button>
 						</div>
 						<br>
 					{/each}
 				{:else if filtered.length}
-					{#each filtered as snapshot, i}
-						<span>Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
+					{#each filtered as snapshot}
+						<span>Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
 						<div class="right-align">
-							<button on:click={() => filterState(snapshot)}>Data</button>
+							<button on:click={() => selectState(snapshot.index)}>Data</button>
+							<button on:click={() => jumpState(snapshot.index)}>Jump</button>
 						</div>
 						<br>
 					{/each}
