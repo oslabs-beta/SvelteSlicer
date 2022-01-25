@@ -2,13 +2,9 @@
 
 
 body {
-	
 	background: rgb(83, 81, 81);
-	margin: 1em;
-	padding: 1em;
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
-	
 }
 
 h2 {
@@ -81,6 +77,10 @@ button {
 	
 }
 
+input {
+	width: 150px;
+}
+
 input:disabled {
 	color: #ccc;
 }
@@ -98,12 +98,10 @@ button:focus {
 }
 
 main {
-	padding: 1em;
 	margin: 0px;
 	align-items: center;
 	color: whitesmoke;
 	background: rgb(83, 81, 81);
-	padding: 1em;
 }
 
 span {
@@ -180,6 +178,7 @@ height: 30px;
 	grid-template-rows: 50px 50px auto;
 	width: 100vw;
   	height: 100vh;
+	padding: 0;
 }
 
 #snapshots {
@@ -200,6 +199,9 @@ height: 30px;
 	border: 1px solid whitesmoke;
 	padding-top: 0px;
 	padding-bottom: 0px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
 #banner {
@@ -209,6 +211,8 @@ height: 30px;
 	grid-row-end: 2;
 	border-collapse: collapse;
 	border: 1px solid whitesmoke;
+	display: flex;
+	align-items: center;
 }
 
 
@@ -218,7 +222,8 @@ height: 30px;
 	grid-row-start: 1;
 	grid-row-end: 2;
 	border: 1px solid whitesmoke;
-	
+	display: flex;
+	align-items: center;
 }
 
 
@@ -229,7 +234,8 @@ height: 30px;
 	grid-row-end: 3;
 	border: 1px solid whitesmoke;
 	padding: 1em;
-
+	display: flex;
+	align-items: center;
 }
 
 

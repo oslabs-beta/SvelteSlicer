@@ -86,15 +86,13 @@
 				<h2> <img src={logo} id="slicerImg" alt='logo'/> Svelte Slicer</h2> 
 			</div>
 			<div id="filter">
-				<div class="filter" style="display:flex; flex-flow:row">
-					<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
-						<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
+				<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
+					<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
 					<button type="submit" class="search-button"> 
-							<i class="fa fa-search"></i>
-						</button>
-					</form>
-					<button on:click={resetFilter}>Reset</button>
-				</div>
+						<i class="fa fa-search"></i>
+					</button>
+				</form>
+				<button on:click={resetFilter}>Reset</button>
 			</div>
 			<div id="snapshots">
 				{#if !filtered.length}
@@ -167,9 +165,5 @@
 	
 	<style>
 		
-
-		
-
-
 	</style>
 	
