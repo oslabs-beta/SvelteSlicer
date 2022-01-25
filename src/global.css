@@ -4,7 +4,7 @@
 body {
 	
 	background: rgb(83, 81, 81);
-	margin: 1em;
+	/* margin: 1em; */
 	padding: 1em;
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
@@ -16,7 +16,6 @@ h2 {
 	font-weight: Bold 700;
 	font-size: 25px;
 	margin: 2px;;
-	/* padding: 0.5em; */
 }
 
 
@@ -35,9 +34,9 @@ a {
 }
 
 span {
-	padding-left: 1em;
-	padding-right: 1em;
-	font-size: 18px;
+	/* padding-left: 1em;
+	padding-right: 1em; */
+	font-size: 16px;
 }
 
 ol li::marker {
@@ -98,12 +97,11 @@ button:focus {
 }
 
 main {
-	padding: 1em;
+
 	margin: 0px;
 	align-items: center;
 	color: whitesmoke;
 	background: rgb(83, 81, 81);
-	padding: 1em;
 }
 
 span {
@@ -149,18 +147,24 @@ height: 30px;
 	content: "▼";
   }
 
-/* .componentUl {
-	margin: 0;
-	list-style: decimal;
-	user-select: none;
-	font-size: 18px;
-} */
-
 .no-arrow { 
-	padding-left: 1.0rem; 
+	/* padding-left: 1.0rem;  */
 	font-size: 16px;
 }
 
+ul.ulArrows {
+	list-style-type: none;
+}
+
+ul.variableVal {
+	font-size: 16px;
+	list-style-type: none;
+}
+
+#variableName {
+	font-size: 16px;
+	list-style-type: none;
+}
 .arrow {
 	cursor: pointer;
 	font-weight: bold;
@@ -221,7 +225,9 @@ height: 30px;
 
 }
 
-
+.oldAndNewVals {
+	font-size: 16px;
+}
 #presentation {
 	grid-column-start: 2;
 	grid-column-end: 3;
@@ -232,14 +238,20 @@ height: 30px;
 
 .oldValue{
 	text-decoration: line-through;
-	color:white;
+	color:rgb(238, 137, 5);
+	font-size: 16px;
 }
 .diffComponentName{
-	color:blue
+	color:white;
+	font-weight: bold;
+	font-size: 16px;
+
+
 }
 .deletedComponent{
 	text-decoration: line-through;
 	color:red;
+	font-size: 16px;
 }
 
 .search-button {
@@ -288,8 +300,8 @@ form.form button:hover {
   
    .content {
 	padding: 2px;
-	font-size: 18px;
+	font-size: 16px;
 	font-weight: bold;
 	border: none;
-	transition: max-height 0.2s ease-out;
+	/* transition: max-height 0.2s ease-out; */
   } 

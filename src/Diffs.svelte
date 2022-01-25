@@ -42,7 +42,7 @@
                     <h4 class='diffComponentName'>{component[0].component}</h4>
                     {#each component as variable} 
                        
-                        <p>{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span>--> {variable.newValue}</span></p>
+                        <p class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span> --> {variable.newValue}</span></p>
                     {/each}
                 {/each}
             {/if}
