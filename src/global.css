@@ -178,6 +178,10 @@ ul.variableVal {
 	transform: rotate(90deg); 
 }
 
+#valuesList {
+	font-size: 16px;
+}
+
 #mainContainer {
 	display: grid;
 	grid-template-columns: 300px auto;
