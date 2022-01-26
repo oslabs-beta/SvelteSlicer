@@ -11,7 +11,6 @@ h2 {
 	font-weight: Bold 700;
 	font-size: 25px;
 	margin: 2px;;
-	/* padding: 0.5em; */
 }
 
 
@@ -30,8 +29,7 @@ a {
 }
 
 span {
-	padding-left: 1em;
-	padding-right: 1em;
+	padding: 1em;
 	font-size: 18px;
 }
 
@@ -73,7 +71,6 @@ button {
 	padding: 5px;
 	border: none;
 	border-radius: 2px;
-	
 }
 
 input {
@@ -102,16 +99,12 @@ main {
 	color: whitesmoke;
 }
 
-span {
-padding: 1em;
-/* padding-left: 1.0rem;  */
-}
-
 .xAxis path,
 .xAxis line {
   stroke: teal;
   shape-rendering: crispEdges;
 }
+
 .xAxis text {
   font-weight: bold;
   font-size: 14px;
@@ -136,11 +129,6 @@ padding: 1em;
   stroke-width: 2px;
 }
 
-#slicerImg{
-width: 30px;
-height: 30px;
-}
-
 .test {
 	content: "▼";
   }
@@ -163,93 +151,10 @@ height: 30px;
 	display: inline-block;
 	transition: transform 200ms;
 	text-align: center;
-	
 }
 
 .arrowDown { 
 	transform: rotate(90deg); 
-}
-
-#mainContainer {
-	display: grid;
-	grid-template-columns: 300px auto;
-	grid-template-rows: 50px 50px auto;
-	width: 100vw;
-  	height: 100vh;
-	padding: 0;
-	border: 1px solid #dddcdc;
-}
-
-#snapshots {
-	grid-column-start: 1;
-	grid-column-end: 2;
-	grid-row-start: 3;
-	grid-row-end: 4;
-	overflow-y: scroll;
-	border-top: 1px solid #dddcdc;
-	background-color: #757474;
-	padding: 0.5em;
-}
-
-#filter {
-	grid-column-start: 1;
-	grid-column-end: 2;
-	grid-row-start: 2;
-	grid-row-end: 3;
-	padding-top: 0px;
-	padding-bottom: 0px;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	background-color: #646262;
-}
-
-#banner {
-	grid-column-start: 2;
-	grid-column-end: 3;
-	grid-row-start: 1;
-	grid-row-end: 2;
-	border-left: 1px solid #dddcdc;
-	display: flex;
-	align-items: center;
-	background-color: #535151;
-}
-
-
-#title {
-	grid-column-start: 1;
-	grid-column-end: 2;
-	grid-row-start: 1;
-	grid-row-end: 2;
-	display: flex;
-	align-items: center;
-	background-color: #535151;
-}
-
-
-#buttons {
-	grid-column-start: 2;
-	grid-column-end: 3;
-	grid-row-start: 2;
-	grid-row-end: 3;
-	border-left: 1px solid #dddcdc;
-	padding: 1em;
-	display: flex;
-	align-items: center;
-	background-color: #646262;
-}
-
-
-#presentation {
-	grid-column-start: 2;
-	grid-column-end: 3;
-	grid-row-start: 3;
-	grid-row-end: 4;
-	overflow-x: scroll;
-	overflow-y: scroll;
-	border-top: 1px solid #dddcdc;
-	border-left: 1px solid #dddcdc;
-	background-color: #757474;
 }
 
 .oldValue{
@@ -313,22 +218,4 @@ form.form button:hover {
 	transition: max-height 0.2s ease-out;
   } 
 
-  .snapshotText {
-	  font-size: 14px;
-  }
 
-  .snapshotButton {
-	  font-size: 14px;
-  }
-
-  .snapshotList {
-	  display: flex;
-	  align-items: center;
-	  justify-content: space-between;
-	  padding: 0;
-  }
-
-  .snapshotButtonGroup {
-	  flex-shrink: 0; 
-	  padding: 0;
-  }
