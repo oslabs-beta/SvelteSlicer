@@ -9,11 +9,10 @@
 	import logo from '../extension/devtools/public/images/svelte_slicer_logo_64X64.png';
 
 	
-	$: CurrentI = (I === undefined ? $snapshots.length - 1 : snapshotLength === $snapshots.length ? I : $snapshots.length - 1);
-	$: inactive = getInactive(jumpStart, jumpEnd);
-	$: CurrentAppView = (appView === undefined ? $snapshots.length -1 : (snapshotLength === $snapshots.length && jumping) ? appView : $snapshots.length -1 )
+	$: CurrentI = (I === undefined ? $snapshots.length - 1 : snapshotLength < $snapshots.length ? $snapshots.length - 1 : I);
+	$: CurrentAppView = (appView === undefined ? $snapshots.length -1 : snapshotLength < $snapshots.length ? $snapshots.length -1 : appView)
 
-	const timeline = [];
+	let timeline = [];
 
 	$: {
 		if (timeline.length !== $snapshots.length) {
@@ -25,7 +24,6 @@
 			else {
 				timeline[latest] = [...timeline[previous], latest]
 			}
-			console.log(timeline);
 			jumping = false;
 		}
 	}
@@ -35,8 +33,6 @@
 	let filtered = [];
 	let input = "";
 	let jumping = false;
-	let jumpStart;
-	let jumpEnd;
 	let snapshotLength;
 	
 	let view = "state";
@@ -46,16 +42,6 @@
 	$: Vis = vis;
 
 	const connection = get(backgroundPageConnection);
-
-	function getInactive(start, end) {
-		const result = [];
-		if (start && end) {
-			for (let j = start; j <= end; j++) {
-				result.push(j);
-			}
-		}
-		return result;
-	}
 
 	function selectView(selection) {
 		view = selection;
@@ -74,8 +60,6 @@
 		I = index;
 		appView = index;
 		snapshotLength = JSON.parse(JSON.stringify($snapshots)).length
-		// jumpStart = index + 1;
-		// jumpEnd = $snapshots.length - 1;
 		jumping = true;
 		connection.postMessage({
     		source: 'panel',
@@ -120,20 +104,56 @@
 	
 	function clearSnapshots(clearType) {
 		let newSnapshotList;
-		if(clearType === 'previous'){
-			newSnapshotList = $snapshots.slice(0,CurrentAppView);
-		}else if(clearType === 'forward') {
-			newSnapshotList = $snapshots.slice(CurrentAppView +1);
-		}else if(clearType === 'path') {
-			let path = timeline[CurrentAppView];
+		let path = timeline[CurrentAppView].slice();
+		if (clearType === 'forward') {
+			newSnapshotList = $snapshots.slice(0, CurrentAppView + 1);
+			timeline = timeline.slice(0, CurrentAppView + 1);
+		}
+		else if (clearType === 'previous') {
+			newSnapshotList = $snapshots.slice(CurrentAppView);
+			let count = CurrentAppView;
+			timeline = timeline.slice(CurrentAppView);
+			timeline.forEach(snapshot => {
+				for (let i = snapshot.length - 1; i >= 0; i--) {
+					const newValue = snapshot[i] - count;
+					if (newValue >= 0) {
+						snapshot[i] = newValue;
+					}
+					else {
+						snapshot.splice(i, 1);
+					}
+				}
+			})
+			appView = appView - count;
+			I = I - count;
+		}
+		else if (clearType === 'path') {
 			newSnapshotList = $snapshots.slice();
-			for(let i = $snapshots.length -1; i > 0 ; i-=1){
+			for (let i = $snapshots.length -1; i > 0 ; i-=1){
 				if(!path.includes(i)){
-				newSnapshotList.splice(i,1)
+					newSnapshotList.splice(i,1);
+					timeline.splice(i, 1);
 				}
 			}
-		}snapshots.set(newSnapshotList)
-
+			timeline.forEach((snapshot, snapshotIndex) => {
+				snapshot.splice(0, snapshot.length);
+				for (let i = 0; i <= snapshotIndex; i++) {
+					snapshot.push(i);
+				}
+			})
+			console.log(timeline);
+		}
+		
+		snapshots.set(newSnapshotList)
+		
+		connection.postMessage({
+			source: 'panel',
+			name: 'clearSnapshots',
+			clearType,
+			index: CurrentAppView,
+			path,
+			tabId: chrome.devtools.inspectedWindow.tabId
+		})
 	}
 
 	</script>
@@ -176,9 +196,8 @@
 				{/if}
 			</div>
 			<div id="banner">
-				<button on:click={() => selectView("files")}>File Structure</button>
-				<button on:click={() => selectView("state")}>State</button>
-				<button on:click={() => selectView("diff")}>Diff</button>				
+				<button on:click={() => selectView("files")}>Components</button>
+				<button on:click={() => selectView("state")}>State</button>			
 			</div>
 			<div id="buttons">
 				{#if View === "files"}
@@ -187,6 +206,7 @@
 				{:else if View === "state"}
 					<button on:click={() => selectVis("tree")}>Tree</button>
 					<button on:click={() => selectVis("chart")}>Chart</button>
+					<button on:click={() => selectVis("diff")}>Diff</button>	
 				{/if}
 			</div>
 			<div id="presentation">
@@ -200,10 +220,9 @@
 					    <State I={CurrentI}></State>
 						{:else if Vis === "chart"}
                         <TidyTree2 {view} I={CurrentI}/>
-						{/if}
-					
-					{:else if View === "diff"}
+						{:else if Vis === "diff"}
 						<Diffs I={CurrentI}/>
+						{/if}
 					{/if}
 				{/if}
 			</div>

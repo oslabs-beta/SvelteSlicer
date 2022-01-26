@@ -25,5 +25,15 @@ chrome.runtime.onMessage.addListener(message => {
       tree: message.tree
     });
   }
+
+  else if (message.name === "clearSnapshots") {
+    window.postMessage({
+      source: 'listeneter.js',
+      type: 'clearSnapshots',
+      index: message.index,
+      clearType: message.clearType,
+      path: message.path
+    })
+  }
 });
 

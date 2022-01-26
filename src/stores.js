@@ -434,8 +434,6 @@ function buildSnapshot(data) {
 		diff
 	}
 
-	console.log(snapshot);
-
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
 	snapshotLabel = undefined;

@@ -17,7 +17,7 @@ chrome.devtools.panels.create(
                     const componentObject = {};
                     let node_id = 0;
                     let firstLoadSent = false;
-                    const ctxHistory = [];
+                    let ctxHistory = [];
                     let rebuildingDom = false;
 
                     function setup(root) {
@@ -250,6 +250,24 @@ chrome.devtools.panels.create(
                         store.set(value);
                     }
 
+                    function clearSnapshots(index, path, clearType) {
+                        console.log(path);
+                        if (clearType === 'forward') {
+                            ctxHistory = ctxHistory.slice(0, index + 1);
+                        }
+                        else if (clearType === 'previous') {
+                            ctxHistory = ctxHistory.slice(index);
+                        }
+                        else if (clearType === 'path') {
+                            for (let i = ctxHistory.length -1; i > 0 ; i--){
+                                if (!path.includes(i)){
+                                    ctxHistory.splice(i,1);
+                                }
+                            }
+                            console.log(ctxHistory);
+                        }
+                    }
+
                     setup(window.document);
                   
                     for (let i = 0; i < window.frames.length; i++) {
@@ -350,6 +368,11 @@ chrome.devtools.panels.create(
                         if (event.data.type === 'jumpState') {
                             const { index, state, tree} = event.data;
                             rebuildDom(index, state, tree);
+                        }
+
+                        if (event.data.type === 'clearSnapshots') {
+                            const { index, path, clearType } = event.data;
+                            clearSnapshots(index, path, clearType);
                         }
                     })
                     `
