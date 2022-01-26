@@ -161,7 +161,8 @@
 	<main>
 		<div id="mainContainer">
 			<div id="title">
-				<h2> <img src={logo} id="slicerImg" alt='logo'/> Svelte Slicer</h2> 
+				<img src={logo} id="slicerImg" alt='logo'/>
+				<h2 id="titleText">Svelte Slicer</h2> 
 			</div>
 			<div id="filter">
 				<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
@@ -394,10 +395,16 @@
 		#slicerImg{
 			width: 30px;
 			height: 30px;
+			margin-right: 10px;
 		}
 
 		.inactiveSnapshot {
 			background-color: #cbcbcb;
+		}
+
+		#titleText {
+			padding-top: 5px;
+			margin: 0;
 		}
 	</style>
 	

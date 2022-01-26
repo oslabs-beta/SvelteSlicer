@@ -14,15 +14,11 @@
         return result;
     }, {})
 
-function log() {
-    console.log(componentObject);
-}
 </script>
 
 <main>
-    <button on:click={log}>Press Me</button>
     {#if data}
-    <h2>{label}</h2>
+    <h2>Snapshot {I}: {label}</h2>
         {#each Object.keys(componentObject) as componentGroup} 
             {#each componentObject[componentGroup] as componentName, i}
                 {#if componentObject[componentGroup].length === 1 }
