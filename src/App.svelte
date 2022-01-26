@@ -107,7 +107,7 @@
 					{/each}
 				{:else if filtered.length}
 					{#each filtered as snapshot}
-						<span>Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
+						<span >Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
 						<div class="right-align">
 							<button on:click={() => selectState(snapshot.index)}>Data</button>
 							<button on:click={() => jumpState(snapshot.index)}>Jump</button>

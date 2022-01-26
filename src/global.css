@@ -33,11 +33,6 @@ a {
 	text-decoration: none;
 }
 
-span {
-	/* padding-left: 1em;
-	padding-right: 1em; */
-	font-size: 16px;
-}
 
 ol li::marker {
 	content: "▼";
@@ -105,8 +100,8 @@ main {
 }
 
 span {
-padding: 1em;
-/* padding-left: 1.0rem;  */
+/* padding: 1em; */
+font-size: 16px;
 }
 
 .xAxis path,
@@ -309,3 +304,5 @@ form.form button:hover {
 	border: none;
 	/* transition: max-height 0.2s ease-out; */
   } 
+
+  
