@@ -11,13 +11,14 @@
 	
 	$: CurrentI = (I === undefined ? $snapshots.length - 1 : snapshotLength === $snapshots.length ? I : $snapshots.length - 1);
 	$: inactive = getInactive(jumpStart, jumpEnd);
+	$: CurrentAppView = (appView === undefined ? $snapshots.length -1 : (snapshotLength === $snapshots.length && jumping) ? appView : $snapshots.length -1 )
 
 	const timeline = [];
 
 	$: {
 		if (timeline.length !== $snapshots.length) {
 			const latest = $snapshots.length - 1;
-			const previous = jumping ? I : latest - 1;
+			const previous = jumping ? appView : latest - 1;
 			if (latest === 0) {
 				timeline[0] = [0];
 			}
@@ -30,6 +31,7 @@
 	}
 
 	let I;
+	let appView;
 	let filtered = [];
 	let input = "";
 	let jumping = false;
@@ -70,9 +72,10 @@
 
 	function jumpState(index) {
 		I = index;
+		appView = index;
 		snapshotLength = JSON.parse(JSON.stringify($snapshots)).length
-		jumpStart = index + 1;
-		jumpEnd = $snapshots.length - 1;
+		// jumpStart = index + 1;
+		// jumpEnd = $snapshots.length - 1;
 		jumping = true;
 		connection.postMessage({
     		source: 'panel',
@@ -98,7 +101,7 @@
     		}
   			return -1;
 		}
-
+	
     	$snapshots.forEach((snapshot, index) => {
         	let label = snapshot.label
 			label = label.toLowerCase();
@@ -115,6 +118,24 @@
 		filtered = [];
 	}
 	
+	function clearSnapshots(clearType) {
+		let newSnapshotList;
+		if(clearType === 'previous'){
+			newSnapshotList = $snapshots.slice(0,CurrentAppView);
+		}else if(clearType === 'forward') {
+			newSnapshotList = $snapshots.slice(CurrentAppView +1);
+		}else if(clearType === 'path') {
+			let path = timeline[CurrentAppView];
+			newSnapshotList = $snapshots.slice();
+			for(let i = $snapshots.length -1; i > 0 ; i-=1){
+				if(!path.includes(i)){
+				newSnapshotList.splice(i,1)
+				}
+			}
+		}snapshots.set(newSnapshotList)
+
+	}
+
 	</script>
 	
 	<main>
@@ -134,20 +155,20 @@
 			<div id="snapshots">
 				{#if !filtered.length}
 					{#each $snapshots as snapshot, i}
-						<div class="snapshotList" class:selectedSnapshot="{i === CurrentI}" class:inactiveSnapshot="{!timeline[CurrentI].includes(i)}">
+						<div class="snapshotList" class:selectedSnapshot="{i === CurrentAppView}" class:inactiveSnapshot="{!timeline[CurrentAppView].includes(i)}">
 							<span class="snapshotText">Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
 							<div class="snapshotButtonGroup">
-								<button class="snapshotButton" on:click={() => selectState(i)}>Data</button>
+								<button class="snapshotButton" on:click={() => selectState(i)} class:selectedButton="{i === CurrentI}">Data</button>
 								<button class="snapshotButton" on:click={() => jumpState(i)}>Jump</button>
 							</div>
 						</div>
 					{/each}
 				{:else if filtered.length}
 					{#each filtered as snapshot}
-						<div class="snapshotList" class:selectedSnapshot="{snapshot.index === CurrentI}" class:inactiveSnapshot="{!timeline[CurrentI].includes(snapshot.index)}">
+						<div class="snapshotList" class:selectedSnapshot="{snapshot.index === CurrentAppView}" class:inactiveSnapshot="{!timeline[CurrentAppView].includes(snapshot.index)}">
 							<span class="snapshotText">Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
 							<div class="snapshotButtonGroup">
-								<button class="snapshotButton" on:click={() => selectState(snapshot.index)}>Data</button>
+								<button class="snapshotButton" on:click={() => selectState(snapshot.index)} class:selectedButton="{snapshot.index === CurrentI}">Data</button>
 								<button class="snapshotButton" on:click={() => jumpState(snapshot.index)}>Jump</button>
 							</div>
 						</div>
@@ -187,11 +208,11 @@
 				{/if}
 			</div>
 			<div id="clearSnapshots">
-				<p>Clear Snapshots</p>
+				<h6 class='clearSnapshotHeader'>Clear Snapshots</h6>
 				<div id="clearButtons">
-					<button>Previous</button>
-					<button>Forward</button>
-					<button>Path</button>
+					<button class='clearButton' on:click={() => clearSnapshots('previous')}>Previous</button>
+					<button class='clearButton' on:click={() => clearSnapshots('path')}>Path</button>
+					<button class='clearButton' on:click={() => clearSnapshots('forward')}>Forward</button>
 				</div>
 			</div>
 		</div>
@@ -241,7 +262,7 @@
 		#mainContainer {
 			display: grid;
 			grid-template-columns: 300px auto;
-			grid-template-rows: 50px 50px auto 100px;
+			grid-template-rows: 50px 50px auto 85px;
 			width: 100vw;
   			height: 100vh;
 			padding: 0;
@@ -329,8 +350,26 @@
 
 		#clearButtons {
 			display: flex;
-			justify-content: space-evenly;
+			justify-content: center;
 			padding: 0;
+			margin: 0px;
+
+		}
+
+		.clearButton {
+			background-color: transparent;
+			font-size: 14px;
+			border: 1px solid rgb(238, 137, 5);
+			margin-left: 10px;
+			margin-right: 10px;
+
+		}
+
+		.clearSnapshotHeader {
+			text-align: center;
+			font-size: 16px;
+			margin: 0px;
+			padding: 10px;
 		}
 
 		#slicerImg{

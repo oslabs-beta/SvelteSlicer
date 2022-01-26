@@ -73,6 +73,10 @@ button {
 	border-radius: 2px;
 }
 
+.selectedButton {
+	background-color: rgb(238, 137, 5);
+}
+
 input {
 	width: 150px;
 }
