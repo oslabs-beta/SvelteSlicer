@@ -1,16 +1,13 @@
 <script defer>
 export let I;
-export let view;
-import { fileTree, snapshots } from './stores';
+import { snapshots } from './stores';
 import * as d3 from 'd3';
-import {onMount, beforeUpdate, afterUpdate, onDestroy} from 'svelte';
+import { afterUpdate } from 'svelte';
 
 
 $: label = $snapshots[I].label;
-$: snapshot = $snapshots[I];
 $: parent = $snapshots[I].parent;
-$: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
-
+$: tree = JSON.parse(JSON.stringify($snapshots[I].data[parent]));
 
 // can we give an inherit property to the margin here so that 
 // the chart inherits the margin of the parent?
@@ -29,7 +26,23 @@ let margin = {top:40,right:60,bottom:20,left:60}
     let currElement ;
 
    afterUpdate(()=>{
-   
+
+    // remove references to inactive child components
+    function trimTree(tree) {
+        console.log(tree.children);
+        if (tree.children.length) {
+            tree.children.forEach((child, i) => {
+                if (!child.active) {
+                    tree.children.splice(i, 1);
+                }
+                else {
+                    trimTree(child);
+                }
+            })
+        }
+    }
+
+    trimTree(tree);
 
     svg = d3.select('#chart')
        .append('div')
@@ -47,7 +60,7 @@ let margin = {top:40,right:60,bottom:20,left:60}
        //d3.tree() is tidy tree layout module
        let treemap = d3.tree().size([width,height]);
        //construct root node
-       root = d3.hierarchy(component, function(d){
+       root = d3.hierarchy(tree, function(d){
            return d.children;
        });
        console.log('root',root)
