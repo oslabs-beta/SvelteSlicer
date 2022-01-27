@@ -64,17 +64,12 @@ onMount(()=>{
               .attr('class','node')
               .attr('r',0)
               .style('fill',function(d){
-                return d._children? "moccasin":"green";
+                return d._children? "moccasin":"rgb(238, 137, 5)";
                 })
             //add text  to show the node data
              nodeEnter
                .append('text')
                .attr('dx','.35em')
-            //    .attr('dx',function(d){
-            //        console.log('d',d)
-            //        return  d.children ||d._children? `.${d.data.id.length/0.2}em`:`.${d.data.id.length/0.2}em`
-            //    })
-               //.attr('y',-20)
                .attr('y',function(d){
                     //return d.children ||d._children? -20:0;//has childern text on the left(not nesserary)
                     return -12
@@ -85,6 +80,7 @@ onMount(()=>{
                .text(function(d){
                    return d.data.id;
                })
+               .style('fill', 'white')
              
             //make transition node/ start from parent position to new position
             let nodeUpdate = nodeEnter.merge(node);
@@ -98,7 +94,7 @@ onMount(()=>{
               .select('circle.node')
               .attr('r',10)
               .style('fill',function(d){
-                return d._children? "moccasin":"green";
+                return d._children? "moccasin":"rgb(238, 137, 5)";
                 })
               .attr('cursor', 'pointer');
               //remove exiting node;
