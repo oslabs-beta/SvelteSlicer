@@ -12,7 +12,7 @@ chrome.runtime.onConnect.addListener(function (port) {
       return;
     }
     
-    if (message.name === "jumpState") {
+    if (message.name === "jumpState" || message.name === "clearSnapshots") {
       chrome.tabs.sendMessage(message.tabId, message);
     }
   }

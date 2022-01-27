@@ -8,14 +8,12 @@ body {
 	padding: 1em;
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
-	
 }
 
 h2 {
-
 	font-weight: Bold 700;
 	font-size: 25px;
-	margin: 2px;;
+	margin: 2px;
 }
 
 
@@ -72,7 +70,14 @@ button {
 	padding: 5px;
 	border: none;
 	border-radius: 2px;
-	
+}
+
+.selectedButton {
+	background-color: rgb(238, 137, 5);
+}
+
+input {
+	width: 150px;
 }
 
 input:disabled {
@@ -109,6 +114,7 @@ font-size: 16px;
   stroke: teal;
   shape-rendering: crispEdges;
 }
+
 .xAxis text {
   font-weight: bold;
   font-size: 14px;
@@ -131,11 +137,6 @@ font-size: 16px;
   fill: none;
   stroke: #ccc;
   stroke-width: 2px;
-}
-
-#slicerImg{
-width: 30px;
-height: 30px;
 }
 
 .test {
@@ -166,7 +167,6 @@ ul.variableVal {
 	display: inline-block;
 	transition: transform 200ms;
 	text-align: center;
-	
 }
 
 .arrowDown { 
@@ -264,10 +264,7 @@ form.form button:hover {
   background: rgb(238, 137, 5);
 
 }
-/* 
-.right-align {
-	text-align: right;
-} */
+
 
 /* .collapsible {
 	background-color: #777;
