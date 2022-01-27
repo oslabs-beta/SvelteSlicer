@@ -197,17 +197,17 @@
 				{/if}
 			</div>
 			<div id="banner">
-				<button on:click={() => selectView("files")}>Components</button>
-				<button on:click={() => selectView("state")}>State</button>			
+				<button on:click={() => selectView("files")} class:activeButton="{view === "files"}">Components</button>
+				<button on:click={() => selectView("state")} class:activeButton="{view === "state"}">State</button>			
 			</div>
 			<div id="buttons">
 				{#if View === "files"}
-					<button on:click={() => selectVis("tree")}>Tree</button>
-					<button on:click={() => selectVis("chart")}>Chart</button>
+					<button on:click={() => selectVis("tree")} class:activeButton="{vis === "tree"}">Tree</button>
+					<button on:click={() => selectVis("chart")} class:activeButton="{vis === "chart"}">Chart</button>
 				{:else if View === "state"}
-					<button on:click={() => selectVis("tree")}>Tree</button>
-					<button on:click={() => selectVis("chart")}>Chart</button>
-					<button on:click={() => selectVis("diff")}>Diff</button>	
+					<button on:click={() => selectVis("tree")} class:activeButton="{vis === "tree"}">Tree</button>
+					<button on:click={() => selectVis("chart")} class:activeButton="{vis === "chart"}">Chart</button>
+					<button on:click={() => selectVis("diff")} class:activeButton="{vis === "diff"}">Diff</button>	
 				{/if}
 			</div>
 			<div id="presentation">
@@ -286,7 +286,7 @@
 			width: 100vw;
   			height: 100vh;
 			padding: 0;
-			border: 1px solid #dddcdc;
+			border: 2px solid #dddcdc;
 		}
 
 		#snapshots {
@@ -295,7 +295,7 @@
 			grid-row-start: 3;
 			grid-row-end: 4;
 			overflow-y: scroll;
-			border-top: 1px solid #dddcdc;
+			border-top: 2px solid #dddcdc;
 			background-color: #757474;
 			padding: 0;
 			margin: 0;
@@ -319,7 +319,7 @@
 			grid-column-end: 3;
 			grid-row-start: 1;
 			grid-row-end: 2;
-			border-left: 1px solid #dddcdc;
+			border-left: 2px solid #dddcdc;
 			display: flex;
 			align-items: center;
 			background-color: #535151;
@@ -340,7 +340,7 @@
 			grid-column-end: 3;
 			grid-row-start: 2;
 			grid-row-end: 3;
-			border-left: 1px solid #dddcdc;
+			border-left: 2px solid #dddcdc;
 			padding: 1em;
 			display: flex;
 			align-items: center;
@@ -354,8 +354,8 @@
 			grid-row-end: 5;
 			overflow-x: scroll;
 			overflow-y: scroll;
-			border-top: 1px solid #dddcdc;
-			border-left: 1px solid #dddcdc;
+			border-top: 2px solid #dddcdc;
+			border-left: 2px solid #dddcdc;
 			background-color: #757474;
 		}
 
@@ -405,6 +405,14 @@
 		#titleText {
 			padding-top: 5px;
 			margin: 0;
+		}
+
+		.selectedButton {
+			background-color: rgb(238, 137, 5);
+		}
+
+		.activeButton {
+			border: 1px solid rgb(238, 137, 5);
 		}
 	</style>
 	
