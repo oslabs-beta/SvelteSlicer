@@ -6,11 +6,11 @@
 <main>
     {#if typeof variable.value !== "object"}
     <!-- {#if variable.value instanceof !Object} -->
-    <p>{variable.name}: {variable.value}</p>
+    <p class="variableVal">{variable.name}: {variable.value}</p>
     {:else} 
-    <div>
-        <p>{variable.name}: </p>
-        <ul>
+    <div class="variableVal">
+        <p id="variableName">{variable.name}: </p>
+            <ul class="variableVal">
             {#each Object.keys(variable.value) as nestedValue}
                 <li>
                     <svelte:self variable={variable.value[nestedValue]}/>
