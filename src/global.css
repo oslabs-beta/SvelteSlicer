@@ -5,7 +5,6 @@ body {
 	
 	background: rgb(83, 81, 81);
 	/* margin: 1em; */
-	padding: 1em;
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
 }
@@ -101,7 +100,7 @@ main {
 	margin: 0px;
 	align-items: center;
 	color: whitesmoke;
-	background: rgb(83, 81, 81);
+	/* background: rgb(83, 81, 81); */
 }
 
 span {
@@ -177,62 +176,10 @@ ul.variableVal {
 	font-size: 16px;
 }
 
-#mainContainer {
-	display: grid;
-	grid-template-columns: 300px auto;
-	grid-template-rows: 50px 50px auto;
-	width: 100vw;
-  	height: 100vh;
-}
 
-#snapshots {
-	grid-column-start: 1;
-	grid-column-end: 2;
-	grid-row-start: 2;
-	grid-row-end: 4;
-	border: 1px solid whitesmoke;
-	/* align-items: center; */
-}
-
-#banner {
-	grid-column-start: 2;
-	grid-column-end: 3;
-	grid-row-start: 1;
-	grid-row-end: 2;
-	border-collapse: collapse;
-	border: 1px solid whitesmoke;
-}
-
-
-#title {
-	grid-column-start: 1;
-	grid-column-end: 2;
-	grid-row-start: 1;
-	grid-row-end: 2;
-	border: 1px solid whitesmoke;
-	
-}
-
-
-#buttons {
-	grid-column-start: 2;
-	grid-column-end: 3;
-	grid-row-start: 2;
-	grid-row-end: 3;
-	border: 1px solid whitesmoke;
-	padding: 1em;
-
-}
 
 .oldAndNewVals {
 	font-size: 16px;
-}
-#presentation {
-	grid-column-start: 2;
-	grid-column-end: 3;
-	grid-row-start: 3;
-	grid-row-end: 4;
-	border: 1px solid whitesmoke;
 }
 
 .oldValue{
@@ -265,34 +212,6 @@ form.form button:hover {
 
 }
 
-
-/* .collapsible {
-	background-color: #777;
-	color: white;
-	cursor: pointer;
-	padding: 18px;
-	width: 100%;
-	border: none;
-	text-align: left;
-	outline: none;
-	font-size: 15px;
-  } */
-  
-  /* .active, .collapsible:hover {
-	background-color: #555;
-  } */
-  
-  /* .collapsible:after {
-	content: '\002B';
-	color: white;
-	font-weight: bold;
-	float: right;
-	margin-left: 5px;
-  } */
-  
-  /* .active:after {
-	content: "\2212";
-  } */
   
    .content {
 	padding: 2px;
