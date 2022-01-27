@@ -98,7 +98,7 @@ let margin = {top:40,right:60,bottom:20,left:60}
                 .attr('class','node')
                 .attr('r',0)
                 .style('fill',function(d){
-                    return d._children? "moccasin":"green";
+                    return d._children? "moccasin":"rgb(238, 137, 5)";
                 })
 
             //add text  to show the node data
@@ -116,43 +116,43 @@ let margin = {top:40,right:60,bottom:20,left:60}
                .text(function(d){
                    return d.data.id;
                })
+               .style('fill', 'white')
 
                nodeEnter
                  .append('g:title')
                  .attr("transform", "translate(0,0)")
                  .text(function(d){
-                     console.log('d for mouseover',d)
                 
-                  if(Object.keys(d.data.variables).length > 0){
-                      console.log('inside checking variables',d.data)
-                      console.log('valuechecking',d.data.variables)
+                if(Object.keys(d.data.variables).length > 0){
                       let text = '';
-                      Object.keys(d.data.variables).forEach(item=>{
-                        console.log('item>>',item)
-                        console.log('text pre',d.data.variables[item].name,d.data.variables[item].value)
-                          if(typeof item.value !== 'object'){
-                             console.log('not obj',d.data.variables[item].value)
-                            //  if(typeof d.data.variables[item].value !== 'object'){
-                             text = text + d.data.variables[item].name + ':' + d.data.variables[item].value + "\n"
-                             //}
-                            
-                            
-                          }else{
-                          console.log('is obj',d.data.variables[item].value)
-                          }
-                        //   Object.keys(d.data.variables[item].value).forEach(nestedValue=>{
-                            
-                        //     console.log('in nest')
-                        //     // text = text + d.data.variables[item].value[nestedValue].name + ':' + d.data.variables[item].value[nestedValue].value + "\n"
-                        //   })
-                          
-                        
-                      }) 
                     
-                      return text;
-                  }else{
-                   return `There are ${d.data.children.length} children`;
-                  }
+                      Object.keys(d.data.variables).forEach(item=>{
+                        function nested(obj){
+                          if(obj.value){  
+                            text=text+obj.name+ ":";
+                            if(typeof obj.value !=='object'){
+                              text = text + obj.value + "\n";
+                            }else{
+                              text= text + "\n";
+                              for(let val in obj.value ){
+                                nested(obj.value[val]);
+                              }
+                            }
+                         }
+
+                      }
+                   
+                      nested(d.data.variables[item])
+                   
+                   
+                    })
+                
+                    
+                    return text;
+                    
+                }else{
+                    return `There are ${d.data.children.length} children`;
+                }
                })
                
             //make transition node/ start from parent position to new position
@@ -168,7 +168,7 @@ let margin = {top:40,right:60,bottom:20,left:60}
               .select('circle.node')
               .attr('r',10)
               .style('fill',function(d){
-                    return d._children? "moccasin":"green";
+                    return d._children? "moccasin":"rgb(238, 137, 5)";
                 })
               .attr('cursor', 'pointer');
 
@@ -252,7 +252,7 @@ let margin = {top:40,right:60,bottom:20,left:60}
                d._children=null;
            }
            update(d);
-           console.log(`${d.data.id} node is selected`)
+           //console.log(`${d.data.id} node is selected`)
        }
        
        }
