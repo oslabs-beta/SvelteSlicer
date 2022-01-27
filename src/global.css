@@ -2,21 +2,14 @@
 
 
 body {
-	
-	background: rgb(83, 81, 81);
-	margin: 1em;
-	padding: 1em;
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
-	
 }
 
 h2 {
-
 	font-weight: Bold 700;
 	font-size: 25px;
-	margin: 2px;;
-	/* padding: 0.5em; */
+	margin: 2px;
 }
 
 
@@ -35,8 +28,7 @@ a {
 }
 
 span {
-	padding-left: 1em;
-	padding-right: 1em;
+	padding: 1em;
 	font-size: 18px;
 }
 
@@ -78,7 +70,14 @@ button {
 	padding: 5px;
 	border: none;
 	border-radius: 2px;
-	
+}
+
+.selectedButton {
+	background-color: rgb(238, 137, 5);
+}
+
+input {
+	width: 150px;
 }
 
 input:disabled {
@@ -98,17 +97,9 @@ button:focus {
 }
 
 main {
-	padding: 1em;
 	margin: 0px;
 	align-items: center;
 	color: whitesmoke;
-	background: rgb(83, 81, 81);
-	padding: 1em;
-}
-
-span {
-padding: 1em;
-/* padding-left: 1.0rem;  */
 }
 
 .xAxis path,
@@ -116,6 +107,7 @@ padding: 1em;
   stroke: teal;
   shape-rendering: crispEdges;
 }
+
 .xAxis text {
   font-weight: bold;
   font-size: 14px;
@@ -140,11 +132,6 @@ padding: 1em;
   stroke-width: 2px;
 }
 
-#slicerImg{
-width: 30px;
-height: 30px;
-}
-
 .test {
 	content: "▼";
   }
@@ -167,67 +154,10 @@ height: 30px;
 	display: inline-block;
 	transition: transform 200ms;
 	text-align: center;
-	
 }
 
 .arrowDown { 
 	transform: rotate(90deg); 
-}
-
-#mainContainer {
-	display: grid;
-	grid-template-columns: 300px auto;
-	grid-template-rows: 50px 50px auto;
-	width: 100vw;
-  	height: 100vh;
-}
-
-#snapshots {
-	grid-column-start: 1;
-	grid-column-end: 2;
-	grid-row-start: 2;
-	grid-row-end: 4;
-	border: 1px solid whitesmoke;
-	/* align-items: center; */
-}
-
-#banner {
-	grid-column-start: 2;
-	grid-column-end: 3;
-	grid-row-start: 1;
-	grid-row-end: 2;
-	border-collapse: collapse;
-	border: 1px solid whitesmoke;
-}
-
-
-#title {
-	grid-column-start: 1;
-	grid-column-end: 2;
-	grid-row-start: 1;
-	grid-row-end: 2;
-	border: 1px solid whitesmoke;
-	
-}
-
-
-#buttons {
-	grid-column-start: 2;
-	grid-column-end: 3;
-	grid-row-start: 2;
-	grid-row-end: 3;
-	border: 1px solid whitesmoke;
-	padding: 1em;
-
-}
-
-
-#presentation {
-	grid-column-start: 2;
-	grid-column-end: 3;
-	grid-row-start: 3;
-	grid-row-end: 4;
-	border: 1px solid whitesmoke;
 }
 
 .oldValue{
@@ -253,10 +183,7 @@ form.form button:hover {
   background: rgb(238, 137, 5);
 
 }
-/* 
-.right-align {
-	text-align: right;
-} */
+
 
 /* .collapsible {
 	background-color: #777;
@@ -293,3 +220,5 @@ form.form button:hover {
 	border: none;
 	transition: max-height 0.2s ease-out;
   } 
+
+
