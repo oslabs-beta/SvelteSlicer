@@ -4,7 +4,8 @@
 body {
 	
 	background: rgb(83, 81, 81);
-	/* margin: 1em; */
+	margin: 0;
+	height: 100%;
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
 }
@@ -14,7 +15,6 @@ h2 {
 	font-size: 25px;
 	margin: 2px;
 }
-
 
 div {
 	padding: 1em;
@@ -30,10 +30,9 @@ a {
 	text-decoration: none;
 }
 
-
 ol li::marker {
 	content: "▼";
-  }
+}
   
 a:hover {
 	text-decoration: underline;
@@ -69,10 +68,6 @@ button {
 	padding: 5px;
 	border: none;
 	border-radius: 2px;
-}
-
-.selectedButton {
-	background-color: rgb(238, 137, 5);
 }
 
 input {
