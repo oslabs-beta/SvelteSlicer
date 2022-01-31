@@ -13,12 +13,8 @@ $: tree = JSON.parse(JSON.stringify($snapshots[I].data[parent]));
 // the chart inherits the margin of the parent?
 
 let margin = {top:40,right:60,bottom:20,left:60}
-// let margin = {top:50,right:0,bottom:20,left:50}
-    let width = 700 - margin.left - margin.right;
-    let height = 700 - margin.top -margin.bottom; 
-//1/3 
-// const width = document.body.clientWidth;
-// const height = document.body.clientHeight;
+const width = document.body.clientWidth * 0.7;
+const height = document.body.clientHeight;
 
     let svg;
     
@@ -29,16 +25,15 @@ let margin = {top:40,right:60,bottom:20,left:60}
 
     // remove references to inactive child components
     function trimTree(tree) {
-        console.log(tree.children);
         if (tree.children.length) {
-            tree.children.forEach((child, i) => {
-                if (!child.active) {
+            for (let i = tree.children.length - 1; i >= 0; i--) {
+                if (!tree.children[i].active) {
                     tree.children.splice(i, 1);
                 }
                 else {
-                    trimTree(child);
+                    trimTree(tree.children[i]);
                 }
-            })
+            }
         }
     }
 
@@ -60,10 +55,12 @@ let margin = {top:40,right:60,bottom:20,left:60}
        //d3.tree() is tidy tree layout module
        let treemap = d3.tree().size([width,height]);
        //construct root node
+
+       console.log('tree', tree);
        root = d3.hierarchy(tree, function(d){
            return d.children;
        });
-       console.log('root',root)
+       console.log('root',root);
        
     root.x0 = 0;
     root.y0 = width/2;
@@ -71,17 +68,9 @@ let margin = {top:40,right:60,bottom:20,left:60}
        update(root);
        function update(src){
            let treeData = treemap(root)
-           //nodes //return thr arr of descendant nodes, staring with this node then followed by each child
-        //filter nodes. only show active nodes.
-        let activeNode = treeData.descendants();
-           let nodes = [];
-           activeNode.forEach(item=>{
-               if(item.data.active === true || item.data.active === undefined){
-            nodes.push(item)
-               }
-           })
+           let nodes = treeData.descendants();
            console.log('nodes',nodes)
-           console.log('activeNodes',activeNode)
+
            //set depth
            nodes.forEach(function(d){
                d.y=d.depth*180;
@@ -91,7 +80,6 @@ let margin = {top:40,right:60,bottom:20,left:60}
            let node = svg.selectAll('g.node').data(nodes,function(d){
                return d.id || (d.id= ++i); //return d.id or it has child 
            });
-           console.log('node >>',node)
            //node start at the parent's position
            let nodeEnter = node
                   .enter()
@@ -213,7 +201,6 @@ let margin = {top:40,right:60,bottom:20,left:60}
            let activelinks = treeData.descendants().slice(1);
            let links = [];
            activelinks.forEach(item=>{
-               console.log('item for links ',item)
                if(item.data.active){
             links.push(item)
                }
