@@ -2,9 +2,9 @@
 	import {snapshots, fileTree, flatFileTree, backgroundPageConnection} from './stores.js';
 	import { get } from 'svelte/store';
 	import Component from './Component.svelte';
-	import TidyTree2 from './TidyTree2.svelte';
+	import StateChart from './StateChart.svelte';
 	import FileStructure from './FileStructure.svelte';
-	import State from './State.svelte';
+	import StateTree from './StateTree.svelte';
 	import Diffs from './Diffs.svelte';
 	import logo from '../extension/devtools/public/images/svelte_slicer_logo_64X64.png';
 
@@ -218,9 +218,9 @@
 						<FileStructure treeData={$fileTree}/>
 					{:else if View === "state"}
 					   {#if Vis === "tree"}
-					    <State I={CurrentI}></State>
+					    <StateTree I={CurrentI}/>
 						{:else if Vis === "chart"}
-                        <TidyTree2 {view} I={CurrentI}/>
+                        <StateChart {view} I={CurrentI}/>
 						{:else if Vis === "diff"}
 						<Diffs I={CurrentI}/>
 						{/if}
