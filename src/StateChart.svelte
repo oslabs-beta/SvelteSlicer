@@ -1,27 +1,20 @@
 <script defer>
 export let I;
-export let view;
-import { fileTree, snapshots } from './stores';
+import { snapshots } from './stores';
 import * as d3 from 'd3';
-import {onMount, beforeUpdate, afterUpdate, onDestroy} from 'svelte';
+import { afterUpdate } from 'svelte';
 
 
 $: label = $snapshots[I].label;
-$: snapshot = $snapshots[I];
 $: parent = $snapshots[I].parent;
-$: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
-
+$: tree = JSON.parse(JSON.stringify($snapshots[I].data[parent]));
 
 // can we give an inherit property to the margin here so that 
 // the chart inherits the margin of the parent?
 
 let margin = {top:40,right:60,bottom:20,left:60}
-// let margin = {top:50,right:0,bottom:20,left:50}
-    let width = 700 - margin.left - margin.right;
-    let height = 700 - margin.top -margin.bottom; 
-//1/3 
-// const width = document.body.clientWidth;
-// const height = document.body.clientHeight;
+const width = document.body.clientWidth * 0.7;
+const height = document.body.clientHeight;
 
     let svg;
     
@@ -29,7 +22,22 @@ let margin = {top:40,right:60,bottom:20,left:60}
     let currElement ;
 
    afterUpdate(()=>{
-   
+
+    // remove references to inactive child components
+    function trimTree(tree) {
+        if (tree.children.length) {
+            for (let i = tree.children.length - 1; i >= 0; i--) {
+                if (!tree.children[i].active) {
+                    tree.children.splice(i, 1);
+                }
+                else {
+                    trimTree(tree.children[i]);
+                }
+            }
+        }
+    }
+
+    trimTree(tree);
 
     svg = d3.select('#chart')
        .append('div')
@@ -47,10 +55,12 @@ let margin = {top:40,right:60,bottom:20,left:60}
        //d3.tree() is tidy tree layout module
        let treemap = d3.tree().size([width,height]);
        //construct root node
-       root = d3.hierarchy(component, function(d){
+
+       console.log('tree', tree);
+       root = d3.hierarchy(tree, function(d){
            return d.children;
        });
-       console.log('root',root)
+       console.log('root',root);
        
     root.x0 = 0;
     root.y0 = width/2;
@@ -58,17 +68,9 @@ let margin = {top:40,right:60,bottom:20,left:60}
        update(root);
        function update(src){
            let treeData = treemap(root)
-           //nodes //return thr arr of descendant nodes, staring with this node then followed by each child
-        //filter nodes. only show active nodes.
-        let activeNode = treeData.descendants();
-           let nodes = [];
-           activeNode.forEach(item=>{
-               if(item.data.active === true || item.data.active === undefined){
-            nodes.push(item)
-               }
-           })
+           let nodes = treeData.descendants();
            console.log('nodes',nodes)
-           console.log('activeNodes',activeNode)
+
            //set depth
            nodes.forEach(function(d){
                d.y=d.depth*180;
@@ -78,7 +80,6 @@ let margin = {top:40,right:60,bottom:20,left:60}
            let node = svg.selectAll('g.node').data(nodes,function(d){
                return d.id || (d.id= ++i); //return d.id or it has child 
            });
-           console.log('node >>',node)
            //node start at the parent's position
            let nodeEnter = node
                   .enter()
@@ -98,7 +99,7 @@ let margin = {top:40,right:60,bottom:20,left:60}
                 .attr('class','node')
                 .attr('r',0)
                 .style('fill',function(d){
-                    return d._children? "moccasin":"green";
+                    return d._children? "moccasin":"rgb(238, 137, 5)";
                 })
 
             //add text  to show the node data
@@ -116,43 +117,43 @@ let margin = {top:40,right:60,bottom:20,left:60}
                .text(function(d){
                    return d.data.id;
                })
+               .style('fill', 'white')
 
                nodeEnter
                  .append('g:title')
                  .attr("transform", "translate(0,0)")
                  .text(function(d){
-                     console.log('d for mouseover',d)
                 
-                  if(Object.keys(d.data.variables).length > 0){
-                      console.log('inside checking variables',d.data)
-                      console.log('valuechecking',d.data.variables)
+                if(Object.keys(d.data.variables).length > 0){
                       let text = '';
-                      Object.keys(d.data.variables).forEach(item=>{
-                        console.log('item>>',item)
-                        console.log('text pre',d.data.variables[item].name,d.data.variables[item].value)
-                          if(typeof item.value !== 'object'){
-                             console.log('not obj',d.data.variables[item].value)
-                            //  if(typeof d.data.variables[item].value !== 'object'){
-                             text = text + d.data.variables[item].name + ':' + d.data.variables[item].value + "\n"
-                             //}
-                            
-                            
-                          }else{
-                          console.log('is obj',d.data.variables[item].value)
-                          }
-                        //   Object.keys(d.data.variables[item].value).forEach(nestedValue=>{
-                            
-                        //     console.log('in nest')
-                        //     // text = text + d.data.variables[item].value[nestedValue].name + ':' + d.data.variables[item].value[nestedValue].value + "\n"
-                        //   })
-                          
-                        
-                      }) 
                     
-                      return text;
-                  }else{
-                   return `There are ${d.data.children.length} children`;
-                  }
+                      Object.keys(d.data.variables).forEach(item=>{
+                        function nested(obj){
+                          if(obj.value){  
+                            text=text+obj.name+ ":";
+                            if(typeof obj.value !=='object'){
+                              text = text + obj.value + "\n";
+                            }else{
+                              text= text + "\n";
+                              for(let val in obj.value ){
+                                nested(obj.value[val]);
+                              }
+                            }
+                         }
+
+                      }
+                   
+                      nested(d.data.variables[item])
+                   
+                   
+                    })
+                
+                    
+                    return text;
+                    
+                }else{
+                    return `There are ${d.data.children.length} children`;
+                }
                })
                
             //make transition node/ start from parent position to new position
@@ -168,7 +169,7 @@ let margin = {top:40,right:60,bottom:20,left:60}
               .select('circle.node')
               .attr('r',10)
               .style('fill',function(d){
-                    return d._children? "moccasin":"green";
+                    return d._children? "moccasin":"rgb(238, 137, 5)";
                 })
               .attr('cursor', 'pointer');
 
@@ -200,7 +201,6 @@ let margin = {top:40,right:60,bottom:20,left:60}
            let activelinks = treeData.descendants().slice(1);
            let links = [];
            activelinks.forEach(item=>{
-               console.log('item for links ',item)
                if(item.data.active){
             links.push(item)
                }
@@ -252,7 +252,7 @@ let margin = {top:40,right:60,bottom:20,left:60}
                d._children=null;
            }
            update(d);
-           console.log(`${d.data.id} node is selected`)
+           //console.log(`${d.data.id} node is selected`)
        }
        
        }

@@ -5,19 +5,22 @@
 
 <main>
     {#if typeof variable.value !== "object"}
-    <!-- {#if variable.value instanceof !Object} -->
-    <p>{variable.name}: {variable.value}</p>
+        {#if variable.value === ''}
+            <p class="variableVal">{variable.name}: ' '</p>
+        {:else}
+            <p class="variableVal">{variable.name}: {variable.value}</p>
+        {/if}
     {:else} 
-    <div>
-        <p>{variable.name}: </p>
-        <ul>
-            {#each Object.keys(variable.value) as nestedValue}
-                <li>
-                    <svelte:self variable={variable.value[nestedValue]}/>
-                </li>    
-            {/each}
-        </ul>
-    </div>
+        <div class="variableVal">
+            <p id="variableName">{variable.name}: </p>
+                <ul class="variableVal">
+                {#each Object.keys(variable.value) as nestedValue}
+                    <li>
+                        <svelte:self variable={variable.value[nestedValue]}/>
+                    </li>    
+                {/each}
+            </ul>
+        </div>
     {/if}
 </main>
 

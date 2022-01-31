@@ -15,7 +15,7 @@
 
 <main>
    <div>
-       <ul >
+       <ul class="ulArrows">
         <li>
             {#if children.length}
                 <span on:click={toggleExpansion} id={id}>
