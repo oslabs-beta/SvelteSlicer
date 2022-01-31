@@ -15,7 +15,7 @@
     <div id="valuesList">
         <h2>Snapshot {I}: {snapshot.label}</h2>
             {#if newComponents.length} 
-                <h3>New Components</h3>
+                <h3 class="diffsHeading">New Components</h3>
                 {#each newComponents as component}
                     <h4 class='diffComponentName'>{component.component}</h4>
                     {#each Object.keys(component.variables) as variable}
@@ -26,7 +26,7 @@
                 {/each}
             {/if}
             {#if deletedComponents.length} 
-                <h3>Deleted Components</h3>
+                <h3 class='diffsHeading'>Deleted Components</h3>
                 {#each deletedComponents as component}
                     <h4 class='deletedComponent'>{component.component}</h4>
                     {#each Object.keys(component.variables) as variable}
@@ -37,7 +37,7 @@
                 {/each}
             {/if}
             {#if changedVariables.length} 
-                <h3>Changed Variables</h3>
+                <h3 class='diffsHeading'>Changed Variables</h3>
                 {#each changedVariables as component}
                     <h4 class='diffComponentName'>{component[0].component}</h4>
                     {#each component as variable} 
@@ -53,3 +53,9 @@
             {/if}
     </div>
 </main>
+
+<style>
+    .diffsHeading {
+        text-decoration: underline;
+    }
+</style>
