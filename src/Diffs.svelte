@@ -18,22 +18,12 @@
                 <h3 class="diffsHeading">New Components</h3>
                 {#each newComponents as component}
                     <h4 class='diffComponentName'>{component.component}</h4>
-                    {#each Object.keys(component.variables) as variable}
-                        {#if component.variables[variable].value !== undefined}
-                            <Variable variable={component.variables[variable]}/>
-                        {/if}
-                    {/each}
                 {/each}
             {/if}
             {#if deletedComponents.length} 
                 <h3 class='diffsHeading'>Deleted Components</h3>
                 {#each deletedComponents as component}
                     <h4 class='deletedComponent'>{component.component}</h4>
-                    {#each Object.keys(component.variables) as variable}
-                        {#if component.variables[variable].value !== undefined}
-                            <Variable variable={component.variables[variable]}/>
-                        {/if}
-                    {/each}
                 {/each}
             {/if}
             {#if changedVariables.length} 
