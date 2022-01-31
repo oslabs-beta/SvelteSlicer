@@ -6,6 +6,7 @@ export const snapshots = writable([]);
 export const fileTree = writable({});
 export const flatFileTree = writable([]);
 export const backgroundPageConnection = writable(chrome.runtime.connect({name: "panel"}));
+export const sharedAppView = writeable();
 
 // store updateable objects for current component state
 let componentData = {}
@@ -367,9 +368,13 @@ function buildSnapshot(data) {
 	}
 
 	// update ctx variables
+	const currentIndex = get(sharedAppView);
+	console.log(currentIndex);
+	const stateHistory = get(snapshots)
+	const priorState = stateHistory[currentIndex].data;
 	for (let component in componentData) {
 		const componentDiff = [];
-		for(let i in componentData[component].variables) {
+		for(let i in priorState[component].variables) {
 			const variable = componentData[component].variables[i];
 			if (variable.ctxIndex) {
 				if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
