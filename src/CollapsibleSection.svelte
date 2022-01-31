@@ -8,8 +8,8 @@
     <h3>
         <button aria-expanded={expanded} on:click={() => expanded = !expanded}>{headerText}
             <svg viewBox="0 0 20 20" fill="none" >
-                <path class="vert" d="M10 1V19" stroke="black" stroke-width="2"/>
-                <path d="M1 10L19 10" stroke="black" stroke-width="2"/>
+                <path class="vert" d="M10 1V19" stroke="rgb(238, 137, 5)" stroke-width="5"/>
+                <path d="M1 10L19 10" stroke="rgb(238, 137, 5)" stroke-width="5"/>
             </svg>
         </button>
     </h3>
