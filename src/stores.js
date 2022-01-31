@@ -373,13 +373,26 @@ function buildSnapshot(data) {
 			const variable = componentData[component].variables[i];
 			if (variable.ctxIndex) {
 				if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
-					const data = {
-						name: variable.name,
-						oldValue: JSON.parse(JSON.stringify(variable.value !== undefined ? variable.value : "undefined")),
-						newValue: ctxObject[component][variable.ctxIndex].value,
-						component: variable.component,
-						type: variable.type
+					let data;
+					if (variable.value === null || typeof variable.value !== "object") {
+						data = {
+							name: variable.name,
+							oldValue: JSON.parse(JSON.stringify(variable.value !== undefined ? variable.value : "undefined")),
+							newValue: ctxObject[component][variable.ctxIndex].value,
+							component: variable.component,
+							type: variable.type
+						}
 					}
+					else {
+						data = {
+							name: variable.name,
+							oldValue: recurseDiffObject(variable.value),
+							newValue: recurseDiffObject(ctxObject[component][variable.ctxIndex].value),
+							component: variable.component,
+							type: variable.type
+						}
+					}
+					
 					componentDiff.push(data);
 					variable.value = ctxObject[component][variable.ctxIndex].value;
 				}
@@ -450,4 +463,28 @@ function deleteNode (nodeId) {
 		})
 	}
 	delete componentData[component].nodes[id];
+}
+
+function recurseDiffObject(value) {
+	let text = '';
+	  
+	Object.keys(value).forEach(item=>	{	 
+		nested(value[item])
+	})
+	return text;
+
+	function nested(obj){
+		if(obj.value) {  
+			text = text + obj.name + ":";
+			if(typeof obj.value !=='object') {
+				text = text + obj.value + "\n";
+			}
+			else {
+				text = text + "\n";
+				for(let val in obj.value ) {
+					nested(obj.value[val]);
+				}
+			}
+		}
+	}
 }

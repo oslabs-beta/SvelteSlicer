@@ -1,7 +1,6 @@
 <script>
     export let I;
     import {snapshots} from './stores.js';
-    import Variable from './Variable.svelte';
     $: snapshot = $snapshots[I];
     $: newComponents = snapshot.diff.newComponents;
     $: deletedComponents = snapshot.diff.deletedComponents;
@@ -15,41 +14,70 @@
     <div id="valuesList">
         <h2>Snapshot {I}: {snapshot.label}</h2>
             {#if newComponents.length} 
-                <h3>New Components</h3>
+                <h3 class="diffsHeading">New Components</h3>
                 {#each newComponents as component}
                     <h4 class='diffComponentName'>{component.component}</h4>
-                    {#each Object.keys(component.variables) as variable}
-                        {#if component.variables[variable].value !== undefined}
-                            <Variable variable={component.variables[variable]}/>
-                        {/if}
-                    {/each}
                 {/each}
             {/if}
             {#if deletedComponents.length} 
-                <h3>Deleted Components</h3>
+                <h3 class='diffsHeading'>Deleted Components</h3>
                 {#each deletedComponents as component}
                     <h4 class='deletedComponent'>{component.component}</h4>
-                    {#each Object.keys(component.variables) as variable}
-                        {#if component.variables[variable].value !== undefined}
-                            <Variable variable={component.variables[variable]}/>
-                        {/if}
-                    {/each}
                 {/each}
             {/if}
             {#if changedVariables.length} 
-                <h3>Changed Variables</h3>
+                <h3 class='diffsHeading'>Changed Variables</h3>
                 {#each changedVariables as component}
                     <h4 class='diffComponentName'>{component[0].component}</h4>
+                    <ul>
                     {#each component as variable} 
                         {#if variable.oldValue !== '' && variable.newValue !== ''}
-                            <p class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span> --> {variable.newValue}</span></p>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span class='newValue'> --> {variable.newValue}</span></li>
                         {:else if variable.oldValue === ''}
-                            <p class="oldAndNewVals">{variable.name}: <span class='oldValue'>' '</span> <span> --> {variable.newValue}</span></p>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>' '</span> <span class ='newValue'> --> {variable.newValue}</span></li>
                         {:else if variable.newValue === ''}
-                            <p class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span> --> ' '</span></p>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span class='newValue'> --> ' '</span></li>
                         {/if}
                     {/each}
+                    </ul>
                 {/each}
             {/if}
     </div>
 </main>
+
+<style>
+    .diffsHeading {
+        text-decoration: underline;
+    }
+
+    .oldAndNewVals {
+	    font-size: 16px;
+    }
+
+    .oldValue{
+	    text-decoration: line-through;
+	    color:rgb(238, 137, 5);
+	    font-size: 16px;
+        white-space: pre;
+    }
+
+    .newValue{
+        white-space: pre;
+    }
+
+    .diffComponentName{
+	    color:white;
+	    font-weight: bold;
+	    font-size: 16px;
+    }
+
+    .deletedComponent{
+	    text-decoration: line-through;
+	    color:rgb(238, 137, 5);
+	    font-size: 16px;
+    }
+
+    #valuesList {
+	    font-size: 16px;
+    }
+</style>

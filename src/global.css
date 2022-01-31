@@ -167,34 +167,6 @@ ul.variableVal {
 	transform: rotate(90deg); 
 }
 
-#valuesList {
-	font-size: 16px;
-}
-
-
-
-.oldAndNewVals {
-	font-size: 16px;
-}
-
-.oldValue{
-	text-decoration: line-through;
-	color:rgb(238, 137, 5);
-	font-size: 16px;
-}
-.diffComponentName{
-	color:white;
-	font-weight: bold;
-	font-size: 16px;
-
-
-}
-.deletedComponent{
-	text-decoration: line-through;
-	color:red;
-	font-size: 16px;
-}
-
 .search-button {
 	color: rgb(162, 159, 159);
 	background: transparent;
@@ -207,13 +179,12 @@ form.form button:hover {
 
 }
 
-  
-   .content {
+.content {
 	padding: 2px;
 	font-size: 16px;
 	font-weight: bold;
 	border: none;
 	/* transition: max-height 0.2s ease-out; */
-  } 
+} 
 
   
