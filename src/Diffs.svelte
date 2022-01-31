@@ -14,29 +14,29 @@
     <div id="valuesList">
         <h2>Snapshot {I}: {snapshot.label}</h2>
             {#if newComponents.length} 
-                <h3 class="diffsHeading">New Components</h3>
+                <h3 class="diffsHeading">New Components:</h3>
                 {#each newComponents as component}
                     <h4 class='diffComponentName'>{component.component}</h4>
                 {/each}
             {/if}
             {#if deletedComponents.length} 
-                <h3 class='diffsHeading'>Deleted Components</h3>
+                <h3 class='diffsHeading'>Deleted Components:</h3>
                 {#each deletedComponents as component}
                     <h4 class='deletedComponent'>{component.component}</h4>
                 {/each}
             {/if}
             {#if changedVariables.length} 
-                <h3 class='diffsHeading'>Changed Variables</h3>
+                <h3 class='diffsHeading'>Changed Variables:</h3>
                 {#each changedVariables as component}
                     <h4 class='diffComponentName'>{component[0].component}</h4>
                     <ul>
                     {#each component as variable} 
                         {#if variable.oldValue !== '' && variable.newValue !== ''}
-                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span class='newValue'> --> {variable.newValue}</span></li>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span class='newValue'> &#8594; {variable.newValue}</span></li>
                         {:else if variable.oldValue === ''}
-                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>' '</span> <span class ='newValue'> --> {variable.newValue}</span></li>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>' '</span> <span class ='newValue'> &#8594; {variable.newValue}</span></li>
                         {:else if variable.newValue === ''}
-                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span class='newValue'> --> ' '</span></li>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span class='newValue'> &#8594; ' '</span></li>
                         {/if}
                     {/each}
                     </ul>
@@ -46,8 +46,19 @@
 </main>
 
 <style>
+    h2 {
+        padding: 0px;
+        font-weight: 700;
+    }
+
+    h4 {
+     padding: 10px;
+    }
+
     .diffsHeading {
-        text-decoration: underline;
+        text-decoration: none;
+        font-weight: bolder;
+        background-color: rgba(238, 137, 5, 0.288);
     }
 
     .oldAndNewVals {
@@ -79,5 +90,6 @@
 
     #valuesList {
 	    font-size: 16px;
+        padding: 10px;
     }
 </style>
