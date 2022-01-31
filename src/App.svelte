@@ -197,17 +197,17 @@
 				{/if}
 			</div>
 			<div id="banner">
-				<button on:click={() => selectView("files")}>Components</button>
-				<button on:click={() => selectView("state")}>State</button>			
+				<button on:click={() => selectView("files")} class:activeButton="{view === "files"}">Components</button>
+				<button on:click={() => selectView("state")} class:activeButton="{view === "state"}">State</button>			
 			</div>
 			<div id="buttons">
 				{#if View === "files"}
-					<button on:click={() => selectVis("tree")}>Tree</button>
-					<button on:click={() => selectVis("chart")}>Chart</button>
+					<button on:click={() => selectVis("tree")} class:activeButton="{vis === "tree"}">Tree</button>
+					<button on:click={() => selectVis("chart")} class:activeButton="{vis === "chart"}">Chart</button>
 				{:else if View === "state"}
-					<button on:click={() => selectVis("tree")}>Tree</button>
-					<button on:click={() => selectVis("chart")}>Chart</button>
-					<button on:click={() => selectVis("diff")}>Diff</button>	
+					<button on:click={() => selectVis("tree")} class:activeButton="{vis === "tree"}">Tree</button>
+					<button on:click={() => selectVis("chart")} class:activeButton="{vis === "chart"}">Chart</button>
+					<button on:click={() => selectVis("diff")} class:activeButton="{vis === "diff"}">Diff</button>	
 				{/if}
 			</div>
 			<div id="presentation">
@@ -229,9 +229,16 @@
 			</div>
 			<div id="clearSnapshots">
 				<h6 class='clearSnapshotHeader'>Clear Snapshots</h6>
-				<div id="clearButtons">
-					<button class='clearButton' on:click={() => clearSnapshots('previous')}>Previous</button>
-					<button class='clearButton' on:click={() => clearSnapshots('path')}>Path</button>
+				<div id="clearButtons" class="tooltip">
+					<div class="toolTipPrev"> 
+						<button class='clearButton' on:click={() => clearSnapshots('previous')}>Previous</button>
+						<span class="toolTipPrevText">Remove all Snapshots prior to current view</span>
+					</div>
+					<div class='toolTipPath'>
+						<button class='clearButton' on:click={() => clearSnapshots('path')}>Path</button> 
+					</div>
+					<span class='toolTipPathText'></span>
+					
 					<button class='clearButton' on:click={() => clearSnapshots('forward')}>Forward</button>
 				</div>
 			</div>
@@ -286,7 +293,7 @@
 			width: 100vw;
   			height: 100vh;
 			padding: 0;
-			border: 1px solid #dddcdc;
+			border: 2px solid #dddcdc;
 		}
 
 		#snapshots {
@@ -295,7 +302,7 @@
 			grid-row-start: 3;
 			grid-row-end: 4;
 			overflow-y: scroll;
-			border-top: 1px solid #dddcdc;
+			border-top: 2px solid #dddcdc;
 			background-color: #757474;
 			padding: 0;
 			margin: 0;
@@ -319,7 +326,7 @@
 			grid-column-end: 3;
 			grid-row-start: 1;
 			grid-row-end: 2;
-			border-left: 1px solid #dddcdc;
+			border-left: 2px solid #dddcdc;
 			display: flex;
 			align-items: center;
 			background-color: #535151;
@@ -332,6 +339,7 @@
 			grid-row-end: 2;
 			display: flex;
 			align-items: center;
+			font-size: 25px;
 			background-color: #535151;
 		}
 
@@ -340,7 +348,7 @@
 			grid-column-end: 3;
 			grid-row-start: 2;
 			grid-row-end: 3;
-			border-left: 1px solid #dddcdc;
+			border-left: 2px solid #dddcdc;
 			padding: 1em;
 			display: flex;
 			align-items: center;
@@ -354,8 +362,8 @@
 			grid-row-end: 5;
 			overflow-x: scroll;
 			overflow-y: scroll;
-			border-top: 1px solid #dddcdc;
-			border-left: 1px solid #dddcdc;
+			border-top: 2px solid #dddcdc;
+			border-left: 2px solid #dddcdc;
 			background-color: #757474;
 		}
 
@@ -375,6 +383,58 @@
 			margin: 0px;
 
 		}
+
+	/* .tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+} */
+
+.toolTipPrev {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted rgb(83, 81, 81);
+}
+
+.toolTipPrev .toolTipPrevText {
+  visibility: hidden;
+  width: 120px;
+  background-color: rgb(83, 81, 81);
+  border: 1px solid #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+}
+
+
+
+/* .tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+
+
+  position: absolute;
+  z-index: 1;
+} */
+/* 
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+} */
+
+
+.toolTipPrev:hover .toolTipPrevText  {
+  visibility: visible;
+}
 
 		.clearButton {
 			background-color: transparent;
@@ -405,6 +465,14 @@
 		#titleText {
 			padding-top: 5px;
 			margin: 0;
+		}
+
+		.selectedButton {
+			background-color: rgb(238, 137, 5);
+		}
+
+		.activeButton {
+			border: 1px solid rgb(238, 137, 5);
 		}
 	</style>
 	
