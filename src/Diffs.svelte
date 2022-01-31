@@ -30,15 +30,17 @@
                 <h3 class='diffsHeading'>Changed Variables</h3>
                 {#each changedVariables as component}
                     <h4 class='diffComponentName'>{component[0].component}</h4>
+                    <ul>
                     {#each component as variable} 
                         {#if variable.oldValue !== '' && variable.newValue !== ''}
-                            <p class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span> --> {variable.newValue}</span></p>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span> --> {variable.newValue}</span></li>
                         {:else if variable.oldValue === ''}
-                            <p class="oldAndNewVals">{variable.name}: <span class='oldValue'>' '</span> <span> --> {variable.newValue}</span></p>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>' '</span> <span> --> {variable.newValue}</span></li>
                         {:else if variable.newValue === ''}
-                            <p class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span> --> ' '</span></p>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span> --> ' '</span></li>
                         {/if}
                     {/each}
+                    </ul>
                 {/each}
             {/if}
     </div>
