@@ -32,11 +32,11 @@
                     <ul>
                     {#each component as variable} 
                         {#if variable.oldValue !== '' && variable.newValue !== ''}
-                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span> --> {variable.newValue}</span></li>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span class='newValue'> --> {variable.newValue}</span></li>
                         {:else if variable.oldValue === ''}
-                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>' '</span> <span> --> {variable.newValue}</span></li>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>' '</span> <span class ='newValue'> --> {variable.newValue}</span></li>
                         {:else if variable.newValue === ''}
-                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span> --> ' '</span></li>
+                            <li class="oldAndNewVals">{variable.name}: <span class='oldValue'>{variable.oldValue}</span> <span class='newValue'> --> ' '</span></li>
                         {/if}
                     {/each}
                     </ul>
@@ -58,6 +58,11 @@
 	    text-decoration: line-through;
 	    color:rgb(238, 137, 5);
 	    font-size: 16px;
+        white-space: pre;
+    }
+
+    .newValue{
+        white-space: pre;
     }
 
     .diffComponentName{
