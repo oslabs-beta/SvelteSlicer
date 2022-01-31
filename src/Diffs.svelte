@@ -68,7 +68,7 @@
 
     .deletedComponent{
 	    text-decoration: line-through;
-	    color:red;
+	    color:rgb(238, 137, 5);
 	    font-size: 16px;
     }
 
