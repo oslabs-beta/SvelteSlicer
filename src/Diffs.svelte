@@ -1,7 +1,6 @@
 <script>
     export let I;
     import {snapshots} from './stores.js';
-    import Variable from './Variable.svelte';
     $: snapshot = $snapshots[I];
     $: newComponents = snapshot.diff.newComponents;
     $: deletedComponents = snapshot.diff.deletedComponents;
@@ -49,5 +48,31 @@
 <style>
     .diffsHeading {
         text-decoration: underline;
+    }
+
+    .oldAndNewVals {
+	    font-size: 16px;
+    }
+
+    .oldValue{
+	    text-decoration: line-through;
+	    color:rgb(238, 137, 5);
+	    font-size: 16px;
+    }
+
+    .diffComponentName{
+	    color:white;
+	    font-weight: bold;
+	    font-size: 16px;
+    }
+
+    .deletedComponent{
+	    text-decoration: line-through;
+	    color:red;
+	    font-size: 16px;
+    }
+
+    #valuesList {
+	    font-size: 16px;
     }
 </style>
