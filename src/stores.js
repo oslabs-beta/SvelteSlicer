@@ -466,23 +466,28 @@ function deleteNode (nodeId) {
 }
 
 function recurseDiffObject(value) {
-	let text = '';
+	let text = '\n';
 	  
 	Object.keys(value).forEach(item=>	{	 
-		nested(value[item])
+		nested(value[item], 1)
 	})
 	return text;
 
-	function nested(obj){
+	function nested(obj, tabCount){
 		if(obj.value) {  
+			// add tabs based on the level in the recursion
+			for (let i = 1; i <= tabCount; i++) {
+				text = text + "\t"
+			}
 			text = text + obj.name + ":";
 			if(typeof obj.value !=='object') {
 				text = text + obj.value + "\n";
 			}
 			else {
+				tabCount++;
 				text = text + "\n";
 				for(let val in obj.value ) {
-					nested(obj.value[val]);
+					nested(obj.value[val], tabCount);
 				}
 			}
 		}
