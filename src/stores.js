@@ -369,45 +369,46 @@ function buildSnapshot(data) {
 
 	// update ctx variables
 	const currentIndex = get(sharedAppView);
-	console.log(currentIndex);
-	const stateHistory = get(snapshots)
-	const priorState = stateHistory[currentIndex].data;
-	for (let component in componentData) {
-		const componentDiff = [];
-		for(let i in priorState[component].variables) {
-			const variable = componentData[component].variables[i];
-			if (variable.ctxIndex) {
-				if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
-					let data;
-					if (variable.value === null || typeof variable.value !== "object") {
-						data = {
-							name: variable.name,
-							oldValue: JSON.parse(JSON.stringify(variable.value !== undefined ? variable.value : "undefined")),
-							newValue: ctxObject[component][variable.ctxIndex].value,
-							component: variable.component,
-							type: variable.type
+	if (currentIndex) {
+		const stateHistory = get(snapshots);
+		const priorState = stateHistory[currentIndex];
+		for (let component in componentData) {
+			const componentDiff = [];
+			for(let i in componentData[component].variables) {
+				const variable = componentData[component].variables[i];
+				if (variable.ctxIndex) {
+					if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
+						let data;
+						if (variable.value === null || typeof variable.value !== "object") {
+							data = {
+								name: variable.name,
+								oldValue: JSON.parse(JSON.stringify(variable.value !== undefined ? variable.value : "undefined")),
+								newValue: ctxObject[component][variable.ctxIndex].value,
+								component: variable.component,
+								type: variable.type
+							}
 						}
-					}
-					else {
-						data = {
-							name: variable.name,
-							oldValue: recurseDiffObject(variable.value),
-							newValue: recurseDiffObject(ctxObject[component][variable.ctxIndex].value),
-							component: variable.component,
-							type: variable.type
+						else {
+							data = {
+								name: variable.name,
+								oldValue: recurseDiffObject(variable.value),
+								newValue: recurseDiffObject(ctxObject[component][variable.ctxIndex].value),
+								component: variable.component,
+								type: variable.type
+							}
 						}
+						
+						componentDiff.push(data);
+						variable.value = ctxObject[component][variable.ctxIndex].value;
 					}
-					
-					componentDiff.push(data);
-					variable.value = ctxObject[component][variable.ctxIndex].value;
 				}
 			}
-		}
-		if (componentDiff.length) {
-			diff.changedVariables.push(componentDiff);
-		}
+			if (componentDiff.length) {
+				diff.changedVariables.push(componentDiff);
+			}
+		}	
 	}
-
+	
 	let currentTree = get(fileTree);
 	if (_.isEmpty(currentTree)) {
 		// assign component children
