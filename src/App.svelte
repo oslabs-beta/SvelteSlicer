@@ -236,10 +236,13 @@
 					</div>
 					<div class='toolTipPath'>
 						<button class='clearButton' on:click={() => clearSnapshots('path')}>Path</button> 
+						<span class='toolTipPathText'>Remove all Snapshots after last 'jump'</span>
 					</div>
-					<span class='toolTipPathText'></span>
+					<div class='toolTipFwd'> 
+						<button class='clearButton' on:click={() => clearSnapshots('forward')}>Forward</button>
+						<span class='toolTipFwdText'>Remove all Snapshots after the current view</span>
+					</div>
 					
-					<button class='clearButton' on:click={() => clearSnapshots('forward')}>Forward</button>
 				</div>
 			</div>
 		</div>
@@ -384,57 +387,88 @@
 
 		}
 
-	/* .tooltip {
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted black;
-} */
 
-.toolTipPrev {
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted rgb(83, 81, 81);
-}
+		.toolTipPrev {
+		position: relative;
+		display: inline-block;
+		border-bottom: 1px dotted rgb(83, 81, 81);
+		}
 
-.toolTipPrev .toolTipPrevText {
-  visibility: hidden;
-  width: 120px;
-  background-color: rgb(83, 81, 81);
-  border: 1px solid #333;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 0;
+		.toolTipPrev .toolTipPrevText {
+		visibility: hidden;
+		width: 120px;
+		background-color: rgb(83, 81, 81);
+		border: 1px solid #333;
+		color: #fff;
+		text-align: center;
+		border-radius: 6px;
+		/* padding: 5px 0; */
 
-  /* Position the tooltip */
-  position: absolute;
-  z-index: 1;
-}
+		/* Position the tooltip */
+		position: absolute;
+		z-index: 1;
+		}
 
 
-
-/* .tooltip .tooltiptext {
-  visibility: hidden;
-  width: 120px;
-  background-color: black;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 0;
+		.toolTipPrev:hover .toolTipPrevText  {
+		visibility: visible;
+		font-size: 14px;
+		}
 
 
-  position: absolute;
-  z-index: 1;
-} */
-/* 
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-} */
+		.toolTipPath {
+		position: relative;
+		display: inline-block;
+		border-bottom: 1px dotted rgb(83, 81, 81);
+		}
+
+		.toolTipPath .toolTipPathText {
+		visibility: hidden;
+		width: 120px;
+		background-color: rgb(83, 81, 81);
+		border: 1px solid #333;
+		color: #fff;
+		text-align: center;
+		border-radius: 6px;
+		/* padding: 5px 0; */
+
+		/* Position the tooltip */
+		position: absolute;
+		z-index: 1;
+		}
 
 
-.toolTipPrev:hover .toolTipPrevText  {
-  visibility: visible;
-}
+		.toolTipPath:hover .toolTipPathText  {
+		visibility: visible;
+		font-size: 14px;
+		}
+
+		.toolTipFwd {
+		position: relative;
+		display: inline-block;
+		border-bottom: 1px dotted rgb(83, 81, 81);
+		}
+
+		.toolTipFwd .toolTipFwdText {
+		visibility: hidden;
+		width: 120px;
+		background-color: rgb(83, 81, 81);
+		border: 1px solid #333;
+		color: #fff;
+		text-align: center;
+		border-radius: 6px;
+		/* padding: 5px 0; */
+
+		/* Position the tooltip */
+		position: absolute;
+		z-index: 1;
+		}
+
+
+		.toolTipFwd:hover .toolTipFwdText  {
+		visibility: visible;
+		font-size: 14px;
+		}
 
 		.clearButton {
 			background-color: transparent;
@@ -449,7 +483,7 @@
 			text-align: center;
 			font-size: 16px;
 			margin: 0px;
-			padding: 10px;
+			padding: 2px;
 		}
 
 		#slicerImg{
