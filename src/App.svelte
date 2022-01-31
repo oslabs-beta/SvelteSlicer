@@ -387,6 +387,23 @@
 
 		}
 
+		.clearButton {
+			background-color: transparent;
+			font-size: 14px;
+			border: 1px solid rgb(238, 137, 5);
+			margin-left: 10px;
+			margin-right: 10px;
+
+		}
+
+		.clearSnapshotHeader {
+			text-align: center;
+			font-size: 16px;
+			margin: 0px;
+			padding-top: 5px;
+			padding-bottom: 0px;
+		}
+
 
 		.toolTipPrev {
 		position: relative;
@@ -413,6 +430,7 @@
 		.toolTipPrev:hover .toolTipPrevText  {
 		visibility: visible;
 		font-size: 14px;
+		padding: 1px;
 		}
 
 
@@ -430,8 +448,6 @@
 		color: #fff;
 		text-align: center;
 		border-radius: 6px;
-		/* padding: 5px 0; */
-
 		/* Position the tooltip */
 		position: absolute;
 		z-index: 1;
@@ -441,6 +457,7 @@
 		.toolTipPath:hover .toolTipPathText  {
 		visibility: visible;
 		font-size: 14px;
+		padding: 1px;
 		}
 
 		.toolTipFwd {
@@ -468,23 +485,9 @@
 		.toolTipFwd:hover .toolTipFwdText  {
 		visibility: visible;
 		font-size: 14px;
+		padding: 1px;
 		}
 
-		.clearButton {
-			background-color: transparent;
-			font-size: 14px;
-			border: 1px solid rgb(238, 137, 5);
-			margin-left: 10px;
-			margin-right: 10px;
-
-		}
-
-		.clearSnapshotHeader {
-			text-align: center;
-			font-size: 16px;
-			margin: 0px;
-			padding: 2px;
-		}
 
 		#slicerImg{
 			width: 30px;
