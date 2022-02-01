@@ -312,16 +312,27 @@ function buildSnapshot(data) {
 			}
 		}
 
+		if (!_.isEmpty(componentTree)) {
+			fileTree.set(componentTree[parentComponent]);
+		}
+
+
 		// set fileTree for hierarchical displays
 	 	fileTree.set(componentTree[parentComponent]);
 
 		//create depth-first ordering of tree for state injections
 		const flatTreeArray = [];
 
-		depthFirstTraverse(componentTree[parentComponent]);
+		// if AST came through, make flat file tree based on that; otherwise use componentData
+		if (!_.isEmpty(componentTree)) {
+			depthFirstTraverse(componentTree[parentComponent]);
+		}
+		else {
+			depthFirstTraverse(componentData[domParent]);
+		}
 		
 		function depthFirstTraverse(tree) {
-			flatTreeArray.push(tree.id);
+			flatTreeArray.push(tree.tagName || tree.id);
 			if (tree.children.length) {
 				tree.children.forEach(child => {
 					depthFirstTraverse(child);
