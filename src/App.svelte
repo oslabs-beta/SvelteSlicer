@@ -289,6 +289,22 @@
 			border: 2px solid #dddcdc;
 		}
 
+		#snapshots::-webkit-scrollbar {
+			width: 10px;
+		}
+
+		#snapshots::-webkit-scrollbar-track {
+		background-color: rgba(238, 137, 5, 0.288);
+		border-radius: 100px;
+		}
+
+		#snapshots::-webkit-scrollbar-thumb {
+		border-radius: 100px;
+		border: 5px solid transparent;
+		background-clip: content-box;
+		background-color: none;
+		}
+
 		#snapshots {
 			grid-column-start: 1;
 			grid-column-end: 2;
@@ -296,9 +312,13 @@
 			grid-row-end: 4;
 			overflow-y: scroll;
 			border-top: 2px solid #dddcdc;
-			background-color: #757474;
-			padding: 0;
+			background-color: #75747400;
 			margin: 0;
+			padding: 0;
+			overflow-y: auto;
+			direction: ltr;
+			scrollbar-color: #d4aa70 #e4e4e4;
+			scrollbar-width: thin;
 		}
 
 		#filter {

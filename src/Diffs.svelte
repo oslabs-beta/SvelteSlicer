@@ -12,7 +12,7 @@
 
 <main>
     <div id="valuesList">
-        <h2>Snapshot {I}: {snapshot.label}</h2>
+        <h2> Snapshot {I}: {snapshot.label}</h2>
             {#if newComponents.length} 
                 <h3 class="diffsHeading">New Components:</h3>
                 {#each newComponents as component}
@@ -47,16 +47,23 @@
 
 <style>
     h2 {
+        font-size: 19px;
         padding: 0px;
         font-weight: 700;
     }
 
     h4 {
-     padding: 10px;
+     padding: 8px;
+    }
+
+    h3 {
+        padding-top: 5px;
+        padding-bottom: 5px;
     }
 
     .diffsHeading {
         text-decoration: none;
+        font-size: 17px;
         font-weight: bolder;
         background-color: rgba(238, 137, 5, 0.288);
     }
