@@ -1,5 +1,5 @@
 <script>
-	import {snapshots, fileTree, flatFileTree, backgroundPageConnection, sharedAppView} from './stores.js';
+	import {snapshots, fileTree, flatFileTree, backgroundPageConnection } from './stores.js';
 	import { get } from 'svelte/store';
 	import Component from './Component.svelte';
 	import StateChart from './StateChart.svelte';
@@ -11,10 +11,6 @@
 	
 	$: CurrentI = (I === undefined ? $snapshots.length - 1 : snapshotLength < $snapshots.length ? $snapshots.length - 1 : I);
 	$: CurrentAppView = (appView === undefined ? $snapshots.length -1 : snapshotLength < $snapshots.length ? $snapshots.length -1 : appView)
-
-	$: {
-		sharedAppView.set(CurrentAppView);
-	}
 
 	let timeline = [];
 
