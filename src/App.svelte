@@ -105,10 +105,14 @@
 	function clearSnapshots(clearType) {
 		let newSnapshotList;
 		let path = timeline[CurrentAppView].slice();
+		
 		if (clearType === 'forward') {
 			newSnapshotList = $snapshots.slice(0, CurrentAppView + 1);
 			timeline = timeline.slice(0, CurrentAppView + 1);
+			appView = undefined;
+			I = undefined;
 		}
+
 		else if (clearType === 'previous') {
 			newSnapshotList = $snapshots.slice(CurrentAppView);
 			let count = CurrentAppView;
@@ -124,9 +128,10 @@
 					}
 				}
 			})
-			appView = appView - count;
-			I = I - count;
+			appView = 0;
+			I = 0;
 		}
+
 		else if (clearType === 'path') {
 			newSnapshotList = $snapshots.slice();
 			for (let i = $snapshots.length -1; i > 0 ; i-=1){
@@ -141,11 +146,13 @@
 					snapshot.push(i);
 				}
 			})
-			console.log(timeline);
+			I = newSnapshotList.length - 1;
+			appView = newSnapshotList.length - 1;
 		}
 		
 		snapshots.set(newSnapshotList)
 		
+		// message index.js to trim stateHistory stored there
 		connection.postMessage({
 			source: 'panel',
 			name: 'clearSnapshots',
@@ -154,6 +161,9 @@
 			path,
 			tabId: chrome.devtools.inspectedWindow.tabId
 		})
+
+		jumping = false;
+		snapshotLength = snapshotLength = JSON.parse(JSON.stringify($snapshots)).length;
 	}
 
 	</script>
