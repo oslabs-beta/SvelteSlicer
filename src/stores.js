@@ -62,12 +62,12 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 				const components = {};
 				if (ast.instance) {
 					const astVariables = ast.instance.content.body;
-					const data = {};
 					astVariables.forEach(variable => {
+						const data = {};
 						if (variable.type === "ImportDeclaration" && variable.source.value.includes('.svelte')) {
 							data.name = variable.specifiers[0].local.name;
 							data.parent = componentName;
-							components[data.name] = (data);
+							components[data.name] = data;
 						}
 					})
 				}
@@ -298,8 +298,10 @@ function buildSnapshot(data) {
 	let currentTree = get(fileTree);
 	if (_.isEmpty(currentTree)) {
 		// assign component children
+		console.log(astInfo);
+		console.log(componentTree);
 		for (let file in astInfo) {
-			for (let childFile in astInfo[file].components) {
+			for (let childFile in astInfo[file]) {
 				componentTree[file].children.push(componentTree[childFile]);
 				componentTree[childFile].parent = file;
 			}
@@ -315,10 +317,6 @@ function buildSnapshot(data) {
 		if (!_.isEmpty(componentTree)) {
 			fileTree.set(componentTree[parentComponent]);
 		}
-
-
-		// set fileTree for hierarchical displays
-	 	fileTree.set(componentTree[parentComponent]);
 
 		//create depth-first ordering of tree for state injections
 		const flatTreeArray = [];
