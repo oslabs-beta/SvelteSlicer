@@ -2,18 +2,20 @@
 
 
 body {
-	
+	margin: 0;
 	background: rgb(83, 81, 81);
 	margin: 0;
 	height: 100%;
+	font-size: 16px;
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
 }
 
 h2 {
-	font-weight: Bold 700;
-	font-size: 25px;
+	font-weight: 700;
+	font-size: 19px;
 	margin: 2px;
+	padding: 10px;
 }
 
 div {
@@ -51,7 +53,8 @@ input, select, textarea {
 	background: #333;
 	outline: none;
 	margin: 2px;
-	font-size: 18px;
+	font-size: 16px;
+	font-family: 'Overpass', sans-serif;
 	padding: 0.4em;
 	border: none;
 	border-radius: 2px;
@@ -138,7 +141,6 @@ font-size: 16px;
   }
 
 .no-arrow { 
-	/* padding-left: 1.0rem;  */
 	font-size: 16px;
 }
 
@@ -152,7 +154,7 @@ ul.variableVal {
 }
 
 #variableName {
-	font-size: 16px;
+	/* font-size: 16px; */
 	list-style-type: none;
 }
 .arrow {
@@ -165,34 +167,6 @@ ul.variableVal {
 
 .arrowDown { 
 	transform: rotate(90deg); 
-}
-
-#valuesList {
-	font-size: 16px;
-}
-
-
-
-.oldAndNewVals {
-	font-size: 16px;
-}
-
-.oldValue{
-	text-decoration: line-through;
-	color:rgb(238, 137, 5);
-	font-size: 16px;
-}
-.diffComponentName{
-	color:white;
-	font-weight: bold;
-	font-size: 16px;
-
-
-}
-.deletedComponent{
-	text-decoration: line-through;
-	color:red;
-	font-size: 16px;
 }
 
 .search-button {
