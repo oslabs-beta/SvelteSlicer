@@ -239,15 +239,42 @@ function buildSnapshot(data) {
 	for (let component in componentData) {
 		const componentDiff = {};
 		for(let i in componentData[component].variables) {
+			let data;
 			const variable = componentData[component].variables[i];
-			if (!(_.isEqual(variable.value, stateObject[component][variable.name].value))) {
-				const data = {
+			// if variable is in componentData but not in stateObject, new value is null
+			if (!stateObject[component].hasOwnProperty(variable.name)) {
+				data = {
+					name: variable.name,
+					oldValue: variable.value !== undefined ? getDiffValue(variable.value) : "undefined",
+					newValue: null,
+				}
+				variable.value = null;
+			}
+			
+			else if (!(_.isEqual(variable.value, stateObject[component][variable.name].value))) {
+				data = {
 					name: variable.name,
 					oldValue: variable.value !== undefined ? getDiffValue(variable.value) : "undefined",
 					newValue: getDiffValue(stateObject[component][variable.name].value),
 				}
 						
 				variable.value = stateObject[component][variable.name].value;
+			}
+
+			// if variable is in stateObject but not in componentData, old value is null
+			for (let variable in stateObject[component]) {
+				if (!componentData[component].variables.hasOwnProperty(variable)) {
+					data = {
+						name: variable,
+						oldValue: null,
+						newValue: getDiffValue(stateObject[component][variable.name].value),
+					}
+					componentData[component].variables.variable = stateObject[component][variable];
+				}
+			}
+
+			// if there are diffs, add to component diff or store diff
+			if (data) {
 				if (variable.name[0] === '$') {
 					data.component = 'Store'
 					storeDiff[variable.name] = data;
