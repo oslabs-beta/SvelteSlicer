@@ -248,9 +248,6 @@ chrome.devtools.panels.create(
                                             }
                                         }
                                     }
-                                    else {
-                                        destroyComponent(componentInstance);
-                                    }
                                 }
                             }
                         })
@@ -362,7 +359,7 @@ chrome.devtools.panels.create(
                         // only send message if something changed in SvelteDOM or stateObject
                         const currentState = captureRawAppState();
                         const stateChange = JSON.stringify(currentState) !== JSON.stringify(stateHistory[stateHistory.length -1]);
-                        if (components.length || insertedNodes.length || deletedNodes.length || stateChange) {
+                        if (components.length || insertedNodes.length || deletedNodes.length) {
                             stateHistory.push(JSON.parse(JSON.stringify(currentState)));
                             let type;
                             // make sure the first load has already been sent; if not, this is the first load

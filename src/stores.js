@@ -53,6 +53,7 @@ chrome.runtime.onMessage.addListener((msg) => {
 
 // get and parse through the AST for additional variable info
 chrome.devtools.inspectedWindow.getResources(resources => {
+	console.log(resources);
 	const arrSvelteFiles = resources.filter(file =>file.url.includes(".svelte"));
 	arrSvelteFiles.forEach(svelteFile => {
 	  	svelteFile.getContent(source => {
@@ -89,11 +90,6 @@ function buildSnapshot(data) {
 		deletedComponents: [],
 		changedVariables: {}
 	};
-
-	// delete nodes and descendents
-	deletedNodes.forEach(node => {
-		deleteNode(node.id);
-	})
 
 	// build nodes object
 	insertedNodes.forEach(node => {
@@ -206,6 +202,11 @@ function buildSnapshot(data) {
 				componentData[component].targets[node.id] = true;
 			}
 		}
+	})
+
+	// delete nodes and descendents
+	deletedNodes.forEach(node => {
+		deleteNode(node.id);
 	})
 
 	// determine and assign the DOM parent (can't happen until all components are built and have nodes assigned)
