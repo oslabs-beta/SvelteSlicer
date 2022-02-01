@@ -141,7 +141,6 @@
 					snapshot.push(i);
 				}
 			})
-			console.log(timeline);
 		}
 		
 		snapshots.set(newSnapshotList)

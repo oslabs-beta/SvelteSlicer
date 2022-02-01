@@ -2,7 +2,6 @@
 import * as d3 from 'd3';
 import { onMount } from 'svelte';
 export let treeData;
-console.log('treeData',treeData);
 
 let margin = {top:20,right:0,bottom:20,left:0}
 let width = 700 - margin.left - margin.right;
@@ -31,7 +30,6 @@ onMount(()=>{
      root = d3.hierarchy(treeData, function(d){
          return d.children;
      });
-     console.log('root',root)
      
   root.x0 = 0;
   root.y0 = width/2;
@@ -40,7 +38,6 @@ onMount(()=>{
          let treeData = treemap(root)
          //nodes //return thr arr of descendant nodes, staring with this node then followed by each child
          let nodes = treeData.descendants();
-         console.log('nodes',nodes)
          //set depth
          nodes.forEach(function(d){
              d.y=d.depth*140;

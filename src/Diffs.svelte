@@ -6,9 +6,6 @@
     $: newComponents = snapshot.diff.newComponents;
     $: deletedComponents = snapshot.diff.deletedComponents;
     $: changedVariables = snapshot.diff.changedVariables;
-
-    console.log(changedVariables);
-
 </script>
 
 <main>

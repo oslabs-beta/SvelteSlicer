@@ -187,7 +187,6 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 				}
 			}	
 	  	});
-		console.log(uncaughtVariables);
 	});
 });
 

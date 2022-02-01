@@ -17,12 +17,10 @@ const width = document.body.clientWidth * 0.7;
 const height = document.body.clientHeight;
 
     let svg;
-    
     let preElement ;
     let currElement ;
 
    afterUpdate(()=>{
-
     // remove references to inactive child components
     function trimTree(tree) {
         if (tree.children.length) {
@@ -55,22 +53,15 @@ const height = document.body.clientHeight;
        //d3.tree() is tidy tree layout module
        let treemap = d3.tree().size([width,height]);
        //construct root node
-
-       console.log('tree', tree);
        root = d3.hierarchy(tree, function(d){
            return d.children;
        });
-       console.log('root',root);
-       
     root.x0 = 0;
     root.y0 = width/2;
-    
        update(root);
        function update(src){
            let treeData = treemap(root)
            let nodes = treeData.descendants();
-           console.log('nodes',nodes)
-
            //set depth
            nodes.forEach(function(d){
                d.y=d.depth*180;
@@ -252,20 +243,14 @@ const height = document.body.clientHeight;
                d._children=null;
            }
            update(d);
-           //console.log(`${d.data.id} node is selected`)
        }
        
        }
     
       
-    
-
     preElement = document.getElementsByClassName(`${I}`)[0].previousSibling
-    //console.log('pre',preElement)
     currElement= document.getElementsByClassName(`${I}`)
-    //console.log('curr',currElement)
    if(svg.previousSibling){
-
    }
    if(preElement){
        preElement.remove();
@@ -276,11 +261,8 @@ const height = document.body.clientHeight;
 </script>
 
 <main>
-    
     <h2>Snapshot {I}: {label}</h2>
-   
     <div bind:this={svg} id='chart' ></div>
-  
 </main>
 
 
