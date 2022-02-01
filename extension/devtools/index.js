@@ -359,7 +359,7 @@ chrome.devtools.panels.create(
 
                     // capture subsequent DOM changes to update snapshots
                     window.document.addEventListener('dom-changed', (e) => {
-                        // only send message if something changed in SvelteDOM
+                        // only send message if something changed in SvelteDOM or stateObject
                         const currentState = captureRawAppState();
                         const stateChange = JSON.stringify(currentState) !== JSON.stringify(stateHistory[stateHistory.length -1]);
                         if (components.length || insertedNodes.length || deletedNodes.length || stateChange) {
@@ -392,7 +392,7 @@ chrome.devtools.panels.create(
                         addedEventListeners.splice(0, addedEventListeners.length);
                     });
 
-                    // listen for devTool requesting state injections 
+                    // listen for devTool messages
                     window.addEventListener('message', function () {
                         // Only accept messages from the same frame
                         if (event.source !== window) {
