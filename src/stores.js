@@ -6,6 +6,7 @@ export const snapshots = writable([]);
 export const fileTree = writable({});
 export const flatFileTree = writable([]);
 export const backgroundPageConnection = writable(chrome.runtime.connect({name: "panel"}));
+export const sharedAppView = writable();
 
 // store updateable objects for current component state
 let componentData = {}
@@ -235,88 +236,99 @@ function buildSnapshot(data) {
 	}
 
 	// update state variables
-	const storeDiff = {};
-	for (let component in componentData) {
-		const componentDiff = {};
+	const currentIndex = get(sharedAppView);
+	if (currentIndex >= 0) {
+		const allStates = get(snapshots);
+		const stateHistory = allStates[currentIndex].data;
+		const storeDiff = {};
 
-		for (let variable in stateObject[component]) {
-			let data = {};
-			// if variable is in stateObject but not in componentData, set value in componentData to null
-			if (!componentData[component].variables.hasOwnProperty(variable)) {
-				componentData[component].variables[variable] = stateObject[component][variable];
-			}
-			// if values are different, set value in componentData to value from stateObject
-			else if (!(_.isEqual(variable.value, stateObject[component][variable.name].value))) {						
-				componentData[component].variables[variable].value = stateObject[component][variable.name].value;
-			}
+		console.log(componentData);
+		console.log(Object.values(componentData));
+		console.log(Object.entries(componentData));
 
-			// if variable is in stateObject but not in stateHistory, old value is null
-			if (!stateHistory[component].variables.hasOwnProperty(variable)) {
-				data = {
-					name: variable,
-					oldValue: null,
-					newValue: getDiffValue(stateObject[component][variable.name].value),
+		for (let [componentId, component] of Object.entries(componentData)) {
+			const componentDiff = {};
+
+			console.log(componentId);
+			console.log(component);
+
+			for (let [varName, variable] of Object.entries(stateObject[componentId])) {
+				const { name, value } = variable;
+				let data = {};
+				// if variable is in stateObject but not in componentData, set value in componentData to null
+				if (!component.variables.hasOwnProperty(name)) {
+					component.variables[name] = stateObject[componentId][name];
+				}
+				// if values are different, set value in componentData to value from stateObject
+				else if (!(_.isEqual(value, stateObject[componentId][name].value))) {						
+					component.variables[name].value = stateObject[componentId][name].value;
+				}
+
+				// if variable is in stateObject but not in stateHistory, old value is null
+				if (!stateHistory[componentId].variables.hasOwnProperty(name)) {
+					data = {
+						name,
+						oldValue: null,
+						newValue: getDiffValue(stateObject[componentId][name].value),
+					}
+				}
+				// if values are different in stateObject and stateHistory, set old and new values respetively
+				else if (!(_.isEqual(stateHistory[componentId].variables[name].value, stateObject[componentId][name].value))) {
+					data = {
+						name,
+						oldValue: stateHistory[componentId].variables[name].value !== undefined ? getDiffValue(stateHistory[componentId].variables[name].value) : "undefined",
+						newValue: getDiffValue(stateObject[componentId][name].value),
+					}
+				}
+			
+				// if there are diffs, add to component diff or store diff
+				if (data) {
+					if (name[0] === '$') {
+						storeDiff[name] = data;
+					}
+					else {
+						componentDiff[name] = data;
+					}
 				}
 			}
-			// if values are different in stateObject and stateHistory, set old and new values respetively
-			else if (!(_.isEqual(stateHistory[component].variables[variable].value, stateObject[component][variable.name].value))) {
-				data = {
-					name: variable.name,
-					oldValue: stateHistory[component].variables[variable].value.value !== undefined ? getDiffValue(stateHistory[component].variables[variable].value) : "undefined",
-					newValue: getDiffValue(stateObject[component][variable.name].value),
+
+			for (let [varName, variable] of Object.entries(component.variables)) {
+				// if variable is in componentData but not in stateObject, new value in componentData is null
+				if (!stateObject[componentId].hasOwnProperty(varName)) {
+					variable.value = null;
 				}
 			}
 			
-			// if there are diffs, add to component diff or store diff
-			if (data) {
-				if (variable.name[0] === '$') {
-					storeDiff[variable.name] = data;
-				}
-				else {
-					componentDiff[variable.name] = data;
-				}
-			}
-		}
-
-		for(let i in componentData[component].variables) {
-			// if variable is in componentData but not in stateObject, new value in componentData is null
-			if (!stateObject[component].hasOwnProperty(componentData[component].variables[i].name)) {
-				variable.value = null;
-			}
-		}
-			
-		for(let i in stateHistory[component].variables) {
-			// if variable is in stateHistory but not in stateObject, new value is null
-			if (!stateObject[component].hasOwnProperty(stateHistory[component].variables[i].name)) {
-				const data = {
-					name: variable,
-					oldValue: stateHistory[component].variables[variable].value.value !== undefined ? getDiffValue(stateHistory[component].variables[variable].value) : "undefined",
-					newValue: null,
-				}
-				if (data.name[0] === '$') {
-					storeDiff[data.name] = data;
-				}
-				else {
-					componentDiff[data.name] = data;
+			for (let [varName, variable] of Object.entries(stateHistory[component.id].variables)) {
+				// if variable is in stateHistory but not in stateObject, new value is null
+				if (!stateObject[componentId].hasOwnProperty(varName)) {
+					const data = {
+						name: varName,
+						oldValue: variable.value !== undefined ? getDiffValue(variable.value) : "undefined",
+						newValue: null,
+					}
+					if (varName[0] === '$') {
+						storeDiff[varName] = data;
+					}
+					else {
+						componentDiff[varName] = data;
+					}
 				}
 			}
 		
+			if (!_.isEmpty(componentDiff)) {
+				diff.changedVariables[component] = componentDiff;
+			}	
 		}
-		
-		if (!_.isEmpty(componentDiff)) {
-			diff.changedVariables[component] = componentDiff;
-		}	
-	}
 
-	if (!_.isEmpty(storeDiff)) {
-		diff.changedVariables['Store'] = storeDiff;
+		if (!_.isEmpty(storeDiff)) {
+			diff.changedVariables['Store'] = storeDiff;
+		}
 	}
 
 	let currentTree = get(fileTree);
 	if (_.isEmpty(currentTree)) {
 		// assign component children
-		console.log(astInfo);
-		console.log(componentTree);
 		for (let file in astInfo) {
 			for (let childFile in astInfo[file]) {
 				componentTree[file].children.push(componentTree[childFile]);
