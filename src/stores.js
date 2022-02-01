@@ -6,6 +6,7 @@ export const snapshots = writable([]);
 export const fileTree = writable({});
 export const flatFileTree = writable([]);
 export const backgroundPageConnection = writable(chrome.runtime.connect({name: "panel"}));
+export const sharedAppView = writable();
 
 // store updateable objects for current component state
 let componentData = {}
@@ -187,7 +188,6 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 				}
 			}	
 	  	});
-		console.log(uncaughtVariables);
 	});
 });
 
@@ -367,42 +367,47 @@ function buildSnapshot(data) {
 	}
 
 	// update ctx variables
-	for (let component in componentData) {
-		const componentDiff = [];
-		for(let i in componentData[component].variables) {
-			const variable = componentData[component].variables[i];
-			if (variable.ctxIndex) {
-				if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
-					let data;
-					if (variable.value === null || typeof variable.value !== "object") {
-						data = {
-							name: variable.name,
-							oldValue: JSON.parse(JSON.stringify(variable.value !== undefined ? variable.value : "undefined")),
-							newValue: ctxObject[component][variable.ctxIndex].value,
-							component: variable.component,
-							type: variable.type
+	const lastIndex = get(sharedAppView);
+	if (lastIndex >= 0) {
+		const stateHistory = get(snapshots);
+		const priorState = stateHistory[lastIndex];
+		for (let component in componentData) {
+			const componentDiff = [];
+			for(let i in componentData[component].variables) {
+				const variable = componentData[component].variables[i];
+				if (variable.ctxIndex) {
+					if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
+						let data;
+						if (variable.value === null || typeof variable.value !== "object") {
+							data = {
+								name: variable.name,
+								oldValue: JSON.parse(JSON.stringify(variable.value !== undefined ? variable.value : "undefined")),
+								newValue: ctxObject[component][variable.ctxIndex].value,
+								component: variable.component,
+								type: variable.type
+							}
 						}
-					}
-					else {
-						data = {
-							name: variable.name,
-							oldValue: recurseDiffObject(variable.value),
-							newValue: recurseDiffObject(ctxObject[component][variable.ctxIndex].value),
-							component: variable.component,
-							type: variable.type
+						else {
+							data = {
+								name: variable.name,
+								oldValue: recurseDiffObject(variable.value),
+								newValue: recurseDiffObject(ctxObject[component][variable.ctxIndex].value),
+								component: variable.component,
+								type: variable.type
+							}
 						}
+						
+						componentDiff.push(data);
+						variable.value = ctxObject[component][variable.ctxIndex].value;
 					}
-					
-					componentDiff.push(data);
-					variable.value = ctxObject[component][variable.ctxIndex].value;
 				}
 			}
-		}
-		if (componentDiff.length) {
-			diff.changedVariables.push(componentDiff);
-		}
+			if (componentDiff.length) {
+				diff.changedVariables.push(componentDiff);
+			}
+		}	
 	}
-
+	
 	let currentTree = get(fileTree);
 	if (_.isEmpty(currentTree)) {
 		// assign component children
@@ -466,23 +471,28 @@ function deleteNode (nodeId) {
 }
 
 function recurseDiffObject(value) {
-	let text = '';
+	let text = '\n';
 	  
 	Object.keys(value).forEach(item=>	{	 
-		nested(value[item])
+		nested(value[item], 1)
 	})
 	return text;
 
-	function nested(obj){
+	function nested(obj, tabCount){
 		if(obj.value) {  
+			// add tabs based on the level in the recursion
+			for (let i = 1; i <= tabCount; i++) {
+				text = text + "\t"
+			}
 			text = text + obj.name + ":";
 			if(typeof obj.value !=='object') {
 				text = text + obj.value + "\n";
 			}
 			else {
+				tabCount++;
 				text = text + "\n";
 				for(let val in obj.value ) {
-					nested(obj.value[val]);
+					nested(obj.value[val], tabCount);
 				}
 			}
 		}
