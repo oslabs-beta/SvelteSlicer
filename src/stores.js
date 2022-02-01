@@ -11,14 +11,12 @@ export const backgroundPageConnection = writable(chrome.runtime.connect({name: "
 let componentData = {}
 // store ALL nodes and listeners
 const nodes = {};
-const listeners = {};
 
 // store AST info for each file
 const astInfo = {};
 const componentTree = {};
 let parentComponent;
 let domParent;
-let snapshotLabel = "Init";
 
 // set up background page Connection
 const connection = get(backgroundPageConnection);
@@ -43,17 +41,10 @@ chrome.runtime.onMessage.addListener((msg) => {
 		const newSnapshot = buildSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
 	}
-	else if (type === "event") {
-		const listener = listeners[data.nodeId + data.event];
-		const { component, event, name } = listener;
-		const tagName = componentData[component].tagName
-		snapshotLabel = tagName + ' - ' + event + " -> " + name;
-	}
 });
 
 // get and parse through the AST for additional variable info
 chrome.devtools.inspectedWindow.getResources(resources => {
-	console.log(resources);
 	const arrSvelteFiles = resources.filter(file =>file.url.includes(".svelte"));
 	arrSvelteFiles.forEach(svelteFile => {
 	  	svelteFile.getContent(source => {
@@ -84,7 +75,7 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 });
 
 function buildSnapshot(data) {
-	const { components, insertedNodes, deletedNodes, addedEventListeners, stateObject } = data;
+	const { components, insertedNodes, deletedNodes, stateObject, snapshotLabel } = data;
 	const diff = {
 		newComponents: [],
 		deletedComponents: [],
@@ -105,20 +96,6 @@ function buildSnapshot(data) {
 			nodes[node.target].children.push({id: node.id});
 		}
 	})
-
-	// build listeners object and assign listeners to nodes
-	addedEventListeners.forEach(listener => {
-		const listenerData = {
-			node: listener.node,
-			event: listener.event,
-			name: listener.handlerName,
-			string: listener.handlerString,
-			component: listener.component,
-			id: listener.id
-		}
-		// assign to listeners object
-		listeners[listener.id] = listenerData;
-	});
 
 	// build components and assign nodes and variables
 	components.forEach(component => {
@@ -162,14 +139,6 @@ function buildSnapshot(data) {
 		parentNode = Math.min(...Object.keys(targets));
 		data.parentNode = parentNode;
 		data.targets = targets;
-
-		// add event listeners
-		addedEventListeners.forEach(listener => {
-			if (data.nodes.hasOwnProperty(listener.node)) {
-				// update listener object to include full component id with instance number
-				listeners[listener.id].component = id;
-			}
-		})
 
 		// assign variables to components using state object
 		const variables = stateObject[id];
@@ -299,8 +268,6 @@ function buildSnapshot(data) {
 	let currentTree = get(fileTree);
 	if (_.isEmpty(currentTree)) {
 		// assign component children
-		console.log(astInfo);
-		console.log(componentTree);
 		for (let file in astInfo) {
 			for (let childFile in astInfo[file]) {
 				componentTree[file].children.push(componentTree[childFile]);
@@ -350,8 +317,6 @@ function buildSnapshot(data) {
 	}
 
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
-
-	snapshotLabel = undefined;
 
 	return deepCloneSnapshot; // deep clone to "freeze" state
 }

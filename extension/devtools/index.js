@@ -308,13 +308,13 @@ chrome.devtools.panels.create(
                                     snapshotLabel
                                 }
                             })
+                            
+                            // reset arrays
+                            components.splice(0, components.length);
+                            insertedNodes.splice(0, insertedNodes.length);
+                            deletedNodes.splice(0, deletedNodes.length);
+                            snapshotLabel = undefined;
                         }
-
-                        // reset arrays
-                        components.splice(0, components.length);
-                        insertedNodes.splice(0, insertedNodes.length);
-                        deletedNodes.splice(0, deletedNodes.length);
-                        snapshotLabel = undefined;
 
                         // start MutationObserver
                         observer.observe(window.document, {attributes: true, childList: true, subtree: true});
@@ -370,13 +370,13 @@ chrome.devtools.panels.create(
                                     snapshotLabel
                                 }
                             });
-                        }
                         
-                        // reset arrays
-                        components.splice(0, components.length);
-                        insertedNodes.splice(0, insertedNodes.length);
-                        deletedNodes.splice(0, deletedNodes.length);
-                        snapshotLabel = undefined;
+                            // reset arrays
+                            components.splice(0, components.length);
+                            insertedNodes.splice(0, insertedNodes.length);
+                            deletedNodes.splice(0, deletedNodes.length);
+                            snapshotLabel = undefined;
+                        }
                     });
 
                     // listen for devTool messages
