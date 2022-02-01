@@ -20,9 +20,6 @@ let parentComponent;
 let domParent;
 let snapshotLabel = "Init";
 
-// for debugging, store any AST variables not caught by switch statements
-const uncaughtVariables = [];
-
 // set up background page Connection
 const connection = get(backgroundPageConnection);
 
@@ -62,13 +59,15 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 			if (source) {
 				const { ast } = compile(source);
 				const componentName = svelteFile.url.slice((svelteFile.url.lastIndexOf('/') + 1), svelteFile.url.lastIndexOf('.svelte'));			
+				const components = {};
 				if (ast.instance) {
 					const astVariables = ast.instance.content.body;
-					const components = {};
+					const data = {};
 					astVariables.forEach(variable => {
 						if (variable.type === "ImportDeclaration" && variable.source.value.includes('.svelte')) {
-							components.name = variable.specifiers[0].local.name;
-							components.parent = componentName;
+							data.name = variable.specifiers[0].local.name;
+							data.parent = componentName;
+							components[data.name] = (data);
 						}
 					})
 				}
@@ -88,7 +87,7 @@ function buildSnapshot(data) {
 	const diff = {
 		newComponents: [],
 		deletedComponents: [],
-		changedVariables: []
+		changedVariables: {}
 	};
 
 	// delete nodes and descendents
@@ -236,42 +235,39 @@ function buildSnapshot(data) {
 	}
 
 	// update state variables
+	const storeDiff = {};
 	for (let component in componentData) {
-		const componentDiff = [];
+		const componentDiff = {};
 		for(let i in componentData[component].variables) {
 			const variable = componentData[component].variables[i];
-			if (variable.ctxIndex) {
-				if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
-					let data;
-					if (variable.value === null || typeof variable.value !== "object") {
-						data = {
-							name: variable.name,
-							oldValue: JSON.parse(JSON.stringify(variable.value !== undefined ? variable.value : "undefined")),
-							newValue: ctxObject[component][variable.ctxIndex].value,
-							component: variable.component,
-							type: variable.type
-						}
-					}
-					else {
-						data = {
-							name: variable.name,
-							oldValue: recurseDiffObject(variable.value),
-							newValue: recurseDiffObject(ctxObject[component][variable.ctxIndex].value),
-							component: variable.component,
-							type: variable.type
-						}
-					}
+			if (!(_.isEqual(variable.value, stateObject[component][variable.name].value))) {
+				const data = {
+					name: variable.name,
+					oldValue: variable.value !== undefined ? getDiffValue(variable.value) : "undefined",
+					newValue: getDiffValue(stateObject[component][variable.name].value),
+				}
 						
-					componentDiff.push(data);
-					variable.value = ctxObject[component][variable.ctxIndex].value;
+				variable.value = stateObject[component][variable.name].value;
+				if (variable.name[0] === '$') {
+					data.component = 'Store'
+					storeDiff[variable.name] = data;
+				}
+				else {
+					data.component = component;
+					componentDiff[variable.name] = data;
 				}
 			}
 		}
-		if (componentDiff.length) {
-			diff.changedVariables.push(componentDiff);
-		}
-	}	
-	
+		
+		if (!_.isEmpty(componentDiff)) {
+			diff.changedVariables[component] = componentDiff;
+		}	
+	}
+
+	if (!_.isEmpty(storeDiff)) {
+		diff.changedVariables['Store'] = storeDiff;
+	}
+
 	let currentTree = get(fileTree);
 	if (_.isEmpty(currentTree)) {
 		// assign component children
@@ -334,12 +330,19 @@ function deleteNode (nodeId) {
 	delete componentData[component].nodes[id];
 }
 
-function recurseDiffObject(value) {
-	let text = '\n';
-	  
-	Object.keys(value).forEach(item=>	{	 
-		nested(value[item], 1)
-	})
+function getDiffValue(value) {
+	let text = '';
+	
+	if (value === null || typeof value !== "object") {
+		text += value;
+	}
+	else {
+		text += '\n';
+		for (let i in value) {
+			nested(value[i], 1);
+		}
+	}
+	
 	return text;
 
 	function nested(obj, tabCount){
@@ -349,7 +352,7 @@ function recurseDiffObject(value) {
 				text = text + "\t"
 			}
 			text = text + obj.name + ":";
-			if(typeof obj.value !=='object') {
+			if (typeof obj.value !=='object') {
 				text = text + obj.value + "\n";
 			}
 			else {
