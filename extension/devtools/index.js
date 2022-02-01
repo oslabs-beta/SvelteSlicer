@@ -10,7 +10,7 @@ chrome.devtools.panels.create(
                     const components = [];
                     const deletedNodes = [];
                     const insertedNodes = [];
-                    const addedEventListeners = [];
+                    const listeners = {};
                     const nodes = new Map();
                     const componentCounts = {};
                     const componentObject = {};
@@ -19,13 +19,13 @@ chrome.devtools.panels.create(
                     let stateHistory = [];
                     const storeVariables = {};
                     let rebuildingDom = false;
+                    let snapshotLabel = "Init";
 
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
                         root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
                         root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
                         root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener);
-                        root.addEventListener('SvelteDOMRemoveEventListener', svelteDOMRemoveEventListener);
                     }
                   
                     function svelteRegisterComponent (e) {                       
@@ -172,29 +172,24 @@ chrome.devtools.panels.create(
                     }
 
                     function svelteDOMAddEventListener(e) {
-                        const { node, event, handler } = e.detail;
-                        const nodeData = nodes.get(node);
-
-                        id = nodeData.id + event;
-
-                        node.addEventListener(event, () => eventAlert(nodeData.id, event));
-                            
-                        addedEventListeners.push({
-                            node: nodeData.id,
-                            event,
-                            handlerName: e.detail.handler.name,
-                            handlerString: e.detail.handler.toString(),
-                            component: nodeData.component,
-                            id
-                        })
-                    }
-
-                    function svelteDOMRemoveEventListener(e) {
                         const { node, event } = e.detail;
-                        nodeData = nodes.get(node);
-                        const id = nodeData.id + event;
-
-                        node.removeEventListener(event, () => eventAlert(nodeData.id, event));                      
+                        if (node.__svelte_meta) {
+                            if (!nodes.has(node)) {
+                                const nodeId = node_id++;
+                                const componentName = getComponentName(node.__svelte_meta.loc.file)
+                                nodes.set(node, {nodeId, componentName});
+                            }
+                            const nodeData = nodes.get(node);
+                            const listenerId = nodeData.id + event;
+                            node.addEventListener(event, () => updateLabel(nodeData.id, event));
+                            
+                            listeners[listenerId] = ({
+                                node: nodeData.id,
+                                event,
+                                handlerName: e.detail.handler.name,
+                                component: nodeData.componentName,
+                            })
+                        }
                     }
 
                     function getComponentName(file) {
@@ -219,16 +214,11 @@ chrome.devtools.panels.create(
                         return parsedCtx;
                     }
 
-                    function eventAlert(nodeId, event) {
+                    function updateLabel(nodeId, event) {
+                        const listener = listeners[nodeId + event];
+		                const { component, handlerName } = listener;
+		                snapshotLabel = component + ' - ' + event + " -> " + handlerName;
                         rebuildingDom = false;
-                        window.postMessage({
-                            source: 'panel.js',
-                            type: 'event',
-                            data: {
-                                nodeId,
-                                event
-                            }
-                        });
                     }
 
                     function rebuildDom(index, state, tree) {
@@ -303,7 +293,7 @@ chrome.devtools.panels.create(
                     // capture initial DOM load as one snapshot
                     window.onload = () => {
                         // make sure that data is being sent
-                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
+                        if (components.length || insertedNodes.length || deletedNodes.length) {
                             stateHistory.push(JSON.parse(JSON.stringify(captureRawAppState())));
                             firstLoadSent = true;
                             
@@ -315,7 +305,7 @@ chrome.devtools.panels.create(
                                     components,
                                     insertedNodes,
                                     deletedNodes,
-                                    addedEventListeners,
+                                    snapshotLabel
                                 }
                             })
                         }
@@ -324,7 +314,7 @@ chrome.devtools.panels.create(
                         components.splice(0, components.length);
                         insertedNodes.splice(0, insertedNodes.length);
                         deletedNodes.splice(0, deletedNodes.length);
-                        addedEventListeners.splice(0, addedEventListeners.length);
+                        snapshotLabel = undefined;
 
                         // start MutationObserver
                         observer.observe(window.document, {attributes: true, childList: true, subtree: true});
@@ -377,7 +367,7 @@ chrome.devtools.panels.create(
                                     components,
                                     insertedNodes,
                                     deletedNodes,
-                                    addedEventListeners,
+                                    snapshotLabel
                                 }
                             });
                         }
@@ -386,7 +376,7 @@ chrome.devtools.panels.create(
                         components.splice(0, components.length);
                         insertedNodes.splice(0, insertedNodes.length);
                         deletedNodes.splice(0, deletedNodes.length);
-                        addedEventListeners.splice(0, addedEventListeners.length);
+                        snapshotLabel = undefined;
                     });
 
                     // listen for devTool messages
