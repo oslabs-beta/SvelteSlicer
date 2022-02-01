@@ -223,9 +223,17 @@
 			<div id="presentation">
 				{#if $snapshots.length} 
 					{#if View === "files" && Vis === "tree"}
-						<Component component={$fileTree}/>
+						{#if Object.keys($fileTree).length}
+							<Component component={$fileTree}/>
+						{:else}
+							<p>File structure data unavailable</p>
+						{/if}
 					{:else if View === "files" && Vis === "chart"}
-						<FileStructure treeData={$fileTree}/>
+						{#if Object.keys($fileTree).length}
+							<FileStructure treeData={$fileTree}/>
+						{:else}
+							<p>File structure data unavailable</p>
+						{/if}
 					{:else if View === "state"}
 					   {#if Vis === "tree"}
 					    <StateTree I={CurrentI}/>
