@@ -416,7 +416,7 @@ function getDiffValue(value) {
 			for (let i = 1; i <= tabCount; i++) {
 				text = text + "\t"
 			}
-			text = text + obj.name + ":";
+			text = text + obj.name + ": ";
 			if (typeof obj.value !=='object') {
 				text = text + obj.value + "\n";
 			}
