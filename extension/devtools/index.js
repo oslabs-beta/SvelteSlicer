@@ -12,12 +12,12 @@ chrome.devtools.panels.create(
                     const insertedNodes = [];
                     const addedEventListeners = [];
                     const nodes = new Map();
-                    const ctxObject = {};
                     const componentCounts = {};
                     const componentObject = {};
                     let node_id = 0;
                     let firstLoadSent = false;
-                    let ctxHistory = [];
+                    let stateHistory = [];
+                    const storeVariables = {};
                     let rebuildingDom = false;
 
                     function setup(root) {
@@ -37,40 +37,107 @@ chrome.devtools.panels.create(
 		                }
 		                componentCounts[tagName] = instance;
                         const id = tagName + instance;
-                                                
-                        // get state variables and ctx indices from $inject_state
-                        const injectState = {};
-                        let string = component.$inject_state.toString();
-                        while (string.includes('$$invalidate')) {
-                            const varIndexStart = string.indexOf('$$invalidate') + 13;
-                            const varIndexEnd = string.indexOf(',', varIndexStart);
-                            const varIndex = (string.slice(varIndexStart, varIndexEnd));
-                            
-                            const varNameStart = varIndexEnd + 1;
-                            const varNameEnd = string.indexOf('=', varNameStart);
-                            const varName = string.slice(varNameStart, varNameEnd).trim();
-                            injectState[varName] = varIndex;
-                            string = string.slice(varNameEnd);
-                        }
 
                         componentObject[id] = {component, tagName};
-                        ctxObject[id] = {ctx: component.$$.ctx, tagName, instance};
-                        
-                        // parse ctx for messaging purposes
-                        const ctx = {};
-                        component.$$.ctx.forEach((element, index) => {
-                            ctx[index] = parseCtx(element);
-                        })
 
                         data = {
                             id,
-                            ctx,
-                            injectState,
+                            state: captureComponentState(component),
                             tagName,
                             instance,
                             target: (options.target) ? options.target.nodeName + options.target.id : null
                         }
                         components.push(data);
+                    }
+
+                    function parseState(element, name = null) {
+                        if (element === null) {
+                            return { 
+                                value: element,
+                                name
+                            };
+                        }
+                        else if (typeof element === "function") {
+                            return {
+                                name,
+                                value: element.toString()
+                            }
+                        }
+                        else if (typeof element === "object") {
+                            if (element.constructor) {
+                                if (element.constructor.name === "Object" || element.constructor.name === "Array") {
+                                    const value = {};
+                                    for (let i in element) {
+                                        value[i] = parseState(element[i], i);
+                                    }
+                                    return {value, name};
+                                }
+                                else {
+                                    return {
+                                        name,
+                                        value: element.constructor.name
+                                    }
+                                }
+                            }
+                            else {
+                                return {
+                                    name,
+                                    value: "Unknown Object"
+                                }
+                            }
+                        }
+                        else {
+                            return {
+                                value: element,
+                                name
+                            };
+                        }
+                    }
+                    function captureComponentState(component) {
+                        const captureStateFunc = component.$capture_state;
+                        let state = captureStateFunc ? captureStateFunc() : {};
+                        // if capture_state produces an empty object, may need to use ctx instead (older version of Svelte)
+                        if (state && !Object.keys(state).length) {
+                            if (component.$$.ctx.constructor.name === "Object") {
+                                state = JSON.parse(JSON.stringify(component.$$.ctx));
+                            }
+                        }
+                    
+                        const parsedState = {};
+                        for (let variable in state) {
+                            if (typeof state[variable] === "function") {
+                                delete state[variable];
+                            }
+                            else if (state[variable] === null) {
+                                parsedState[variable] = parseState(state[variable], variable);
+                            }
+                            else if (typeof state[variable] === "object") {
+                                if (state[variable].constructor) {
+                                    if (state[variable].constructor.name === "Object" || state[variable].constructor.name === "Array") {
+                                        if (state[variable].hasOwnProperty('subscribe')) {
+                                            if (state[variable].hasOwnProperty('set') && state[variable].hasOwnProperty('update')) {
+                                                storeVariables[variable] = state[variable];
+                                            }
+                                            delete state[variable];
+                                        }
+                                        else {
+                                            parsedState[variable] = parseState(state[variable], variable);
+                                        }
+                                    }
+                                    // we can't handle any object that's not a "true" object or array, so delete from state
+                                    else {
+                                        delete state[variable];
+                                    }
+                                }
+                                else {
+                                    delete state[variable];
+                                }
+                            }
+                            else {
+                                parsedState[variable]  = parseState(state[variable], variable);
+                            }
+                        }
+                        return parsedState;
                     }
 
                     function svelteDOMRemove(e) {
@@ -140,55 +207,6 @@ chrome.devtools.panels.create(
                         return tagName;
                     }
 
-                    function parseCtx(element, name = null) {
-                        if (typeof element === "function") {
-                            return {
-                                type: 'function', 
-                                name: element.name, 
-                                string: element.toString()
-                            };
-                        }
-                        else if (element instanceof Element) {
-                            let value = 'DOM Element';
-                            if (nodes.has(element)) {
-                                value = nodes.get(element);
-                            }
-                            return {
-                                type: 'DOM Element',
-                                value
-                            }
-                        }
-                        else if (typeof element === "object") {
-                            if (element === null) {
-                                return {
-                                    type: 'value', 
-                                    value: element,
-                                    name
-                                };
-                            }
-                            if (element.hasOwnProperty('$$')) {
-                                return {
-                                    type: 'Svelte Component',
-                                    value: '<' + element.constructor.name + '>'
-                                }
-                            }
-                            else {
-                                const value = {};
-                                for (let i in element) {
-                                    value[i] = parseCtx(element[i], i);
-                                }
-                                return {type: 'value', value, name};
-                            }
-                        }
-                        else {
-                            return {
-                                type: 'value', 
-                                value: element,
-                                name
-                            };
-                        }
-                    }
-
                     function parseCtxObject() {
                         parsedCtx = {};
                         for (let component in ctxObject) {
@@ -217,21 +235,21 @@ chrome.devtools.panels.create(
                         rebuildingDom = true;
                         
                         tree.forEach(componentFile => {
-                            for (let componentInstance in ctxObject) {
-                                if (ctxObject[componentInstance].tagName === componentFile) {
-                                    if (ctxHistory[index].hasOwnProperty(componentInstance)) {
-                                        const { variables } = state[componentInstance];
+                            for (let componentInstance in stateHistory[stateHistory.length - 1]) {
+                                if (componentObject[componentInstance].tagName === componentFile) {
+                                    if (stateHistory[index].hasOwnProperty(componentInstance)) {
+                                        const variables = stateHistory[index][componentInstance];
                                         for (let variable in variables) {
-                                            const { name, ctxIndex, type } = variables[variable];
-                                            if (ctxIndex) {
-                                                if (type === 'store') {
-                                                    updateStore(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
-                                                }
-                                                else {
-                                                    injectState(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
-                                                }
+                                            if (variable[0] === '$') {
+                                                updateStore(componentInstance, variable, variables[variable]);
+                                            }
+                                            else {
+                                                injectState(componentInstance, variable, variables[variable]);
                                             }
                                         }
+                                    }
+                                    else {
+                                        destroyComponent(componentInstance);
                                     }
                                 }
                             }
@@ -243,28 +261,25 @@ chrome.devtools.panels.create(
                         component.$inject_state({ [key]: value })
                     }
 
-                    function updateStore(componentId, storeVariable, value) {
+                    function updateStore(componentId, name, value) {
                         const component = componentObject[componentId].component;
-                        const stateObject = component.$capture_state();
-                        const store = stateObject[storeVariable];
+                        const store = storeVariables[name.slice(1)];
                         store.set(value);
                     }
 
                     function clearSnapshots(index, path, clearType) {
-                        console.log(path);
                         if (clearType === 'forward') {
-                            ctxHistory = ctxHistory.slice(0, index + 1);
+                            stateHistory = stateHistory.slice(0, index + 1);
                         }
                         else if (clearType === 'previous') {
-                            ctxHistory = ctxHistory.slice(index);
+                            stateHistory = stateHistory.slice(index);
                         }
                         else if (clearType === 'path') {
-                            for (let i = ctxHistory.length -1; i > 0 ; i--){
+                            for (let i = stateHistory.length -1; i > 0 ; i--){
                                 if (!path.includes(i)){
-                                    ctxHistory.splice(i,1);
+                                    stateHistory.splice(i,1);
                                 }
                             }
-                            console.log(ctxHistory);
                         }
                     }
 
@@ -277,7 +292,7 @@ chrome.devtools.panels.create(
                     }
 
                     // observe for changes to the DOM
-                    const observer = new MutationObserver( list => {
+                    const observer = new MutationObserver(() => {
                         if (!rebuildingDom){
                             const domChange = new CustomEvent('dom-changed');
                             window.document.dispatchEvent(domChange)
@@ -292,15 +307,14 @@ chrome.devtools.panels.create(
                     window.onload = () => {
                         // make sure that data is being sent
                         if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
-                            ctxHistory.push(JSON.parse(JSON.stringify(ctxObject)));
+                            stateHistory.push(JSON.parse(JSON.stringify(captureRawAppState())));
                             firstLoadSent = true;
-                            // parse the ctxObject for messaging purposes
                             
                             window.postMessage({
                                 source: 'panel.js',
                                 type: 'firstLoad',
                                 data: {
-                                    ctxObject: parseCtxObject(),
+                                    stateObject: captureParsedAppState(),
                                     components,
                                     insertedNodes,
                                     deletedNodes,
@@ -319,11 +333,37 @@ chrome.devtools.panels.create(
                         observer.observe(window.document, {attributes: true, childList: true, subtree: true});
                     }   
 
+                    function captureRawAppState() {
+                        const appState = {};
+                        for (let component in componentObject) {
+                            const captureStateFunc = componentObject[component].component.$capture_state;
+                            let state = captureStateFunc ? captureStateFunc() : {};
+                            // if state object is empty, may need to use ctx instead (older version of Svelte)
+                            if (state && !Object.keys(state).length) {
+                                if (componentObject[component].component.$$.ctx.constructor.name === "Object") {
+                                    state = componentObject[component].component.$$.ctx;
+                                }
+                            }
+                            appState[component] = state;
+                        }
+                        return appState;
+                    }
+
+                    function captureParsedAppState() {
+                        const appState = {};
+                        for (let component in componentObject) {
+                            appState[component] = captureComponentState(componentObject[component].component);
+                        }
+                        return appState;
+                    }
+
                     // capture subsequent DOM changes to update snapshots
                     window.document.addEventListener('dom-changed', (e) => {
                         // only send message if something changed in SvelteDOM
-                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
-                            ctxHistory.push(JSON.parse(JSON.stringify(ctxObject)));
+                        const currentState = captureRawAppState();
+                        const stateChange = JSON.stringify(currentState) !== JSON.stringify(stateHistory[stateHistory.length -1]);
+                        if (components.length || insertedNodes.length || deletedNodes.length || stateChange) {
+                            stateHistory.push(JSON.parse(JSON.stringify(currentState)));
                             let type;
                             // make sure the first load has already been sent; if not, this is the first load
                             if (!firstLoadSent) {
@@ -336,7 +376,7 @@ chrome.devtools.panels.create(
                                 source: 'panel.js',
                                 type,
                                 data: {
-                                    ctxObject: parseCtxObject(),
+                                    stateObject: captureParsedAppState(),
                                     components,
                                     insertedNodes,
                                     deletedNodes,
