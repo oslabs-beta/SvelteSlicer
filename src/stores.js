@@ -237,20 +237,15 @@ function buildSnapshot(data) {
 
 	// update state variables
 	const currentIndex = get(sharedAppView);
+	console.log(currentIndex);
 	if (currentIndex >= 0) {
 		const allStates = get(snapshots);
 		const stateHistory = allStates[currentIndex].data;
+		console.log(allStates[currentIndex]);
 		const storeDiff = {};
-
-		console.log(componentData);
-		console.log(Object.values(componentData));
-		console.log(Object.entries(componentData));
 
 		for (let [componentId, component] of Object.entries(componentData)) {
 			const componentDiff = {};
-
-			console.log(componentId);
-			console.log(component);
 
 			for (let [varName, variable] of Object.entries(stateObject[componentId])) {
 				const { name, value } = variable;
@@ -317,7 +312,7 @@ function buildSnapshot(data) {
 			}
 		
 			if (!_.isEmpty(componentDiff)) {
-				diff.changedVariables[component] = componentDiff;
+				diff.changedVariables[componentId] = componentDiff;
 			}	
 		}
 
