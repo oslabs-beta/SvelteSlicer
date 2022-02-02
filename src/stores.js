@@ -17,6 +17,7 @@ const astInfo = {};
 const componentTree = {};
 let parentComponent;
 let domParent;
+let rebuild = false;
 
 // set up background page Connection
 const connection = get(backgroundPageConnection);
@@ -40,6 +41,10 @@ chrome.runtime.onMessage.addListener((msg) => {
 	else if (type === "update") {
 		const newSnapshot = buildSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
+	}
+	else if (type === "rebuild") {
+		rebuild = true;
+		const newSnapshot = buildSnapshot(data);
 	}
 });
 
@@ -75,6 +80,7 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 });
 
 function buildSnapshot(data) {
+	console.log(data);
 	const { components, insertedNodes, deletedNodes, stateObject, snapshotLabel } = data;
 	const diff = {
 		newComponents: [],
@@ -178,6 +184,14 @@ function buildSnapshot(data) {
 		deleteNode(node.id);
 	})
 
+	// if DOM was rebuilt by jumping, need to explicitly remove components
+	if (rebuild) {
+		console.log(data.deletedComponents);
+		data.deletedComponents.forEach(component => {
+			delete componentData[component];
+		})
+	}
+
 	// determine and assign the DOM parent (can't happen until all components are built and have nodes assigned)
 	for (let component in componentData) {
 		const { parentNode } = componentData[component];
@@ -206,6 +220,8 @@ function buildSnapshot(data) {
 
 	// update state variables
 	const storeDiff = {};
+	console.log(stateObject);
+	console.log(componentData);
 	for (let component in componentData) {
 		const componentDiff = {};
 		for(let i in componentData[component].variables) {
@@ -315,6 +331,8 @@ function buildSnapshot(data) {
 		label: (snapshotLabel ? snapshotLabel : "Unlabeled Snapshot"),
 		diff
 	}
+
+	rebuild = false;
 
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 

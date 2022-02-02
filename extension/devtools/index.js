@@ -20,6 +20,7 @@ chrome.devtools.panels.create(
                     const storeVariables = {};
                     let rebuildingDom = false;
                     let snapshotLabel = "Init";
+                    let jumpIndex;
 
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
@@ -221,14 +222,14 @@ chrome.devtools.panels.create(
                         rebuildingDom = false;
                     }
 
-                    function rebuildDom(index, state, tree) {
+                    function rebuildDom(tree) {
                         rebuildingDom = true;
                         
                         tree.forEach(componentFile => {
-                            for (let componentInstance in stateHistory[stateHistory.length - 1]) {
+                            for (let componentInstance in componentObject) {
                                 if (componentObject[componentInstance].tagName === componentFile) {
-                                    if (stateHistory[index].hasOwnProperty(componentInstance)) {
-                                        const variables = stateHistory[index][componentInstance];
+                                    if (stateHistory[jumpIndex].hasOwnProperty(componentInstance)) {
+                                        const variables = stateHistory[jumpIndex][componentInstance];
                                         for (let variable in variables) {
                                             if (variable[0] === '$') {
                                                 updateStore(componentInstance, variable, variables[variable]);
@@ -308,7 +309,7 @@ chrome.devtools.panels.create(
                                     snapshotLabel
                                 }
                             })
-                            
+
                             // reset arrays
                             components.splice(0, components.length);
                             insertedNodes.splice(0, insertedNodes.length);
@@ -379,6 +380,54 @@ chrome.devtools.panels.create(
                         }
                     });
 
+                    window.document.addEventListener('rebuild', (e) => {
+                        deletedComponents = [];
+                        for (let component in componentObject) {
+                            if (componentObject[component].component.$$.fragment === null) {
+                                delete componentObject[component];
+                                deletedComponents.push(component);
+                            }
+                        }
+                        
+                        components.forEach (newComponent => {
+                            const { tagName, id } = newComponent;
+                            const component = componentObject[id].component;
+                            const captureStateFunc = component.$capture_state;
+                            let componentState = captureStateFunc ? captureStateFunc() : {}; 
+                            
+                            const previousState = stateHistory[jumpIndex];
+                            for (let componentId in previousState) {
+                                if (JSON.stringify(previousState[componentId]) === JSON.stringify(componentState) && !componentObject.hasOwnProperty(componentId)) {
+                                    componentObject[componentId] = {
+                                        component,
+                                        tagName
+                                    }
+                                    newComponent.id = componentId;
+                                    delete componentObject[id]
+                                }
+                            }    
+                        })
+                        
+                        window.postMessage({
+                            source: 'panel.js',
+                            type: 'rebuild',
+                            data: {
+                                stateObject: captureParsedAppState(),
+                                components,
+                                insertedNodes,
+                                deletedNodes,
+                                deletedComponents,
+                                snapshotLabel
+                            }
+                        });
+
+                        components.splice(0, components.length);
+                        insertedNodes.splice(0, insertedNodes.length);
+                        deletedNodes.splice(0, deletedNodes.length);
+                        snapshotLabel = undefined;
+                        jumpIndex = undefined;
+                    })
+
                     // listen for devTool messages
                     window.addEventListener('message', function () {
                         // Only accept messages from the same frame
@@ -393,8 +442,9 @@ chrome.devtools.panels.create(
                         }
 
                         if (event.data.type === 'jumpState') {
-                            const { index, state, tree} = event.data;
-                            rebuildDom(index, state, tree);
+                            const { index, tree} = event.data;
+                            jumpIndex = index;
+                            rebuildDom(tree);
                         }
 
                         if (event.data.type === 'clearSnapshots') {
