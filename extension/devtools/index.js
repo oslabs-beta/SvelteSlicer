@@ -76,7 +76,7 @@ chrome.devtools.panels.create(
                                 else {
                                     return {
                                         name,
-                                        value: element.constructor.name
+                                        value: '<' + element.constructor.name + '>'
                                     }
                                 }
                             }
@@ -128,9 +128,8 @@ chrome.devtools.panels.create(
                                             parsedState[variable] = parseState(state[variable], variable);
                                         }
                                     }
-                                    // we can't handle any object that's not a "true" object or array, so delete from state
                                     else {
-                                        delete state[variable];
+                                        parsedState[variable] = parseState(state[variable], variable)
                                     }
                                 }
                                 else {
