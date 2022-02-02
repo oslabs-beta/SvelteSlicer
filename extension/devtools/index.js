@@ -395,6 +395,7 @@ chrome.devtools.panels.create(
                         }
                     });
 
+                    // clean up after jumps
                     window.document.addEventListener('rebuild', (e) => {
                         deletedComponents = [];
                         for (let component in componentObject) {
@@ -409,6 +410,11 @@ chrome.devtools.panels.create(
                             const component = componentObject[id].component;
                             const captureStateFunc = component.$capture_state;
                             let componentState = captureStateFunc ? captureStateFunc() : {}; 
+                            if (componentState && !Object.keys(componentState).length) {
+                                if (component.$$.ctx.constructor.name === "Object") {
+                                    componentState = deepClone(component.$$.ctx);
+                                }
+                            }
                             
                             const previousState = stateHistory[jumpIndex];
                             for (let componentId in previousState) {
