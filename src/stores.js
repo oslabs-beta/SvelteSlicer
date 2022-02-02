@@ -6,6 +6,7 @@ export const snapshots = writable([]);
 export const fileTree = writable({});
 export const flatFileTree = writable([]);
 export const backgroundPageConnection = writable(chrome.runtime.connect({name: "panel"}));
+export const sharedAppView = writable();
 
 // store updateable objects for current component state
 let componentData = {}
@@ -80,7 +81,6 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 });
 
 function buildSnapshot(data) {
-	console.log(data);
 	const { components, insertedNodes, deletedNodes, stateObject, snapshotLabel } = data;
 	const diff = {
 		newComponents: [],
@@ -218,64 +218,87 @@ function buildSnapshot(data) {
 	}
 
 	// update state variables
-	const storeDiff = {};
-	for (let component in componentData) {
-		const componentDiff = {};
-		for(let i in componentData[component].variables) {
-			let data;
-			const variable = componentData[component].variables[i];
-			// if variable is in componentData but not in stateObject, new value is null
-			if (!stateObject[component].hasOwnProperty(variable.name)) {
-				data = {
-					name: variable.name,
-					oldValue: variable.value !== undefined ? getDiffValue(variable.value) : "undefined",
-					newValue: null,
+	const currentIndex = get(sharedAppView);
+	if (currentIndex >= 0) {
+		const allStates = get(snapshots);
+		const stateHistory = allStates[currentIndex].data;
+		const storeDiff = {};
+
+		for (let [componentId, component] of Object.entries(componentData)) {
+			const componentDiff = {};
+
+			for (let [varName, variable] of Object.entries(stateObject[componentId])) {
+				const { value } = variable;
+				let data = {};
+				// if variable is in stateObject but not in componentData, set value in componentData to null
+				if (!component.variables.hasOwnProperty(varName)) {
+					component.variables[varName] = variable;
 				}
-				variable.value = null;
+				// if values are different, set value in componentData to value from stateObject
+				else if (!(_.isEqual(value, component.variables[varName].value))) {						
+					component.variables[varName].value = value;
+				}
+
+				// if variable is in stateObject but not in stateHistory, old value is null
+				if (!stateHistory[componentId].variables.hasOwnProperty(varName)) {
+					data = {
+						name: varName,
+						oldValue: null,
+						newValue: getDiffValue(value),
+					}
+				}
+				// if values are different in stateObject and stateHistory, set old and new values respetively
+				else if (!(_.isEqual(stateHistory[componentId].variables[varName].value, value))) {
+					data = {
+						name: varName,
+						oldValue: stateHistory[componentId].variables[varName].value !== undefined ? getDiffValue(stateHistory[componentId].variables[varName].value) : "undefined",
+						newValue: getDiffValue(value),
+					}
+				}
+			
+				// if there are diffs, add to component diff or store diff
+				if (!_.isEmpty(data)) {
+					if (varName[0] === '$') {
+						storeDiff[varName] = data;
+					}
+					else {
+						componentDiff[varName] = data;
+					}
+				}
+			}
+
+			for (let [varName, variable] of Object.entries(component.variables)) {
+				// if variable is in componentData but not in stateObject, new value in componentData is null
+				if (!stateObject[componentId].hasOwnProperty(varName)) {
+					variable.value = null;
+				}
 			}
 			
-			else if (!(_.isEqual(variable.value, stateObject[component][variable.name].value))) {
-				data = {
-					name: variable.name,
-					oldValue: variable.value !== undefined ? getDiffValue(variable.value) : "undefined",
-					newValue: getDiffValue(stateObject[component][variable.name].value),
-				}
-						
-				variable.value = stateObject[component][variable.name].value;
-			}
-
-			// if variable is in stateObject but not in componentData, old value is null
-			for (let variable in stateObject[component]) {
-				if (!componentData[component].variables.hasOwnProperty(variable)) {
-					data = {
-						name: variable,
-						oldValue: null,
-						newValue: getDiffValue(stateObject[component][variable].value),
+			for (let [varName, variable] of Object.entries(stateHistory[componentId].variables)) {
+				// if variable is in stateHistory but not in stateObject, new value is null
+				if (!stateObject[componentId].hasOwnProperty(varName)) {
+					const data = {
+						name: varName,
+						oldValue: variable.value !== undefined ? getDiffValue(variable.value) : "undefined",
+						newValue: null,
 					}
-					componentData[component].variables.variable = stateObject[component][variable];
+					if (varName[0] === '$') {
+						storeDiff[varName] = data;
+					}
+					else {
+						componentDiff[varName] = data;
+					}
 				}
 			}
-
-			// if there are diffs, add to component diff or store diff
-			if (data) {
-				if (variable.name[0] === '$') {
-					data.component = 'Store'
-					storeDiff[variable.name] = data;
-				}
-				else {
-					data.component = component;
-					componentDiff[variable.name] = data;
-				}
-			}
-		}
 		
-		if (!_.isEmpty(componentDiff)) {
-			diff.changedVariables[component] = componentDiff;
-		}	
-	}
+			if (!_.isEmpty(componentDiff)) {
+				diff.changedVariables[componentId] = componentDiff;
+			}	
+		}
 
-	if (!_.isEmpty(storeDiff)) {
-		diff.changedVariables['Store'] = storeDiff;
+		if (!_.isEmpty(storeDiff)) {
+			diff.changedVariables['Store'] = storeDiff;
+		}
 	}
 
 	let currentTree = get(fileTree);
@@ -331,6 +354,8 @@ function buildSnapshot(data) {
 
 	rebuild = false;
 
+	console.log(snapshot);
+
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
 	return deepCloneSnapshot; // deep clone to "freeze" state
@@ -368,7 +393,7 @@ function getDiffValue(value) {
 			for (let i = 1; i <= tabCount; i++) {
 				text = text + "\t"
 			}
-			text = text + obj.name + ":";
+			text = text + obj.name + ": ";
 			if (typeof obj.value !=='object') {
 				text = text + obj.value + "\n";
 			}
