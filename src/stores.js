@@ -81,7 +81,6 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 });
 
 function buildSnapshot(data) {
-	console.log(data);
 	const { components, insertedNodes, deletedNodes, stateObject, snapshotLabel } = data;
 	const diff = {
 		newComponents: [],
@@ -220,52 +219,50 @@ function buildSnapshot(data) {
 
 	// update state variables
 	const currentIndex = get(sharedAppView);
-	console.log(currentIndex);
 	if (currentIndex >= 0) {
 		const allStates = get(snapshots);
 		const stateHistory = allStates[currentIndex].data;
-		console.log(allStates[currentIndex]);
 		const storeDiff = {};
 
 		for (let [componentId, component] of Object.entries(componentData)) {
 			const componentDiff = {};
 
 			for (let [varName, variable] of Object.entries(stateObject[componentId])) {
-				const { name, value } = variable;
+				const { value } = variable;
 				let data = {};
 				// if variable is in stateObject but not in componentData, set value in componentData to null
-				if (!component.variables.hasOwnProperty(name)) {
-					component.variables[name] = stateObject[componentId][name];
+				if (!component.variables.hasOwnProperty(varName)) {
+					component.variables[varName] = variable;
 				}
 				// if values are different, set value in componentData to value from stateObject
-				else if (!(_.isEqual(value, stateObject[componentId][name].value))) {						
-					component.variables[name].value = stateObject[componentId][name].value;
+				else if (!(_.isEqual(value, component.variables[varName].value))) {						
+					component.variables[varName].value = value;
 				}
 
 				// if variable is in stateObject but not in stateHistory, old value is null
-				if (!stateHistory[componentId].variables.hasOwnProperty(name)) {
+				if (!stateHistory[componentId].variables.hasOwnProperty(varName)) {
 					data = {
-						name,
+						name: varName,
 						oldValue: null,
-						newValue: getDiffValue(stateObject[componentId][name].value),
+						newValue: getDiffValue(value),
 					}
 				}
 				// if values are different in stateObject and stateHistory, set old and new values respetively
-				else if (!(_.isEqual(stateHistory[componentId].variables[name].value, stateObject[componentId][name].value))) {
+				else if (!(_.isEqual(stateHistory[componentId].variables[varName].value, value))) {
 					data = {
-						name,
-						oldValue: stateHistory[componentId].variables[name].value !== undefined ? getDiffValue(stateHistory[componentId].variables[name].value) : "undefined",
-						newValue: getDiffValue(stateObject[componentId][name].value),
+						name: varName,
+						oldValue: stateHistory[componentId].variables[varName].value !== undefined ? getDiffValue(stateHistory[componentId].variables[varName].value) : "undefined",
+						newValue: getDiffValue(value),
 					}
 				}
 			
 				// if there are diffs, add to component diff or store diff
-				if (data) {
-					if (name[0] === '$') {
-						storeDiff[name] = data;
+				if (!_.isEmpty(data)) {
+					if (varName[0] === '$') {
+						storeDiff[varName] = data;
 					}
 					else {
-						componentDiff[name] = data;
+						componentDiff[varName] = data;
 					}
 				}
 			}
@@ -277,7 +274,7 @@ function buildSnapshot(data) {
 				}
 			}
 			
-			for (let [varName, variable] of Object.entries(stateHistory[component.id].variables)) {
+			for (let [varName, variable] of Object.entries(stateHistory[componentId].variables)) {
 				// if variable is in stateHistory but not in stateObject, new value is null
 				if (!stateObject[componentId].hasOwnProperty(varName)) {
 					const data = {
@@ -356,6 +353,8 @@ function buildSnapshot(data) {
 	}
 
 	rebuild = false;
+
+	console.log(snapshot);
 
 	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 

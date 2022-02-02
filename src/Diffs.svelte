@@ -26,7 +26,7 @@
             {#if Object.keys(changedVariables).length} 
                 <h3 class='diffsHeading'>Changed Variables:</h3>
                 {#each Object.entries(changedVariables) as [componentName, component]}
-                    <h4 class='diffComponentName'>{component.id}</h4>
+                    <h4 class='diffComponentName'>{componentName}</h4>
                     <ul>
                     {#each Object.entries(component) as [variableName, variable]} 
                         {#if variable.oldValue !== '' && variable.newValue !== ''}
