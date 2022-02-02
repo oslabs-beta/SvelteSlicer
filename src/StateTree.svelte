@@ -7,7 +7,7 @@
     $: data = $snapshots[I].data;
     $: label = $snapshots[I].label;
 
-    $: componentList = (Object.keys(data).sort())
+    $: componentList = (Object.keys(data).sort().filter(component => data[component].active))
 
 </script>
 
