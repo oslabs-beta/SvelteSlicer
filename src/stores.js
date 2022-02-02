@@ -12,14 +12,13 @@ export const sharedAppView = writable();
 let componentData = {}
 // store ALL nodes and listeners
 const nodes = {};
-const listeners = {};
 
 // store AST info for each file
 const astInfo = {};
 const componentTree = {};
 let parentComponent;
 let domParent;
-let snapshotLabel = "Init";
+let rebuild = false;
 
 // set up background page Connection
 const connection = get(backgroundPageConnection);
@@ -44,11 +43,9 @@ chrome.runtime.onMessage.addListener((msg) => {
 		const newSnapshot = buildSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
 	}
-	else if (type === "event") {
-		const listener = listeners[data.nodeId + data.event];
-		const { component, event, name } = listener;
-		const tagName = componentData[component].tagName
-		snapshotLabel = tagName + ' - ' + event + " -> " + name;
+	else if (type === "rebuild") {
+		rebuild = true;
+		const newSnapshot = buildSnapshot(data);
 	}
 });
 
@@ -84,17 +81,13 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 });
 
 function buildSnapshot(data) {
-	const { components, insertedNodes, deletedNodes, addedEventListeners, stateObject } = data;
+	console.log(data);
+	const { components, insertedNodes, deletedNodes, stateObject, snapshotLabel } = data;
 	const diff = {
 		newComponents: [],
 		deletedComponents: [],
 		changedVariables: {}
 	};
-
-	// delete nodes and descendents
-	deletedNodes.forEach(node => {
-		deleteNode(node.id);
-	})
 
 	// build nodes object
 	insertedNodes.forEach(node => {
@@ -110,20 +103,6 @@ function buildSnapshot(data) {
 			nodes[node.target].children.push({id: node.id});
 		}
 	})
-
-	// build listeners object and assign listeners to nodes
-	addedEventListeners.forEach(listener => {
-		const listenerData = {
-			node: listener.node,
-			event: listener.event,
-			name: listener.handlerName,
-			string: listener.handlerString,
-			component: listener.component,
-			id: listener.id
-		}
-		// assign to listeners object
-		listeners[listener.id] = listenerData;
-	});
 
 	// build components and assign nodes and variables
 	components.forEach(component => {
@@ -168,14 +147,6 @@ function buildSnapshot(data) {
 		data.parentNode = parentNode;
 		data.targets = targets;
 
-		// add event listeners
-		addedEventListeners.forEach(listener => {
-			if (data.nodes.hasOwnProperty(listener.node)) {
-				// update listener object to include full component id with instance number
-				listeners[listener.id].component = id;
-			}
-		})
-
 		// assign variables to components using state object
 		const variables = stateObject[id];
 		for (let variable in variables) {
@@ -208,6 +179,18 @@ function buildSnapshot(data) {
 			}
 		}
 	})
+
+	// delete nodes and descendents
+	deletedNodes.forEach(node => {
+		deleteNode(node.id);
+	})
+
+	// if DOM was rebuilt by jumping, need to explicitly remove components
+	if (rebuild) {
+		data.deletedComponents.forEach(component => {
+			delete componentData[component];
+		})
+	}
 
 	// determine and assign the DOM parent (can't happen until all components are built and have nodes assigned)
 	for (let component in componentData) {
@@ -372,9 +355,9 @@ function buildSnapshot(data) {
 		diff
 	}
 
-	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
+	rebuild = false;
 
-	snapshotLabel = undefined;
+	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
 	return deepCloneSnapshot; // deep clone to "freeze" state
 }

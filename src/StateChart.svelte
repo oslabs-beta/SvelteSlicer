@@ -56,11 +56,9 @@ const height = document.body.clientHeight;
        let treemap = d3.tree().size([width,height]);
        //construct root node
 
-       console.log('tree', tree);
        root = d3.hierarchy(tree, function(d){
            return d.children;
        });
-       console.log('root',root);
        
     root.x0 = 0;
     root.y0 = width/2;
@@ -69,7 +67,6 @@ const height = document.body.clientHeight;
        function update(src){
            let treeData = treemap(root)
            let nodes = treeData.descendants();
-           console.log('nodes',nodes)
 
            //set depth
            nodes.forEach(function(d){
@@ -252,7 +249,6 @@ const height = document.body.clientHeight;
                d._children=null;
            }
            update(d);
-           //console.log(`${d.data.id} node is selected`)
        }
        
        }
@@ -261,9 +257,7 @@ const height = document.body.clientHeight;
     
 
     preElement = document.getElementsByClassName(`${I}`)[0].previousSibling
-    //console.log('pre',preElement)
     currElement= document.getElementsByClassName(`${I}`)
-    //console.log('curr',currElement)
    if(svg.previousSibling){
 
    }
