@@ -423,7 +423,8 @@ chrome.devtools.panels.create(
                                         tagName
                                     }
                                     newComponent.id = componentId;
-                                    delete componentObject[id]
+                                    delete componentObject[id];
+                                    componentCounts[tagName]--;
                                 }
                             }    
                         })
