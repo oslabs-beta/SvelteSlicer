@@ -62,9 +62,21 @@ chrome.devtools.panels.create(
                             return {
                                 name,
                                 value: element.toString()
+                            };
+                        }
+                        else if (element instanceof Element) {
+                            return {
+                                name, 
+                                value: 'DOM Element'
                             }
                         }
                         else if (typeof element === "object") {
+                            if (element.hasOwnProperty('$$')) {
+                                return {
+                                    name,
+                                    value: 'Svelte Component'
+                                }
+                            }
                             if (element.constructor) {
                                 if (element.constructor.name === "Object" || element.constructor.name === "Array") {
                                     const value = {};
@@ -94,13 +106,14 @@ chrome.devtools.panels.create(
                             };
                         }
                     }
+
                     function captureComponentState(component) {
                         const captureStateFunc = component.$capture_state;
                         let state = captureStateFunc ? captureStateFunc() : {};
                         // if capture_state produces an empty object, may need to use ctx instead (older version of Svelte)
                         if (state && !Object.keys(state).length) {
                             if (component.$$.ctx.constructor.name === "Object") {
-                                state = JSON.parse(JSON.stringify(component.$$.ctx));
+                                state = deepClone(component.$$.ctx);
                             }
                         }
                     
@@ -115,7 +128,9 @@ chrome.devtools.panels.create(
                             else if (typeof state[variable] === "object") {
                                 if (state[variable].constructor) {
                                     if (state[variable].constructor.name === "Object" || state[variable].constructor.name === "Array") {
+                                        // check if variable is a store variable
                                         if (state[variable].hasOwnProperty('subscribe')) {
+                                            // if a writable store, we need to store the instance
                                             if (state[variable].hasOwnProperty('set') && state[variable].hasOwnProperty('update')) {
                                                 storeVariables[variable] = state[variable];
                                             }
@@ -203,17 +218,29 @@ chrome.devtools.panels.create(
                         return tagName;
                     }
 
-                    function parseCtxObject() {
-                        parsedCtx = {};
-                        for (let component in ctxObject) {
-                            const ctxData = {};
-                            ctxObject[component].ctx.forEach((element, index) => {
-                                ctxData[index] = parseCtx(element);
-                            })
-                            parsedCtx[component] = ctxData;
+                    const deepClone = (inObject) => {
+                        let outObject, value, key
+                      
+                        if (typeof inObject !== "object" || inObject === null) {
+                          return inObject // Return the value if inObject is not an object
                         }
-                        return parsedCtx;
-                    }
+                      
+                        if (inObject.constructor.name !== "Object" && inObject.constructor.name !== "Array") {
+                            return inObject // Return the value if inObject is not an object
+                        }
+
+                        // Create an array or object to hold the values
+                        outObject = Array.isArray(inObject) ? [] : {}
+                      
+                        for (key in inObject) {
+                          value = inObject[key]
+                      
+                          // Recursively (deep) copy for nested objects, including arrays
+                          outObject[key] = deepClone(value)
+                        }
+                      
+                        return outObject
+                      }
 
                     function updateLabel(nodeId, event) {
                         const listener = listeners[nodeId + event];
@@ -295,7 +322,7 @@ chrome.devtools.panels.create(
                     window.onload = () => {
                         // make sure that data is being sent
                         if (components.length || insertedNodes.length || deletedNodes.length) {
-                            stateHistory.push(JSON.parse(JSON.stringify(captureRawAppState())));
+                            stateHistory.push(deepClone(captureRawAppState()));
                             firstLoadSent = true;
                             
                             window.postMessage({
@@ -351,7 +378,7 @@ chrome.devtools.panels.create(
                         const currentState = captureRawAppState();
                         const stateChange = JSON.stringify(currentState) !== JSON.stringify(stateHistory[stateHistory.length -1]);
                         if (components.length || insertedNodes.length || deletedNodes.length) {
-                            stateHistory.push(JSON.parse(JSON.stringify(currentState)));
+                            stateHistory.push(deepClone(currentState));
                             let type;
                             // make sure the first load has already been sent; if not, this is the first load
                             if (!firstLoadSent) {
@@ -389,7 +416,7 @@ chrome.devtools.panels.create(
                             }
                         }
                         
-                        components.forEach (newComponent => {
+                        components.forEach(newComponent => {
                             const { tagName, id } = newComponent;
                             const component = componentObject[id].component;
                             const captureStateFunc = component.$capture_state;

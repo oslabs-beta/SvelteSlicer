@@ -186,7 +186,6 @@ function buildSnapshot(data) {
 
 	// if DOM was rebuilt by jumping, need to explicitly remove components
 	if (rebuild) {
-		console.log(data.deletedComponents);
 		data.deletedComponents.forEach(component => {
 			delete componentData[component];
 		})
@@ -220,8 +219,6 @@ function buildSnapshot(data) {
 
 	// update state variables
 	const storeDiff = {};
-	console.log(stateObject);
-	console.log(componentData);
 	for (let component in componentData) {
 		const componentDiff = {};
 		for(let i in componentData[component].variables) {
@@ -253,7 +250,7 @@ function buildSnapshot(data) {
 					data = {
 						name: variable,
 						oldValue: null,
-						newValue: getDiffValue(stateObject[component][variable.name].value),
+						newValue: getDiffValue(stateObject[component][variable].value),
 					}
 					componentData[component].variables.variable = stateObject[component][variable];
 				}
