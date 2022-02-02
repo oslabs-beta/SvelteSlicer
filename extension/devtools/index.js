@@ -64,19 +64,7 @@ chrome.devtools.panels.create(
                                 value: element.toString()
                             };
                         }
-                        else if (element instanceof Element) {
-                            return {
-                                name, 
-                                value: 'DOM Element'
-                            }
-                        }
                         else if (typeof element === "object") {
-                            if (element.hasOwnProperty('$$')) {
-                                return {
-                                    name,
-                                    value: 'Svelte Component'
-                                }
-                            }
                             if (element.constructor) {
                                 if (element.constructor.name === "Object" || element.constructor.name === "Array") {
                                     const value = {};
