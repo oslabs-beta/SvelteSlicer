@@ -1,5 +1,5 @@
 <script>
-	import {snapshots, fileTree, flatFileTree, backgroundPageConnection } from './stores.js';
+	import { snapshots, fileTree, flatFileTree, backgroundPageConnection, sharedAppView } from './stores.js';
 	import { get } from 'svelte/store';
 	import Component from './Component.svelte';
 	import StateChart from './StateChart.svelte';
@@ -26,6 +26,10 @@
 			}
 			jumping = false;
 		}
+	}
+
+	$: {
+		sharedAppView.set(CurrentAppView);
 	}
 
 	let I;
@@ -223,9 +227,17 @@
 			<div id="presentation">
 				{#if $snapshots.length} 
 					{#if View === "files" && Vis === "tree"}
-						<Component component={$fileTree}/>
+						{#if Object.keys($fileTree).length}
+							<Component component={$fileTree}/>
+						{:else}
+							<p>File structure data unavailable</p>
+						{/if}
 					{:else if View === "files" && Vis === "chart"}
-						<FileStructure treeData={$fileTree}/>
+						{#if Object.keys($fileTree).length}
+							<FileStructure treeData={$fileTree}/>
+						{:else}
+							<p>File structure data unavailable</p>
+						{/if}
 					{:else if View === "state"}
 					   {#if Vis === "tree"}
 					    <StateTree I={CurrentI}/>

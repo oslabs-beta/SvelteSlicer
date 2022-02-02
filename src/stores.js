@@ -6,22 +6,19 @@ export const snapshots = writable([]);
 export const fileTree = writable({});
 export const flatFileTree = writable([]);
 export const backgroundPageConnection = writable(chrome.runtime.connect({name: "panel"}));
+export const sharedAppView = writable();
 
 // store updateable objects for current component state
 let componentData = {}
 // store ALL nodes and listeners
 const nodes = {};
-const listeners = {};
 
 // store AST info for each file
 const astInfo = {};
 const componentTree = {};
 let parentComponent;
 let domParent;
-let snapshotLabel = "Init";
-
-// for debugging, store any AST variables not caught by switch statements
-const uncaughtVariables = [];
+let rebuild = false;
 
 // set up background page Connection
 const connection = get(backgroundPageConnection);
@@ -46,11 +43,9 @@ chrome.runtime.onMessage.addListener((msg) => {
 		const newSnapshot = buildSnapshot(data);
 		snapshots.update(array => [...array, newSnapshot]);
 	}
-	else if (type === "event") {
-		const listener = listeners[data.nodeId + data.event];
-		const { component, event, name } = listener;
-		const tagName = componentData[component].tagName
-		snapshotLabel = tagName + ' - ' + event + " -> " + name;
+	else if (type === "rebuild") {
+		rebuild = true;
+		const newSnapshot = buildSnapshot(data);
 	}
 });
 
@@ -60,127 +55,22 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 	arrSvelteFiles.forEach(svelteFile => {
 	  	svelteFile.getContent(source => {
 			if (source) {
-				const { ast, vars } = compile(source, {varsReport: 'full'});
-				const componentName = svelteFile.url.slice((svelteFile.url.lastIndexOf('/') + 1), svelteFile.url.lastIndexOf('.svelte'));
-				const variables = {};
-				const functions = {};
-				const components = {};		
+				const { ast } = compile(source);
+				const componentName = svelteFile.url.slice((svelteFile.url.lastIndexOf('/') + 1), svelteFile.url.lastIndexOf('.svelte'));			
+				const components = {};
 				if (ast.instance) {
 					const astVariables = ast.instance.content.body;
 					astVariables.forEach(variable => {
-						let data;
-						switch (variable.type) {
-							case "ExportNamedDeclaration":
-								if (variable.declaration.type !== "FunctionDeclaration") {
-									data = {
-										name: variable.declaration.declarations[0].id.name,
-										value: (variable.declaration.declarations[0].init) ? variable.declaration.declarations[0].init.value : null,
-										type: "prop",
-										ctxVariable: false
-									}
-									variables[data.name] = data;
-								}
-								else {
-									data = {
-										name: variable.declaration.id.name,
-										object: variable.declaration.body.body[0].expression.callee.object.name,
-										type: "function",
-										ctxVariable: false
-									}
-									functions[data.name] = data;
-								}
-								break;
-							case "ImportDeclaration":
-								data = {
-									name: variable.specifiers[0].local.name,
-									value: null,
-									ctxVariable: false
-								}
-								if (variable.source.value.includes('.svelte')) {
-									data.type = "component"
-									data.parent = componentName;
-									components[data.name] = data;
-								}
-								else if (variable.source.value.includes('/store')) {
-									data.type = "store"
-									variables[data.name] = data;
-								}
-								else if (variable.source.value.includes('/action')) {
-									data.type = "action"
-									functions[data.name] = data;
-								}
-								else {
-									uncaughtVariables.push(variable);
-								}
-								break;
-							case "VariableDeclaration":
-								const declaration = variable.declarations[0];
-								data = {
-									name: declaration.id.name,
-									ctxVariable: false
-								}
-								if (!declaration.init) {
-									data.value = null;
-									data.type = "stateVariable"
-									variables[data.name] = data;
-								}
-								else if (declaration.init.type === "Literal") {
-									data.value = declaration.init.value;
-									data.type = "stateVariable";
-									variables[data.name] = data;
-								}
-								else if (declaration.init.type === "ArrowFunctionExpression") {
-									data.type = "function";
-									functions[data.name] = data;
-								}
-								else if (declaration.init.type === "MemberExpression") {
-									data.type = "stateVariable";
-									variables[data.name] = data;
-								}
-								else {
-									uncaughtVariables.push(variable);
-								}
-								break;
-							case "FunctionDeclaration":
-								data = {
-									name: variable.id.name,
-									type: "function",
-									ctxVariable: false
-								}
-								functions[data.name] = data;
-								break;
-							case "LabeledStatement":
-								if (variable.body.expression && variable.body.expression.type === "AssignmentExpression") {
-									data = {
-										name: variable.body.expression.left.name,
-										type: "reactiveVariable",
-										ctxVariable: false
-									}
-									variables[data.name] = data;
-								}
-								else {
-									uncaughtVariables.push(variable);
-								}
-								break;
-							default:
-								uncaughtVariables.push(variable);
-								break;
+						const data = {};
+						if (variable.type === "ImportDeclaration" && variable.source.value.includes('.svelte')) {
+							data.name = variable.specifiers[0].local.name;
+							data.parent = componentName;
+							components[data.name] = data;
 						}
 					})
 				}
-				
-				vars.forEach(variable => {
-					// if state variable, take of leading $ on name
-					if (variable.name[0] === "$") {
-						variable.name = variable.name.slice(1);
-					}
-					// mark ctx variables (must be prop OR referenced and mutated or assigned);
-					if (variables.hasOwnProperty(variable.name) && ((variable.referenced && (variable.reassigned || variable.mutated)) || variables[variable.name].type === "prop")) {
-						variables[variable.name].ctxVariable = true;
-					}
-				})
 
-				astInfo[componentName] = {variables, components, functions};
+				astInfo[componentName] = components;
 				componentTree[componentName] = {
 					id: componentName,
 					children: []
@@ -191,17 +81,12 @@ chrome.devtools.inspectedWindow.getResources(resources => {
 });
 
 function buildSnapshot(data) {
-	const { components, insertedNodes, deletedNodes, addedEventListeners, ctxObject } = data;
+	const { components, insertedNodes, deletedNodes, stateObject, snapshotLabel } = data;
 	const diff = {
 		newComponents: [],
 		deletedComponents: [],
-		changedVariables: []
+		changedVariables: {}
 	};
-
-	// delete nodes and descendents
-	deletedNodes.forEach(node => {
-		deleteNode(node.id);
-	})
 
 	// build nodes object
 	insertedNodes.forEach(node => {
@@ -218,23 +103,9 @@ function buildSnapshot(data) {
 		}
 	})
 
-	// build listeners object and assign listeners to nodes
-	addedEventListeners.forEach(listener => {
-		const listenerData = {
-			node: listener.node,
-			event: listener.event,
-			name: listener.handlerName,
-			string: listener.handlerString,
-			component: listener.component,
-			id: listener.id
-		}
-		// assign to listeners object
-		listeners[listener.id] = listenerData;
-	});
-
 	// build components and assign nodes and variables
 	components.forEach(component => {
-		const { ctx, injectState, tagName, id, instance } = component;
+		const { tagName, id, instance } = component;
 
 		const data = {
 			tagName,
@@ -275,49 +146,18 @@ function buildSnapshot(data) {
 		data.parentNode = parentNode;
 		data.targets = targets;
 
-		// add event listeners
-		addedEventListeners.forEach(listener => {
-			if (data.nodes.hasOwnProperty(listener.node)) {
-				// update listener object to include full component id with instance number
-				listeners[listener.id].component = id;
-			}
-		})
-
-		// assign variables to components using AST data and ctx
-		const astVariables = astInfo[tagName].variables;
-		const unclaimedVariables = [];
-		for (let i in astVariables) {
-			const astVariable = astVariables[i];
+		// assign variables to components using state object
+		const variables = stateObject[id];
+		for (let variable in variables) {
 			const varData = {
-				name: astVariable.name,
-				type: astVariable.type,
+				name: variable,
 				component: id,
-				initValue: astVariable.value ? astVariable.value : null
+				value: variables[variable].value
 			}
-			if (astVariable.ctxVariable) {
-				if (injectState.hasOwnProperty(astVariable.name)) {
-					const index = injectState[astVariable.name]
-					varData.ctxIndex = index;
-					varData.value = ctx[index].value;
-					delete ctx[index];
-				}
-				// if not in injectState, push to array for later processing
-				else unclaimedVariables.push(astVariable);
-			}
+			
 			data.variables[varData.name] = varData;
 		}
 
-		// match unassigned value indices in ctx with unclaimed variables
-		unclaimedVariables.forEach(variable => {
-			for (let i in ctx) {
-				if (ctx[i].type === "value") {
-					data.variables[variable.name].ctxIndex = i;
-					data.variables[variable.name].value = ctx[i].value;
-					delete ctx[i];
-					break; 
-				}
-			}
-		})
 		diff.newComponents.push({component: id, variables: data.variables});
 
 		componentData[id] = data;
@@ -338,6 +178,18 @@ function buildSnapshot(data) {
 			}
 		}
 	})
+
+	// delete nodes and descendents
+	deletedNodes.forEach(node => {
+		deleteNode(node.id);
+	})
+
+	// if DOM was rebuilt by jumping, need to explicitly remove components
+	if (rebuild) {
+		data.deletedComponents.forEach(component => {
+			delete componentData[component];
+		})
+	}
 
 	// determine and assign the DOM parent (can't happen until all components are built and have nodes assigned)
 	for (let component in componentData) {
@@ -365,48 +217,99 @@ function buildSnapshot(data) {
 		}
 	}
 
-	// update ctx variables
-	for (let component in componentData) {
-		const componentDiff = [];
-		for(let i in componentData[component].variables) {
-			const variable = componentData[component].variables[i];
-			if (variable.ctxIndex) {
-				if (!(_.isEqual(variable.value, ctxObject[component][variable.ctxIndex].value))) {
-					let data;
-					if (variable.value === null || typeof variable.value !== "object") {
+	// update state variables
+	const currentIndex = get(sharedAppView);
+	if (currentIndex >= 0) {
+		const allStates = get(snapshots);
+		const stateHistory = allStates[currentIndex].data;
+		const storeDiff = {};
+
+		for (let [componentId, component] of Object.entries(componentData)) {
+			const componentDiff = {};
+
+			for (let [varName, variable] of Object.entries(stateObject[componentId])) {
+				const { value } = variable;
+				let data = {};
+				// if variable is in stateObject but not in componentData, set value in componentData to null
+				if (!component.variables.hasOwnProperty(varName)) {
+					component.variables[varName] = variable;
+				}
+				// if values are different, set value in componentData to value from stateObject
+				else if (!(_.isEqual(value, component.variables[varName].value))) {						
+					component.variables[varName].value = value;
+				}
+
+				if (stateHistory.hasOwnProperty(componentId)) {
+					// if variable is in stateObject but not in stateHistory, old value is null
+					if (!stateHistory[componentId].variables.hasOwnProperty(varName)) {
 						data = {
-							name: variable.name,
-							oldValue: JSON.parse(JSON.stringify(variable.value !== undefined ? variable.value : "undefined")),
-							newValue: ctxObject[component][variable.ctxIndex].value,
-							component: variable.component,
-							type: variable.type
+							name: varName,
+							oldValue: null,
+							newValue: getDiffValue(value),
 						}
+					}
+					// if values are different in stateObject and stateHistory, set old and new values respetively
+					else if (!(_.isEqual(stateHistory[componentId].variables[varName].value, value))) {
+						data = {
+							name: varName,
+							oldValue: stateHistory[componentId].variables[varName].value !== undefined ? getDiffValue(stateHistory[componentId].variables[varName].value) : "undefined",
+							newValue: getDiffValue(value),
+						}
+					}
+				}
+			
+				// if there are diffs, add to component diff or store diff
+				if (!_.isEmpty(data)) {
+					if (varName[0] === '$') {
+						storeDiff[varName] = data;
 					}
 					else {
-						data = {
-							name: variable.name,
-							oldValue: recurseDiffObject(variable.value),
-							newValue: recurseDiffObject(ctxObject[component][variable.ctxIndex].value),
-							component: variable.component,
-							type: variable.type
-						}
+						componentDiff[varName] = data;
 					}
-						
-					componentDiff.push(data);
-					variable.value = ctxObject[component][variable.ctxIndex].value;
 				}
 			}
+
+			for (let [varName, variable] of Object.entries(component.variables)) {
+				// if variable is in componentData but not in stateObject, new value in componentData is null
+				if (!stateObject[componentId].hasOwnProperty(varName)) {
+					variable.value = null;
+				}
+			}
+			
+			if (stateHistory.hasOwnProperty(componentId)) {
+				for (let [varName, variable] of Object.entries(stateHistory[componentId].variables)) {
+					// if variable is in stateHistory but not in stateObject, new value is null
+					if (!stateObject[componentId].hasOwnProperty(varName)) {
+						const data = {
+							name: varName,
+							oldValue: variable.value !== undefined ? getDiffValue(variable.value) : "undefined",
+							newValue: null,
+						}
+						if (varName[0] === '$') {
+							storeDiff[varName] = data;
+						}
+						else {
+							componentDiff[varName] = data;
+						}
+					}
+				}
+			}
+		
+			if (!_.isEmpty(componentDiff)) {
+				diff.changedVariables[componentId] = componentDiff;
+			}	
 		}
-		if (componentDiff.length) {
-			diff.changedVariables.push(componentDiff);
+
+		if (!_.isEmpty(storeDiff)) {
+			diff.changedVariables['Store'] = storeDiff;
 		}
-	}	
-	
+	}
+
 	let currentTree = get(fileTree);
 	if (_.isEmpty(currentTree)) {
 		// assign component children
 		for (let file in astInfo) {
-			for (let childFile in astInfo[file].components) {
+			for (let childFile in astInfo[file]) {
 				componentTree[file].children.push(componentTree[childFile]);
 				componentTree[childFile].parent = file;
 			}
@@ -419,16 +322,23 @@ function buildSnapshot(data) {
 			}
 		}
 
-		// set fileTree for hierarchical displays
-	 	fileTree.set(componentTree[parentComponent]);
+		if (!_.isEmpty(componentTree)) {
+			fileTree.set(componentTree[parentComponent]);
+		}
 
 		//create depth-first ordering of tree for state injections
 		const flatTreeArray = [];
 
-		depthFirstTraverse(componentTree[parentComponent]);
+		// if AST came through, make flat file tree based on that; otherwise use componentData
+		if (!_.isEmpty(componentTree)) {
+			depthFirstTraverse(componentTree[parentComponent]);
+		}
+		else {
+			depthFirstTraverse(componentData[domParent]);
+		}
 		
 		function depthFirstTraverse(tree) {
-			flatTreeArray.push(tree.id);
+			flatTreeArray.push(tree.tagName || tree.id);
 			if (tree.children.length) {
 				tree.children.forEach(child => {
 					depthFirstTraverse(child);
@@ -446,9 +356,11 @@ function buildSnapshot(data) {
 		diff
 	}
 
-	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
+	rebuild = false;
 
-	snapshotLabel = undefined;
+	console.log(snapshot);
+
+	const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot))
 
 	return deepCloneSnapshot; // deep clone to "freeze" state
 }
@@ -464,12 +376,19 @@ function deleteNode (nodeId) {
 	delete componentData[component].nodes[id];
 }
 
-function recurseDiffObject(value) {
-	let text = '\n';
-	  
-	Object.keys(value).forEach(item=>	{	 
-		nested(value[item], 1)
-	})
+function getDiffValue(value) {
+	let text = '';
+	
+	if (value === null || typeof value !== "object") {
+		text += value;
+	}
+	else {
+		text += '\n';
+		for (let i in value) {
+			nested(value[i], 1);
+		}
+	}
+	
 	return text;
 
 	function nested(obj, tabCount){
@@ -478,8 +397,8 @@ function recurseDiffObject(value) {
 			for (let i = 1; i <= tabCount; i++) {
 				text = text + "\t"
 			}
-			text = text + obj.name + ":";
-			if(typeof obj.value !=='object') {
+			text = text + obj.name + ": ";
+			if (typeof obj.value !=='object') {
 				text = text + obj.value + "\n";
 			}
 			else {
