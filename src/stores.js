@@ -254,84 +254,88 @@ function buildSnapshot(data) {
     for (let [componentId, component] of Object.entries(componentData)) {
       const componentDiff = {};
 
-      for (let [varName, variable] of Object.entries(
-        stateObject[componentId]
-      )) {
-        const { value } = variable;
-        let data = {};
-        // if variable is in stateObject but not in componentData, set value in componentData to null
-        if (!component.variables.hasOwnProperty(varName)) {
-          component.variables[varName] = variable;
-        }
-        // if values are different, set value in componentData to value from stateObject
-        else if (!_.isEqual(value, component.variables[varName].value)) {
-          component.variables[varName].value = value;
-        }
-
-        if (stateHistory.hasOwnProperty(componentId)) {
-          // if variable is in stateObject but not in stateHistory, old value is null
-          if (!stateHistory[componentId].variables.hasOwnProperty(varName)) {
-            data = {
-              name: varName,
-              oldValue: null,
-              newValue: getDiffValue(value),
-            };
-          }
-          // if values are different in stateObject and stateHistory, set old and new values respetively
-          else if (
-            !_.isEqual(
-              stateHistory[componentId].variables[varName].value,
-              value
-            )
-          ) {
-            data = {
-              name: varName,
-              oldValue:
-                stateHistory[componentId].variables[varName].value !== undefined
-                  ? getDiffValue(
-                      stateHistory[componentId].variables[varName].value
-                    )
-                  : "undefined",
-              newValue: getDiffValue(value),
-            };
-          }
-        }
-
-        // if there are diffs, add to component diff or store diff
-        if (!_.isEmpty(data)) {
-          if (varName[0] === "$") {
-            storeDiff[varName] = data;
-          } else {
-            componentDiff[varName] = data;
-          }
-        }
-      }
-
-      for (let [varName, variable] of Object.entries(component.variables)) {
-        // if variable is in componentData but not in stateObject, new value in componentData is null
-        if (!stateObject[componentId].hasOwnProperty(varName)) {
-          variable.value = null;
-        }
-      }
-
-      if (stateHistory.hasOwnProperty(componentId)) {
+      if (stateObject.hasOwnProperty(componentId)) {
         for (let [varName, variable] of Object.entries(
-          stateHistory[componentId].variables
+          stateObject[componentId]
         )) {
-          // if variable is in stateHistory but not in stateObject, new value is null
-          if (!stateObject[componentId].hasOwnProperty(varName)) {
-            const data = {
-              name: varName,
-              oldValue:
-                variable.value !== undefined
-                  ? getDiffValue(variable.value)
-                  : "undefined",
-              newValue: null,
-            };
+          const { value } = variable;
+          let data = {};
+          // if variable is in stateObject but not in componentData, set value in componentData to null
+          if (!component.variables.hasOwnProperty(varName)) {
+            component.variables[varName] = variable;
+          }
+          // if values are different, set value in componentData to value from stateObject
+          else if (!_.isEqual(value, component.variables[varName].value)) {
+            component.variables[varName].value = value;
+          }
+
+          if (stateHistory.hasOwnProperty(componentId)) {
+            // if variable is in stateObject but not in stateHistory, old value is null
+            if (!stateHistory[componentId].variables.hasOwnProperty(varName)) {
+              data = {
+                name: varName,
+                oldValue: null,
+                newValue: getDiffValue(value),
+              };
+            }
+            // if values are different in stateObject and stateHistory, set old and new values respetively
+            else if (
+              !_.isEqual(
+                stateHistory[componentId].variables[varName].value,
+                value
+              )
+            ) {
+              data = {
+                name: varName,
+                oldValue:
+                  stateHistory[componentId].variables[varName].value !== undefined
+                    ? getDiffValue(
+                        stateHistory[componentId].variables[varName].value
+                      )
+                    : "undefined",
+                newValue: getDiffValue(value),
+              };
+            }
+          }
+
+          // if there are diffs, add to component diff or store diff
+          if (!_.isEmpty(data)) {
             if (varName[0] === "$") {
               storeDiff[varName] = data;
             } else {
               componentDiff[varName] = data;
+            }
+          }
+        }
+      }
+      
+      if (stateObject.hasOwnProperty(componentId)) {
+        for (let [varName, variable] of Object.entries(component.variables)) {
+          // if variable is in componentData but not in stateObject, new value in componentData is null
+          if (!stateObject[componentId].hasOwnProperty(varName)) {
+            variable.value = null;
+          }
+        }
+
+        if (stateHistory.hasOwnProperty(componentId)) {
+          for (let [varName, variable] of Object.entries(
+            stateHistory[componentId].variables
+          )) {
+            // if variable is in stateHistory but not in stateObject, new value is null
+            if (!stateObject[componentId].hasOwnProperty(varName)) {
+              const data = {
+                name: varName,
+                oldValue:
+                  variable.value !== undefined
+                    ? getDiffValue(variable.value)
+                    : "undefined",
+                newValue: null,
+              };
+              if (varName[0] === "$") {
+                storeDiff[varName] = data;
+              } else {
+                componentDiff[varName] = data;
+              }
             }
           }
         }
