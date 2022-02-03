@@ -1,6 +1,6 @@
 # SvelteSlicer
 
-![Svelte Slicer logo](public/images/svelte_slicer_logo_64x64.png)
+![Svelte Slicer logo](extension/devtools/public/images/svelte_slicer_logo_64x64.png)
 
 # About The Project
 Svelte Slicer is an open-source Chrome Developer Tool for visualizing component and state changes in Svelte applications. Svelte Slicer allows users to capture, store and traverse detailed snapshots of application state to aid in debugging.
