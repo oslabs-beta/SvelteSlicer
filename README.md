@@ -1,2 +1,1 @@
-# SvelteSlicer
-![SvelteSlicer Logo](/extension/devtools/icon64.png)
+![SvelteSlicer Logo](/extension/devtools/icon64.png) # SvelteSlicer
