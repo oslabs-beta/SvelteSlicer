@@ -1,5 +1,6 @@
 # SvelteSlicer
-![SvelteSlicer Logo](/extension/devtools/icon64.png)
+<!-- ![SvelteSlicer Logo](/extension/devtools/icon64.png) -->
+![SvelteSlicer Logo](/icon_128.png)
 
                                                 Svelte Slicer
 
@@ -11,15 +12,21 @@ Svelte Slicer is an open-source Chrome Developer Tool for visualizing component 
 Key features include:
 
 Visualization of component relationships
+
 Moment-by-moment tracking of state variables
+
 Snapshot diffing to identify specific state changes
+
 Dynamic time travel through past state snapshots
 
 Built With:
 
 Svelte
+
 D3.js
+
 Chrome Extension API’s
+
 Webpack
 
 
@@ -53,8 +60,11 @@ Please open an issue to submit feedback or problems you come across.
 Authors:
 
 Heather Barney - LinkedIn
+
 Rachel Collins - LinkedIn
+
 Lynda Labranche - LinkedIn
+
 Anchi Teng - LinkedIn
 
 License:
