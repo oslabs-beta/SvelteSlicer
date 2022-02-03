@@ -1,16 +1,31 @@
 <script>
-	import { snapshots, fileTree, flatFileTree, backgroundPageConnection, sharedAppView } from './stores.js';
-	import { get } from 'svelte/store';
-	import Component from './Component.svelte';
-	import StateChart from './StateChart.svelte';
-	import FileStructure from './FileStructure.svelte';
-	import StateTree from './StateTree.svelte';
-	import Diffs from './Diffs.svelte';
-	import logo from '../extension/devtools/public/images/svelte_slicer_logo_64X64.png';
+	import {
+		snapshots,
+		fileTree,
+		flatFileTree,
+		backgroundPageConnection,
+		sharedAppView,
+	} from "./stores.js";
+	import { get } from "svelte/store";
+	import Component from "./Component.svelte";
+	import StateChart from "./StateChart.svelte";
+	import FileStructure from "./FileStructure.svelte";
+	import StateTree from "./StateTree.svelte";
+	import Diffs from "./Diffs.svelte";
+	import logo from "../extension/devtools/public/images/svelte_slicer_logo_64X64.png";
 
-	
-	$: CurrentI = (I === undefined ? $snapshots.length - 1 : snapshotLength < $snapshots.length ? $snapshots.length - 1 : I);
-	$: CurrentAppView = (appView === undefined ? $snapshots.length -1 : snapshotLength < $snapshots.length ? $snapshots.length -1 : appView)
+	$: CurrentI =
+		I === undefined
+			? $snapshots.length - 1
+			: snapshotLength < $snapshots.length
+			? $snapshots.length - 1
+			: I;
+	$: CurrentAppView =
+		appView === undefined
+			? $snapshots.length - 1
+			: snapshotLength < $snapshots.length
+			? $snapshots.length - 1
+			: appView;
 
 	let timeline = [];
 
@@ -20,9 +35,8 @@
 			const previous = jumping ? appView : latest - 1;
 			if (latest === 0) {
 				timeline[0] = [0];
-			}
-			else {
-				timeline[latest] = [...timeline[previous], latest]
+			} else {
+				timeline[latest] = [...timeline[previous], latest];
 			}
 			jumping = false;
 		}
@@ -38,7 +52,7 @@
 	let input = "";
 	let jumping = false;
 	let snapshotLength;
-	
+
 	let view = "state";
 	$: View = view;
 
@@ -52,26 +66,26 @@
 	}
 
 	function selectVis(selection) {
-        vis = selection;
+		vis = selection;
 	}
 
 	function selectState(index) {
 		I = index;
-		snapshotLength = JSON.parse(JSON.stringify($snapshots)).length
+		snapshotLength = JSON.parse(JSON.stringify($snapshots)).length;
 	}
 
 	function jumpState(index) {
 		I = index;
 		appView = index;
-		snapshotLength = JSON.parse(JSON.stringify($snapshots)).length
+		snapshotLength = JSON.parse(JSON.stringify($snapshots)).length;
 		jumping = true;
 		connection.postMessage({
-    		source: 'panel',
-			name: 'jumpState',
+			source: "panel",
+			name: "jumpState",
 			index,
 			state: $snapshots[index].data,
 			tree: $flatFileTree,
-			tabId: chrome.devtools.inspectedWindow.tabId
+			tabId: chrome.devtools.inspectedWindow.tabId,
 		});
 	}
 
@@ -80,67 +94,62 @@
 		function isSubstring(s1, s2) {
 			let S = s1.length;
 			let L = s2.length;
-    		for (let i = 0; i <= L - S; i++) {
-        		let j;
+			for (let i = 0; i <= L - S; i++) {
+				let j;
 				for (j = 0; j < S; j++) {
 					if (s2[i + j] != s1[j]) break;
 				}
 				if (j == S) return i;
-    		}
-  			return -1;
-		}
-	
-    	$snapshots.forEach((snapshot, index) => {
-        	let label = snapshot.label
-			label = label.toLowerCase();
-    
-        	let res = isSubstring(input, label);
-			if(res > -1){
-				filtered.push({snapshot, index});
 			}
-		});	
+			return -1;
+		}
+
+		$snapshots.forEach((snapshot, index) => {
+			let label = snapshot.label;
+			label = label.toLowerCase();
+
+			let res = isSubstring(input, label);
+			if (res > -1) {
+				filtered.push({ snapshot, index });
+			}
+		});
 		input = " ";
 	}
 
 	function resetFilter() {
 		filtered = [];
 	}
-	
+
 	function clearSnapshots(clearType) {
 		let newSnapshotList;
 		let path = timeline[CurrentAppView].slice();
-		
-		if (clearType === 'forward') {
+
+		if (clearType === "forward") {
 			newSnapshotList = $snapshots.slice(0, CurrentAppView + 1);
 			timeline = timeline.slice(0, CurrentAppView + 1);
 			appView = undefined;
 			I = undefined;
-		}
-
-		else if (clearType === 'previous') {
+		} else if (clearType === "previous") {
 			newSnapshotList = $snapshots.slice(CurrentAppView);
 			let count = CurrentAppView;
 			timeline = timeline.slice(CurrentAppView);
-			timeline.forEach(snapshot => {
+			timeline.forEach((snapshot) => {
 				for (let i = snapshot.length - 1; i >= 0; i--) {
 					const newValue = snapshot[i] - count;
 					if (newValue >= 0) {
 						snapshot[i] = newValue;
-					}
-					else {
+					} else {
 						snapshot.splice(i, 1);
 					}
 				}
-			})
+			});
 			appView = 0;
 			I = 0;
-		}
-
-		else if (clearType === 'path') {
+		} else if (clearType === "path") {
 			newSnapshotList = $snapshots.slice();
-			for (let i = $snapshots.length -1; i > 0 ; i-=1){
-				if(!path.includes(i)){
-					newSnapshotList.splice(i,1);
+			for (let i = $snapshots.length - 1; i > 0; i -= 1) {
+				if (!path.includes(i)) {
+					newSnapshotList.splice(i, 1);
 					timeline.splice(i, 1);
 				}
 			}
@@ -149,312 +158,455 @@
 				for (let i = 0; i <= snapshotIndex; i++) {
 					snapshot.push(i);
 				}
-			})
+			});
 			I = newSnapshotList.length - 1;
 			appView = newSnapshotList.length - 1;
 		}
-		
-		snapshots.set(newSnapshotList)
-		
+
+		snapshots.set(newSnapshotList);
+
 		// message index.js to trim stateHistory stored there
 		connection.postMessage({
-			source: 'panel',
-			name: 'clearSnapshots',
+			source: "panel",
+			name: "clearSnapshots",
 			clearType,
 			index: CurrentAppView,
 			path,
-			tabId: chrome.devtools.inspectedWindow.tabId
-		})
+			tabId: chrome.devtools.inspectedWindow.tabId,
+		});
 
 		jumping = false;
-		snapshotLength = snapshotLength = JSON.parse(JSON.stringify($snapshots)).length;
+		snapshotLength = snapshotLength = JSON.parse(
+			JSON.stringify($snapshots)
+		).length;
 	}
+</script>
 
-	</script>
-	
-	<main>
-		<div id="mainContainer">
-			<div id="title">
-				<img src={logo} id="slicerImg" alt='logo'/>
-				<h2 id="titleText">Svelte Slicer</h2> 
-			</div>
-			<div id="filter">
-				<form on:submit|preventDefault={(e) => filterEventHandler(e)} class="form">
-					<input type="text" bind:value={input} placeholder="Filter..." name="search" class="search-field" />
-					<button type="submit" class="search-button"> 
-						<i class="fa fa-search"></i>
-					</button>
-				</form>
-				<button on:click={resetFilter}>Reset</button>
-			</div>
-			<div id="snapshots">
-				{#if !filtered.length}
-					{#each $snapshots as snapshot, i}
-						<div class="snapshotList" class:selectedSnapshot="{i === CurrentAppView}" class:inactiveSnapshot="{!timeline[CurrentAppView].includes(i)}">
-							<span class="snapshotText">Snapshot {i} {snapshot.label ? ' : ' + snapshot.label : ''}</span>
-							<div class="snapshotButtonGroup">
-								<button class="snapshotButton" on:click={() => selectState(i)} class:selectedButton="{i === CurrentI}">Data</button>
-								<button class="snapshotButton" on:click={() => jumpState(i)}>Jump</button>
-							</div>
+<main>
+	<div id="mainContainer">
+		<div id="title">
+			<img src={logo} id="slicerImg" alt="logo" />
+			<h2 id="titleText">Svelte Slicer</h2>
+		</div>
+		<div id="filter">
+			<form
+				on:submit|preventDefault={(e) => filterEventHandler(e)}
+				class="form"
+			>
+				<input
+					type="text"
+					bind:value={input}
+					placeholder="Filter..."
+					name="search"
+					class="search-field"
+				/>
+				<button type="submit" class="search-button">
+					<i class="fa fa-search" />
+				</button>
+			</form>
+			<button on:click={resetFilter}>Reset</button>
+		</div>
+		<div id="snapshots">
+			{#if !filtered.length}
+				{#each $snapshots as snapshot, i}
+					<div
+						class="snapshotList"
+						class:selectedSnapshot={i === CurrentAppView}
+						class:inactiveSnapshot={!timeline[
+							CurrentAppView
+						].includes(i)}
+					>
+						<span class="snapshotText"
+							>Snapshot {i}
+							{snapshot.label ? " : " + snapshot.label : ""}</span
+						>
+						<div class="snapshotButtonGroup">
+							<button
+								class="snapshotButton"
+								on:click={() => selectState(i)}
+								class:selectedButton={i === CurrentI}
+								>Data</button
+							>
+							<button
+								class="snapshotButton"
+								on:click={() => jumpState(i)}>Jump</button
+							>
 						</div>
-					{/each}
-				{:else if filtered.length}
-					{#each filtered as snapshot}
-						<div class="snapshotList" class:selectedSnapshot="{snapshot.index === CurrentAppView}" class:inactiveSnapshot="{!timeline[CurrentAppView].includes(snapshot.index)}">
-							<span class="snapshotText">Snapshot {snapshot.index} {snapshot.snapshot.label ? ' : ' + snapshot.snapshot.label : ''}</span>
-							<div class="snapshotButtonGroup">
-								<button class="snapshotButton" on:click={() => selectState(snapshot.index)} class:selectedButton="{snapshot.index === CurrentI}">Data</button>
-								<button class="snapshotButton" on:click={() => jumpState(snapshot.index)}>Jump</button>
-							</div>
+					</div>
+				{/each}
+			{:else if filtered.length}
+				{#each filtered as snapshot}
+					<div
+						class="snapshotList"
+						class:selectedSnapshot={snapshot.index ===
+							CurrentAppView}
+						class:inactiveSnapshot={!timeline[
+							CurrentAppView
+						].includes(snapshot.index)}
+					>
+						<span class="snapshotText"
+							>Snapshot {snapshot.index}
+							{snapshot.snapshot.label
+								? " : " + snapshot.snapshot.label
+								: ""}</span
+						>
+						<div class="snapshotButtonGroup">
+							<button
+								class="snapshotButton"
+								on:click={() => selectState(snapshot.index)}
+								class:selectedButton={snapshot.index ===
+									CurrentI}>Data</button
+							>
+							<button
+								class="snapshotButton"
+								on:click={() => jumpState(snapshot.index)}
+								>Jump</button
+							>
 						</div>
-					{/each}
-				{/if}
-			</div>
-			<div id="banner">
-				<button on:click={() => selectView("files")} class:activeButton="{view === "files"}">Components</button>
-				<button on:click={() => selectView("state")} class:activeButton="{view === "state"}">State</button>			
-			</div>
-			<div id="buttons">
-				{#if View === "files"}
-					<button on:click={() => selectVis("tree")} class:activeButton="{vis === "tree"}">Tree</button>
-					<button on:click={() => selectVis("chart")} class:activeButton="{vis === "chart"}">Chart</button>
+					</div>
+				{/each}
+			{/if}
+		</div>
+		<div id="banner">
+			<button
+				on:click={() => selectView("files")}
+				class:activeButton={view === "files"}>Components</button
+			>
+			<button
+				on:click={() => selectView("state")}
+				class:activeButton={view === "state"}>State</button
+			>
+		</div>
+		<div id="buttons">
+			{#if View === "files"}
+				<button
+					on:click={() => selectVis("tree")}
+					class:activeButton={vis === "tree"}>Tree</button
+				>
+				<button
+					on:click={() => selectVis("chart")}
+					class:activeButton={vis === "chart"}>Chart</button
+				>
+			{:else if View === "state"}
+				<button
+					on:click={() => selectVis("tree")}
+					class:activeButton={vis === "tree"}>Tree</button
+				>
+				<button
+					on:click={() => selectVis("chart")}
+					class:activeButton={vis === "chart"}>Chart</button
+				>
+				<button
+					on:click={() => selectVis("diff")}
+					class:activeButton={vis === "diff"}>Diff</button
+				>
+			{/if}
+		</div>
+		<div id="presentation">
+			{#if $snapshots.length}
+				{#if View === "files" && Vis === "tree"}
+					{#if Object.keys($fileTree).length}
+						<Component component={$fileTree} />
+					{:else}
+						<p>File structure data unavailable</p>
+					{/if}
+				{:else if View === "files" && Vis === "chart"}
+					{#if Object.keys($fileTree).length}
+						<FileStructure treeData={$fileTree} />
+					{:else}
+						<p>File structure data unavailable</p>
+					{/if}
 				{:else if View === "state"}
-					<button on:click={() => selectVis("tree")} class:activeButton="{vis === "tree"}">Tree</button>
-					<button on:click={() => selectVis("chart")} class:activeButton="{vis === "chart"}">Chart</button>
-					<button on:click={() => selectVis("diff")} class:activeButton="{vis === "diff"}">Diff</button>	
-				{/if}
-			</div>
-			<div id="presentation">
-				{#if $snapshots.length} 
-					{#if View === "files" && Vis === "tree"}
-						{#if Object.keys($fileTree).length}
-							<Component component={$fileTree}/>
-						{:else}
-							<p>File structure data unavailable</p>
-						{/if}
-					{:else if View === "files" && Vis === "chart"}
-						{#if Object.keys($fileTree).length}
-							<FileStructure treeData={$fileTree}/>
-						{:else}
-							<p>File structure data unavailable</p>
-						{/if}
-					{:else if View === "state"}
-					   {#if Vis === "tree"}
-					    <StateTree I={CurrentI}/>
-						{:else if Vis === "chart"}
-                        <StateChart {view} I={CurrentI}/>
-						{:else if Vis === "diff"}
-						<Diffs I={CurrentI}/>
-						{/if}
+					{#if Vis === "tree"}
+						<StateTree I={CurrentI} />
+					{:else if Vis === "chart"}
+						<StateChart {view} I={CurrentI} />
+					{:else if Vis === "diff"}
+						<Diffs I={CurrentI} />
 					{/if}
 				{/if}
-			</div>
-			<div id="clearSnapshots">
+			{/if}
+		</div>
+		<div id="clearSnapshots">
 				<h6 class='clearSnapshotHeader'>Clear Snapshots</h6>
-				<div id="clearButtons">
-					<button class='clearButton' on:click={() => clearSnapshots('previous')}>Previous</button>
-					<button class='clearButton' on:click={() => clearSnapshots('path')}>Path</button>
-					<button class='clearButton' on:click={() => clearSnapshots('forward')}>Forward</button>
-				</div>
+				<div id="clearButtons" class="tooltip">
+					<div class="toolTipPrev"> 
+						<button class='clearButton' on:click={() => clearSnapshots('previous')}>Previous</button>
+						<span class="toolTipPrevText">Remove all Snapshots prior to current view</span>
+					</div>
+					<div class='toolTipPath'>
+						<button class='clearButton' on:click={() => clearSnapshots('path')}>Path</button> 
+						<span class='toolTipPathText'>Remove Snapshots outside current view's timeline</span>
+					</div>
+					<div class='toolTipFwd'> 
+						<button class='clearButton' on:click={() => clearSnapshots('forward')}>Forward</button>
+						<span class='toolTipFwdText'>Remove all Snapshots after the current view</span>
+					</div>
 			</div>
 		</div>
-	</main>
-	
-	<style>
-		.snapshotText {
-	 	 	font-size: 14px;
-	  		padding-top: 0.25em;
-			padding-bottom: 0.25em;
-	  		padding-left: 0.5em;
-			margin-top: 0;
-			margin-bottom: 0;
-  		}
+	</div>
+</main>
 
-  		.snapshotButton {
-	 		font-size: 14px;
-			margin-top: 0;
-			margin-bottom: 0;
-  		}
+<style>
+	.snapshotText {
+		font-size: 14px;
+		padding-top: 0.25em;
+		padding-bottom: 0.25em;
+		padding-left: 0.5em;
+		margin-top: 0;
+		margin-bottom: 0;
+	}
 
-  		.snapshotList {
-		  	display: flex;
-	  		align-items: center;
-	  		justify-content: space-between;
-			padding: 0;
-			margin-top:2px;
-			margin-bottom: 2px;
-			min-height: 60px;
-			margin: 0;
-  		}
+	.snapshotButton {
+		font-size: 14px;
+		margin-top: 0;
+		margin-bottom: 0;
+	}
 
-  		.snapshotButtonGroup {
-	  		flex-shrink: 0; 
-	  		padding-top: 0.25em;
-	  		padding-right: 0.5em;
-			padding-bottom: 0.25em;
-  		}
+	.snapshotList {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0;
+		margin-top: 2px;
+		margin-bottom: 2px;
+		min-height: 60px;
+		margin: 0;
+	}
 
-  		.selectedSnapshot {
-	  		background-color:#989797;
-			border-bottom: 1px solid rgb(238, 137, 5);
-			padding: 0;
-			margin: 0;
-  		}
+	.snapshotButtonGroup {
+		flex-shrink: 0;
+		padding-top: 0.25em;
+		padding-right: 0.5em;
+		padding-bottom: 0.25em;
+	}
 
-		#mainContainer {
-			display: grid;
-			grid-template-columns: 300px auto;
-			grid-template-rows: 50px 50px auto 85px;
-			width: 100vw;
-  			height: 100vh;
-			padding: 0;
-			border: 2px solid #dddcdc;
-		}
+	.selectedSnapshot {
+		background-color: #989797;
+		border-bottom: 1px solid rgb(238, 137, 5);
+		padding: 0;
+		margin: 0;
+	}
 
-		#snapshots::-webkit-scrollbar {
-			width: 10px;
-		}
+	#mainContainer {
+		display: grid;
+		grid-template-columns: 300px auto;
+		grid-template-rows: 50px 50px auto 85px;
+		width: 100vw;
+		height: 100vh;
+		padding: 0;
+		border: 2px solid #dddcdc;
+	}
 
-		#snapshots::-webkit-scrollbar-track {
+	#snapshots::-webkit-scrollbar {
+		width: 10px;
+	}
+
+	#snapshots::-webkit-scrollbar-track {
 		background-color: rgba(238, 137, 5, 0.288);
 		border-radius: 100px;
-		}
+	}
 
-		#snapshots::-webkit-scrollbar-thumb {
+	#snapshots::-webkit-scrollbar-thumb {
 		border-radius: 100px;
 		border: 5px solid transparent;
 		background-clip: content-box;
 		background-color: none;
+	}
+
+	#snapshots {
+		grid-column-start: 1;
+		grid-column-end: 2;
+		grid-row-start: 3;
+		grid-row-end: 4;
+		overflow-y: scroll;
+		border-top: 2px solid #dddcdc;
+		background-color: #75747400;
+		margin: 0;
+		padding: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		direction: ltr;
+		scrollbar-color: #d4aa70 #e4e4e4;
+		scrollbar-width: thin;
+	}
+
+	#filter {
+		grid-column-start: 1;
+		grid-column-end: 2;
+		grid-row-start: 2;
+		grid-row-end: 3;
+		padding-top: 0px;
+		padding-bottom: 0px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		background-color: #646262;
+	}
+
+	#banner {
+		grid-column-start: 2;
+		grid-column-end: 3;
+		grid-row-start: 1;
+		grid-row-end: 2;
+		border-left: 2px solid #dddcdc;
+		display: flex;
+		align-items: center;
+		background-color: #535151;
+	}
+
+	#title {
+		grid-column-start: 1;
+		grid-column-end: 2;
+		grid-row-start: 1;
+		grid-row-end: 2;
+		display: flex;
+		align-items: center;
+		background-color: #535151;
+	}
+
+	#buttons {
+		grid-column-start: 2;
+		grid-column-end: 3;
+		grid-row-start: 2;
+		grid-row-end: 3;
+		border-left: 2px solid #dddcdc;
+		padding: 1em;
+		display: flex;
+		align-items: center;
+		background-color: #646262;
+	}
+
+	#presentation {
+		grid-column-start: 2;
+		grid-column-end: 3;
+		grid-row-start: 3;
+		grid-row-end: 5;
+		overflow-x: scroll;
+		overflow-y: scroll;
+		border-top: 2px solid #dddcdc;
+		border-left: 2px solid #dddcdc;
+		background-color: #757474;
+	}
+
+	#clearSnapshots {
+		grid-column-start: 1;
+		grid-column-end: 2;
+		grid-row-start: 4;
+		grid-row-end: 5;
+		background-color: #646262;
+		padding: 0;
+	}
+
+	#clearButtons {
+		display: flex;
+		justify-content: center;
+		padding: 0;
+		margin: 0px;
+	}
+
+	.clearButton {
+		background-color: transparent;
+		font-size: 14px;
+		border: 1px solid rgb(238, 137, 5);
+		margin-left: 10px;
+		margin-right: 10px;
+	}
+
+	.clearSnapshotHeader {
+		text-align: center;
+		font-size: 16px;
+		margin: 0px;
+		padding: 10px;
+	}
+
+	.toolTipPrev {
+		position: relative;
+		display: inline-block;
+		border-bottom: 1px dotted rgb(83, 81, 81);
+		}
+		.toolTipPrev .toolTipPrevText {
+		visibility: hidden;
+		width: 120px;
+		background-color: rgb(83, 81, 81);
+		border: 1px solid #333;
+		color: #fff;
+		text-align: center;
+		border-radius: 6px;
+		/* Position the tooltip */
+		position: absolute;
+		z-index: 1;
+		}
+		.toolTipPrev:hover .toolTipPrevText  {
+		visibility: visible;
+		font-size: 14px;
+		padding: 1px;
+		}
+		.toolTipPath {
+		position: relative;
+		display: inline-block;
+		border-bottom: 1px dotted rgb(83, 81, 81);
+		}
+		.toolTipPath .toolTipPathText {
+		visibility: hidden;
+		width: 120px;
+		background-color: rgb(83, 81, 81);
+		border: 1px solid #333;
+		color: #fff;
+		text-align: center;
+		border-radius: 6px;
+		/* Position the tooltip */
+		position: absolute;
+		z-index: 1;
+		}
+		.toolTipPath:hover .toolTipPathText  {
+		visibility: visible;
+		font-size: 14px;
+		padding: 1px;
+		}
+		.toolTipFwd {
+		position: relative;
+		display: inline-block;
+		border-bottom: 1px dotted rgb(83, 81, 81);
+		}
+		.toolTipFwd .toolTipFwdText {
+		visibility: hidden;
+		width: 120px;
+		background-color: rgb(83, 81, 81);
+		border: 1px solid #333;
+		color: #fff;
+		text-align: center;
+		border-radius: 6px;
+		/* Position the tooltip */
+		position: absolute;
+		z-index: 1;
+		}
+		.toolTipFwd:hover .toolTipFwdText  {
+		visibility: visible;
+		font-size: 14px;
+		padding: 1px;
 		}
 
-		#snapshots {
-			grid-column-start: 1;
-			grid-column-end: 2;
-			grid-row-start: 3;
-			grid-row-end: 4;
-			overflow-y: scroll;
-			border-top: 2px solid #dddcdc;
-			background-color: #75747400;
-			margin: 0;
-			padding: 0;
-			overflow-y: auto;
-			direction: ltr;
-			scrollbar-color: #d4aa70 #e4e4e4;
-			scrollbar-width: thin;
-		}
+	#slicerImg {
+		width: 30px;
+		height: 30px;
+		margin-right: 10px;
+	}
 
-		#filter {
-			grid-column-start: 1;
-			grid-column-end: 2;
-			grid-row-start: 2;
-			grid-row-end: 3;
-			padding-top: 0px;
-			padding-bottom: 0px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			background-color: #646262;
-		}
+	.inactiveSnapshot {
+		background-color: #cbcbcb;
+	}
 
-		#banner {
-			grid-column-start: 2;
-			grid-column-end: 3;
-			grid-row-start: 1;
-			grid-row-end: 2;
-			border-left: 2px solid #dddcdc;
-			display: flex;
-			align-items: center;
-			background-color: #535151;
-		}
+	#titleText {
+		padding-top: 5px;
+		margin: 0;
+	}
 
-		#title {
-			grid-column-start: 1;
-			grid-column-end: 2;
-			grid-row-start: 1;
-			grid-row-end: 2;
-			display: flex;
-			align-items: center;
-			background-color: #535151;
-		}
+	.selectedButton {
+		background-color: rgb(238, 137, 5);
+	}
 
-		#buttons {
-			grid-column-start: 2;
-			grid-column-end: 3;
-			grid-row-start: 2;
-			grid-row-end: 3;
-			border-left: 2px solid #dddcdc;
-			padding: 1em;
-			display: flex;
-			align-items: center;
-			background-color: #646262;
-		}
-
-		#presentation {
-			grid-column-start: 2;
-			grid-column-end: 3;
-			grid-row-start: 3;
-			grid-row-end: 5;
-			overflow-x: scroll;
-			overflow-y: scroll;
-			border-top: 2px solid #dddcdc;
-			border-left: 2px solid #dddcdc;
-			background-color: #757474;
-		}
-
-		#clearSnapshots {
-			grid-column-start: 1;
-			grid-column-end: 2;
-			grid-row-start: 4;
-			grid-row-end: 5;
-			background-color: #646262;
-			padding: 0;
-		}
-
-		#clearButtons {
-			display: flex;
-			justify-content: center;
-			padding: 0;
-			margin: 0px;
-
-		}
-
-		.clearButton {
-			background-color: transparent;
-			font-size: 14px;
-			border: 1px solid rgb(238, 137, 5);
-			margin-left: 10px;
-			margin-right: 10px;
-
-		}
-
-		.clearSnapshotHeader {
-			text-align: center;
-			font-size: 16px;
-			margin: 0px;
-			padding: 10px;
-		}
-
-		#slicerImg{
-			width: 30px;
-			height: 30px;
-			margin-right: 10px;
-		}
-
-		.inactiveSnapshot {
-			background-color: #cbcbcb;
-		}
-
-		#titleText {
-			padding-top: 5px;
-			margin: 0;
-		}
-
-		.selectedButton {
-			background-color: rgb(238, 137, 5);
-		}
-
-		.activeButton {
-			border: 1px solid rgb(238, 137, 5);
-		}
-	</style>
-	
+	.activeButton {
+		border: 1px solid rgb(238, 137, 5);
+	}
+</style>
