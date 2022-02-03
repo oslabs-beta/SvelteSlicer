@@ -1,20 +1,27 @@
 # SvelteSlicer
-![SvelteSlicer Logo](/extension/devtools/icon64.png) 
 
-                                            Svelte Slicer
+
+    ![SvelteSlicer Logo](/extension/devtools/icon64.png)             Svelte Slicer
+
+
 About The Project
+
 Svelte Slicer is an open-source Chrome Developer Tool for visualizing component and state changes in Svelte applications. Svelte Slicer allows users to capture, store and traverse detailed snapshots of application state to aid in debugging.
+
 Key features include:
 Visualization of component relationships
 Moment-by-moment tracking of state variables
 Snapshot diffing to identify specific state changes
 Dynamic time travel through past state snapshots
-Built With
+
+Built With:
 Svelte
 D3.js
 Chrome Extension API’s
 Webpack
-Getting Started
+
+
+Getting Started:
 Install Svelte Slicer from the Chrome Web Store
 Run your Svelte application in development mode.
 Open Chrome Developer Tools (Cmd + Option + I) & navigate to the “Slicer” panel
@@ -32,7 +39,9 @@ Using the Jump buttons allows the user to not only see the data for a chosen sna
 Snapshots outside the timeline of the currently rendered snapshot are retained and can still be viewed and jumped to, but are washed out in the snapshot panel to indicate that they are not related to the current snapshot. Using the Path button will clear out these washed out snapshots, leaving only the current timeline in the panel. 
 
 The Previous and Forward buttons also clear out unwanted snapshots, removing all snapshots respectively before or after the currently rendered one.
-Contributing
+
+
+Contributing:
 Found a bug or have suggestions for improvement? We would love to hear from you!
 Please open an issue to submit feedback or problems you come across.
 Authors
@@ -40,5 +49,6 @@ Heather Barney - LinkedIn
 Rachel Collins - LinkedIn
 Lynda Labranche - LinkedIn
 Anchi Teng - LinkedIn
+
 License
 This project is licensed under the MIT License - see the LICENSE file for details
