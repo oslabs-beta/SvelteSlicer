@@ -29,12 +29,12 @@
     ],
     "action": {
       "default_icon": {
-        "16": "devtools/icon16.png",
-        "128": "devtools/icon128.png"
+        "16": "devtools/public/images/icon16.png",
+        "128": "devtools/public/images/icon128.png"
       }
     },
     "icons": {
-      "16": "devtools/icon16.png",
-      "128": "devtools/icon128.png"
+      "16": "devtools/public/images/icon16.png",
+      "128": "devtools/public/images/icon128.png"
     }
 }
