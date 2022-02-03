@@ -1,5 +1,5 @@
 # SvelteSlicer
-![SvelteSlicer Logo](/extension/devtools/icon_128.png)
+![SvelteSlicer Logo](/extension/devtools/icon128.png)
 
                                                 Svelte Slicer
 
