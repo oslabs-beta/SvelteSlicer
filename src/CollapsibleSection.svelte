@@ -1,62 +1,55 @@
 <script>
-    export let headerText;
+  export let headerText;
 
-    let expanded = false
+  let expanded = false;
 </script>
 
-<div class="collapsible" >
-    <h3>
-        <button aria-expanded={expanded} on:click={() => expanded = !expanded} class="variableVal">{headerText}
-            <svg viewBox="0 0 20 20" fill="none" >
-                <path class="vert" d="M10 1V19" stroke="rgb(238, 137, 5)" stroke-width="5"/>
-                <path d="M1 10L19 10" stroke="rgb(238, 137, 5)" stroke-width="5"/>
-            </svg>
-        </button>
-    </h3>
-    
-    <div class='contents' hidden={!expanded}>
-        <slot></slot>
-    </div>
+<div class="collapsible">
+  <h3>
+    <button
+      aria-expanded={expanded}
+      on:click={() => (expanded = !expanded)}
+      class="variableVal"
+      >{headerText}
+      <svg viewBox="0 0 20 20" fill="none">
+        <path
+          class="vert"
+          d="M10 1V19"
+          stroke="rgb(238, 137, 5)"
+          stroke-width="5"
+        />
+        <path d="M1 10L19 10" stroke="rgb(238, 137, 5)" stroke-width="5" />
+      </svg>
+    </button>
+  </h3>
+
+  <div class="contents" hidden={!expanded}>
+    <slot />
+  </div>
 </div>
 
 <style>
-  /* .collapsible {
-    border-bottom: 1px solid var(--gray-light, #eee);
-  } */
-	
-	h3 {
-		margin: 0;
-	}
-	
+  h3 {
+    margin: 0;
+  }
+
   button {
     background-color: var(--background, #fff);
     color: var(--gray-darkest, #282828);
     display: flex;
-		justify-content: space-between;
+    justify-content: space-between;
     width: 100%;
-		border: none;
-		margin: 0;
-		padding: 1em 0.5em;
+    border: none;
+    margin: 0;
+    padding: 1em 0.5em;
   }
 
-  /* button[aria-expanded="true"] {
-    border-bottom: 1px solid var(--gray-light, #eee);
-  } */
+  button[aria-expanded="true"] .vert {
+    display: none;
+  }
 
-    button[aria-expanded="true"] .vert {
-        display: none;
-    }
-
-    /* button:focus svg{
-        outline: 2px solid;
-    } */
-
-    /* button [aria-expanded="true"] rect {
-        fill: currentColor;
-    } */
-
-    svg {
-        height: 0.7em;
-				width: 0.7em;
-    }
+  svg {
+    height: 0.7em;
+    width: 0.7em;
+  }
 </style>
