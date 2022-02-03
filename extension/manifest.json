@@ -26,5 +26,15 @@
         "js": ["devtools/listener.js"],
         "run_at": "document_start"
       }
-    ]
-  }
+    ],
+    "action": {
+      "default_icon": {
+        "16": "devtools/icon16.png",
+        "128": "devtools/icon128.png"
+      }
+    },
+    "icons": {
+      "16": "devtools/icon16.png",
+      "128": "devtools/icon128.png"
+    }
+}
