@@ -1,6 +1,6 @@
 # SvelteSlicer
 
-![Svelte Slicer logo](extension/public/images/svelte_slicer_logo_64x64.png)
+![Svelte Slicer logo](images/svelte_slicer_logo_64x64.png)
 
 # About The Project
 Svelte Slicer is an open-source Chrome Developer Tool for visualizing component and state changes in Svelte applications. Svelte Slicer allows users to capture, store and traverse detailed snapshots of application state to aid in debugging.
@@ -43,10 +43,10 @@ Found a bug or have suggestions for improvement? We would love to hear from you!
 Please open an issue to submit feedback or problems you come across.
 
 # Authors
-Heather Barney - [LinkedIn](https://www.linkedin.com/in/heather-barney-81ab2834/)
-Rachel Collins - [LinkedIn](https://www.linkedin.com/in/rachel-c-bb5b0346/)
-Lynda Labranche - [LinkedIn](https://www.linkedin.com/in/lynda-labranche-854184146/)
-Anchi Teng - [LinkedIn](https://www.linkedin.com/in/anchiteng/)
+- Heather Barney - [LinkedIn](https://www.linkedin.com/in/heather-barney-81ab2834/)
+- Rachel Collins - [LinkedIn](https://www.linkedin.com/in/rachel-c-bb5b0346/)
+- Lynda Labranche - [LinkedIn](https://www.linkedin.com/in/lynda-labranche-854184146/)
+- Anchi Teng - [LinkedIn](https://www.linkedin.com/in/anchiteng/)
 
 # License
 This project is licensed under the MIT [License](https://github.com/oslabs-beta/svelte-sight/blob/master/LICENSE) - see the LICENSE file for details
