@@ -1,26 +1,19 @@
 <script defer>
 export let I;
-export let view;
-import { fileTree, snapshots } from './stores';
+import { snapshots } from './stores';
 import * as d3 from 'd3';
-import {onMount, beforeUpdate, afterUpdate, onDestroy} from 'svelte';
+import { afterUpdate } from 'svelte';
 
 
 $: label = $snapshots[I].label;
-$: snapshot = $snapshots[I];
 $: parent = $snapshots[I].parent;
-$: component = view === "state" ? $snapshots[I].data[parent] : $fileTree;
-
+$: tree = JSON.parse(JSON.stringify($snapshots[I].data[parent]));
 
 // can we give an inherit property to the margin here so that 
 // the chart inherits the margin of the parent?
 
 let margin = {top:40,right:60,bottom:20,left:60}
-// let margin = {top:50,right:0,bottom:20,left:50}
-    // let width = 700 - margin.left - margin.right;
-    // let height = 700 - margin.top -margin.bottom; 
-//1/3 
-const width = document.body.clientWidth*0.7;
+const width = document.body.clientWidth * 0.7;
 const height = document.body.clientHeight;
 
     let svg;
@@ -29,7 +22,22 @@ const height = document.body.clientHeight;
     let currElement ;
 
    afterUpdate(()=>{
-   
+
+    // remove references to inactive child components
+    function trimTree(tree) {
+        if (tree.children.length) {
+            for (let i = tree.children.length - 1; i >= 0; i--) {
+                if (!tree.children[i].active) {
+                    tree.children.splice(i, 1);
+                }
+                else {
+                    trimTree(tree.children[i]);
+                }
+            }
+        }
+    }
+
+    trimTree(tree);
 
     svg = d3.select('#chart')
        .append('div')
@@ -47,10 +55,10 @@ const height = document.body.clientHeight;
        //d3.tree() is tidy tree layout module
        let treemap = d3.tree().size([width,height]);
        //construct root node
-       root = d3.hierarchy(component, function(d){
+
+       root = d3.hierarchy(tree, function(d){
            return d.children;
        });
-       console.log('root',root)
        
     root.x0 = 0;
     root.y0 = width/2;
@@ -58,17 +66,8 @@ const height = document.body.clientHeight;
        update(root);
        function update(src){
            let treeData = treemap(root)
-           //nodes //return thr arr of descendant nodes, staring with this node then followed by each child
-        //filter nodes. only show active nodes.
-        let activeNode = treeData.descendants();
-           let nodes = [];
-           activeNode.forEach(item=>{
-               if(item.data.active === true || item.data.active === undefined){
-            nodes.push(item)
-               }
-           })
-           console.log('nodes',nodes)
-           console.log('activeNodes',activeNode)
+           let nodes = treeData.descendants();
+
            //set depth
            nodes.forEach(function(d){
                d.y=d.depth*180;
@@ -78,7 +77,6 @@ const height = document.body.clientHeight;
            let node = svg.selectAll('g.node').data(nodes,function(d){
                return d.id || (d.id= ++i); //return d.id or it has child 
            });
-           console.log('node >>',node)
            //node start at the parent's position
            let nodeEnter = node
                   .enter()
@@ -200,7 +198,6 @@ const height = document.body.clientHeight;
            let activelinks = treeData.descendants().slice(1);
            let links = [];
            activelinks.forEach(item=>{
-               console.log('item for links ',item)
                if(item.data.active){
             links.push(item)
                }
@@ -252,7 +249,6 @@ const height = document.body.clientHeight;
                d._children=null;
            }
            update(d);
-           //console.log(`${d.data.id} node is selected`)
        }
        
        }
@@ -261,9 +257,7 @@ const height = document.body.clientHeight;
     
 
     preElement = document.getElementsByClassName(`${I}`)[0].previousSibling
-    //console.log('pre',preElement)
     currElement= document.getElementsByClassName(`${I}`)
-    //console.log('curr',currElement)
    if(svg.previousSibling){
 
    }

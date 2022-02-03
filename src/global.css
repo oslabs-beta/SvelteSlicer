@@ -2,16 +2,21 @@
 
 
 body {
+	margin: 0;
+	background: rgb(83, 81, 81);
+	margin: 0;
+	height: 100%;
+	font-size: 16px;
 	color:whitesmoke;
 	font-family: 'Overpass', sans-serif;
 }
 
 h2 {
-	font-weight: Bold 700;
-	font-size: 25px;
+	font-weight: 700;
+	font-size: 19px;
 	margin: 2px;
+	padding: 10px;
 }
-
 
 div {
 	padding: 1em;
@@ -27,14 +32,9 @@ a {
 	text-decoration: none;
 }
 
-span {
-	padding: 1em;
-	font-size: 18px;
-}
-
 ol li::marker {
 	content: "▼";
-  }
+}
   
 a:hover {
 	text-decoration: underline;
@@ -53,7 +53,8 @@ input, select, textarea {
 	background: #333;
 	outline: none;
 	margin: 2px;
-	font-size: 18px;
+	font-size: 16px;
+	font-family: 'Overpass', sans-serif;
 	padding: 0.4em;
 	border: none;
 	border-radius: 2px;
@@ -70,10 +71,6 @@ button {
 	padding: 5px;
 	border: none;
 	border-radius: 2px;
-}
-
-.selectedButton {
-	background-color: rgb(238, 137, 5);
 }
 
 input {
@@ -97,9 +94,16 @@ button:focus {
 }
 
 main {
+
 	margin: 0px;
 	align-items: center;
 	color: whitesmoke;
+	/* background: rgb(83, 81, 81); */
+}
+
+span {
+/* padding: 1em; */
+font-size: 16px;
 }
 
 .xAxis path,
@@ -136,18 +140,23 @@ main {
 	content: "▼";
   }
 
-/* .componentUl {
-	margin: 0;
-	list-style: decimal;
-	user-select: none;
-	font-size: 18px;
-} */
-
 .no-arrow { 
-	padding-left: 1.0rem; 
 	font-size: 16px;
 }
 
+ul.ulArrows {
+	list-style-type: none;
+}
+
+ul.variableVal {
+	font-size: 16px;
+	list-style-type: none;
+}
+
+#variableName {
+	/* font-size: 16px; */
+	list-style-type: none;
+}
 .arrow {
 	cursor: pointer;
 	font-weight: bold;
@@ -158,18 +167,6 @@ main {
 
 .arrowDown { 
 	transform: rotate(90deg); 
-}
-
-.oldValue{
-	text-decoration: line-through;
-	color:white;
-}
-.diffComponentName{
-	color:blue
-}
-.deletedComponent{
-	text-decoration: line-through;
-	color:red;
 }
 
 .search-button {
@@ -184,41 +181,13 @@ form.form button:hover {
 
 }
 
-
-/* .collapsible {
-	background-color: #777;
-	color: white;
-	cursor: pointer;
-	padding: 18px;
-	width: 100%;
-	border: none;
-	text-align: left;
-	outline: none;
-	font-size: 15px;
-  } */
-  
-  /* .active, .collapsible:hover {
-	background-color: #555;
-  } */
-  
-  /* .collapsible:after {
-	content: '\002B';
-	color: white;
-	font-weight: bold;
-	float: right;
-	margin-left: 5px;
-  } */
-  
-  /* .active:after {
-	content: "\2212";
-  } */
   
    .content {
 	padding: 2px;
-	font-size: 18px;
+	font-size: 16px;
 	font-weight: bold;
 	border: none;
-	transition: max-height 0.2s ease-out;
+	/* transition: max-height 0.2s ease-out; */
   } 
 
-
+  

@@ -10,22 +10,23 @@ chrome.devtools.panels.create(
                     const components = [];
                     const deletedNodes = [];
                     const insertedNodes = [];
-                    const addedEventListeners = [];
+                    const listeners = {};
                     const nodes = new Map();
-                    const ctxObject = {};
                     const componentCounts = {};
                     const componentObject = {};
                     let node_id = 0;
                     let firstLoadSent = false;
-                    let ctxHistory = [];
+                    let stateHistory = [];
+                    const storeVariables = {};
                     let rebuildingDom = false;
+                    let snapshotLabel = "Init";
+                    let jumpIndex;
 
                     function setup(root) {
                         root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
                         root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
                         root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
                         root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener);
-                        root.addEventListener('SvelteDOMRemoveEventListener', svelteDOMRemoveEventListener);
                     }
                   
                     function svelteRegisterComponent (e) {                       
@@ -37,40 +38,109 @@ chrome.devtools.panels.create(
 		                }
 		                componentCounts[tagName] = instance;
                         const id = tagName + instance;
-                                                
-                        // get state variables and ctx indices from $inject_state
-                        const injectState = {};
-                        let string = component.$inject_state.toString();
-                        while (string.includes('$$invalidate')) {
-                            const varIndexStart = string.indexOf('$$invalidate') + 13;
-                            const varIndexEnd = string.indexOf(',', varIndexStart);
-                            const varIndex = (string.slice(varIndexStart, varIndexEnd));
-                            
-                            const varNameStart = varIndexEnd + 1;
-                            const varNameEnd = string.indexOf('=', varNameStart);
-                            const varName = string.slice(varNameStart, varNameEnd).trim();
-                            injectState[varName] = varIndex;
-                            string = string.slice(varNameEnd);
-                        }
 
                         componentObject[id] = {component, tagName};
-                        ctxObject[id] = {ctx: component.$$.ctx, tagName, instance};
-                        
-                        // parse ctx for messaging purposes
-                        const ctx = {};
-                        component.$$.ctx.forEach((element, index) => {
-                            ctx[index] = parseCtx(element);
-                        })
 
                         data = {
                             id,
-                            ctx,
-                            injectState,
+                            state: captureComponentState(component),
                             tagName,
                             instance,
                             target: (options.target) ? options.target.nodeName + options.target.id : null
                         }
                         components.push(data);
+                    }
+
+                    function parseState(element, name = null) {
+                        if (element === null) {
+                            return { 
+                                value: element,
+                                name
+                            };
+                        }
+                        else if (typeof element === "function") {
+                            return {
+                                name,
+                                value: element.toString()
+                            };
+                        }
+                        else if (typeof element === "object") {
+                            if (element.constructor) {
+                                if (element.constructor.name === "Object" || element.constructor.name === "Array") {
+                                    const value = {};
+                                    for (let i in element) {
+                                        value[i] = parseState(element[i], i);
+                                    }
+                                    return {value, name};
+                                }
+                                else {
+                                    return {
+                                        name,
+                                        value: '<' + element.constructor.name + '>'
+                                    }
+                                }
+                            }
+                            else {
+                                return {
+                                    name,
+                                    value: "Unknown Object"
+                                }
+                            }
+                        }
+                        else {
+                            return {
+                                value: element,
+                                name
+                            };
+                        }
+                    }
+
+                    function captureComponentState(component) {
+                        const captureStateFunc = component.$capture_state;
+                        let state = captureStateFunc ? captureStateFunc() : {};
+                        // if capture_state produces an empty object, may need to use ctx instead (older version of Svelte)
+                        if (state && !Object.keys(state).length) {
+                            if (component.$$.ctx.constructor.name === "Object") {
+                                state = deepClone(component.$$.ctx);
+                            }
+                        }
+                    
+                        const parsedState = {};
+                        for (let variable in state) {
+                            if (typeof state[variable] === "function") {
+                                delete state[variable];
+                            }
+                            else if (state[variable] === null) {
+                                parsedState[variable] = parseState(state[variable], variable);
+                            }
+                            else if (typeof state[variable] === "object") {
+                                if (state[variable].constructor) {
+                                    if (state[variable].constructor.name === "Object" || state[variable].constructor.name === "Array") {
+                                        // check if variable is a store variable
+                                        if (state[variable].hasOwnProperty('subscribe')) {
+                                            // if a writable store, we need to store the instance
+                                            if (state[variable].hasOwnProperty('set') && state[variable].hasOwnProperty('update')) {
+                                                storeVariables[variable] = state[variable];
+                                            }
+                                            delete state[variable];
+                                        }
+                                        else {
+                                            parsedState[variable] = parseState(state[variable], variable);
+                                        }
+                                    }
+                                    else {
+                                        parsedState[variable] = parseState(state[variable], variable)
+                                    }
+                                }
+                                else {
+                                    delete state[variable];
+                                }
+                            }
+                            else {
+                                parsedState[variable]  = parseState(state[variable], variable);
+                            }
+                        }
+                        return parsedState;
                     }
 
                     function svelteDOMRemove(e) {
@@ -105,29 +175,24 @@ chrome.devtools.panels.create(
                     }
 
                     function svelteDOMAddEventListener(e) {
-                        const { node, event, handler } = e.detail;
-                        const nodeData = nodes.get(node);
-
-                        id = nodeData.id + event;
-
-                        node.addEventListener(event, () => eventAlert(nodeData.id, event));
-                            
-                        addedEventListeners.push({
-                            node: nodeData.id,
-                            event,
-                            handlerName: e.detail.handler.name,
-                            handlerString: e.detail.handler.toString(),
-                            component: nodeData.component,
-                            id
-                        })
-                    }
-
-                    function svelteDOMRemoveEventListener(e) {
                         const { node, event } = e.detail;
-                        nodeData = nodes.get(node);
-                        const id = nodeData.id + event;
-
-                        node.removeEventListener(event, () => eventAlert(nodeData.id, event));                      
+                        if (node.__svelte_meta) {
+                            if (!nodes.has(node)) {
+                                const nodeId = node_id++;
+                                const componentName = getComponentName(node.__svelte_meta.loc.file)
+                                nodes.set(node, {nodeId, componentName});
+                            }
+                            const nodeData = nodes.get(node);
+                            const listenerId = nodeData.id + event;
+                            node.addEventListener(event, () => updateLabel(nodeData.id, event));
+                            
+                            listeners[listenerId] = ({
+                                node: nodeData.id,
+                                event,
+                                handlerName: e.detail.handler.name,
+                                component: nodeData.componentName,
+                            })
+                        }
                     }
 
                     function getComponentName(file) {
@@ -140,96 +205,51 @@ chrome.devtools.panels.create(
                         return tagName;
                     }
 
-                    function parseCtx(element, name = null) {
-                        if (typeof element === "function") {
-                            return {
-                                type: 'function', 
-                                name: element.name, 
-                                string: element.toString()
-                            };
+                    const deepClone = (inObject) => {
+                        let outObject, value, key
+                      
+                        if (typeof inObject !== "object" || inObject === null) {
+                          return inObject // Return the value if inObject is not an object
                         }
-                        else if (element instanceof Element) {
-                            let value = 'DOM Element';
-                            if (nodes.has(element)) {
-                                value = nodes.get(element);
-                            }
-                            return {
-                                type: 'DOM Element',
-                                value
-                            }
+                      
+                        if (inObject.constructor.name !== "Object" && inObject.constructor.name !== "Array") {
+                            return inObject // Return the value if inObject is not an object
                         }
-                        else if (typeof element === "object") {
-                            if (element === null) {
-                                return {
-                                    type: 'value', 
-                                    value: element,
-                                    name
-                                };
-                            }
-                            if (element.hasOwnProperty('$$')) {
-                                return {
-                                    type: 'Svelte Component',
-                                    value: '<' + element.constructor.name + '>'
-                                }
-                            }
-                            else {
-                                const value = {};
-                                for (let i in element) {
-                                    value[i] = parseCtx(element[i], i);
-                                }
-                                return {type: 'value', value, name};
-                            }
-                        }
-                        else {
-                            return {
-                                type: 'value', 
-                                value: element,
-                                name
-                            };
-                        }
-                    }
 
-                    function parseCtxObject() {
-                        parsedCtx = {};
-                        for (let component in ctxObject) {
-                            const ctxData = {};
-                            ctxObject[component].ctx.forEach((element, index) => {
-                                ctxData[index] = parseCtx(element);
-                            })
-                            parsedCtx[component] = ctxData;
+                        // Create an array or object to hold the values
+                        outObject = Array.isArray(inObject) ? [] : {}
+                      
+                        for (key in inObject) {
+                          value = inObject[key]
+                      
+                          // Recursively (deep) copy for nested objects, including arrays
+                          outObject[key] = deepClone(value)
                         }
-                        return parsedCtx;
-                    }
+                      
+                        return outObject
+                      }
 
-                    function eventAlert(nodeId, event) {
+                    function updateLabel(nodeId, event) {
+                        const listener = listeners[nodeId + event];
+		                const { component, handlerName } = listener;
+		                snapshotLabel = component + ' - ' + event + " -> " + handlerName;
                         rebuildingDom = false;
-                        window.postMessage({
-                            source: 'panel.js',
-                            type: 'event',
-                            data: {
-                                nodeId,
-                                event
-                            }
-                        });
                     }
 
-                    function rebuildDom(index, state, tree) {
+                    function rebuildDom(tree) {
                         rebuildingDom = true;
                         
                         tree.forEach(componentFile => {
-                            for (let componentInstance in ctxObject) {
-                                if (ctxObject[componentInstance].tagName === componentFile) {
-                                    if (ctxHistory[index].hasOwnProperty(componentInstance)) {
-                                        const { variables } = state[componentInstance];
+                            for (let componentInstance in componentObject) {
+                                if (componentObject[componentInstance].tagName === componentFile) {
+                                    if (stateHistory[jumpIndex].hasOwnProperty(componentInstance)) {
+                                        const variables = stateHistory[jumpIndex][componentInstance];
                                         for (let variable in variables) {
-                                            const { name, ctxIndex, type } = variables[variable];
-                                            if (ctxIndex) {
-                                                if (type === 'store') {
-                                                    updateStore(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
-                                                }
-                                                else {
-                                                    injectState(componentInstance, name, ctxHistory[index][componentInstance].ctx[ctxIndex]);
-                                                }
+                                            if (variable[0] === '$') {
+                                                updateStore(componentInstance, variable, variables[variable]);
+                                            }
+                                            else {
+                                                injectState(componentInstance, variable, variables[variable]);
                                             }
                                         }
                                     }
@@ -243,28 +263,25 @@ chrome.devtools.panels.create(
                         component.$inject_state({ [key]: value })
                     }
 
-                    function updateStore(componentId, storeVariable, value) {
+                    function updateStore(componentId, name, value) {
                         const component = componentObject[componentId].component;
-                        const stateObject = component.$capture_state();
-                        const store = stateObject[storeVariable];
+                        const store = storeVariables[name.slice(1)];
                         store.set(value);
                     }
 
                     function clearSnapshots(index, path, clearType) {
-                        console.log(path);
                         if (clearType === 'forward') {
-                            ctxHistory = ctxHistory.slice(0, index + 1);
+                            stateHistory = stateHistory.slice(0, index + 1);
                         }
                         else if (clearType === 'previous') {
-                            ctxHistory = ctxHistory.slice(index);
+                            stateHistory = stateHistory.slice(index);
                         }
                         else if (clearType === 'path') {
-                            for (let i = ctxHistory.length -1; i > 0 ; i--){
+                            for (let i = stateHistory.length -1; i > 0 ; i--){
                                 if (!path.includes(i)){
-                                    ctxHistory.splice(i,1);
+                                    stateHistory.splice(i,1);
                                 }
                             }
-                            console.log(ctxHistory);
                         }
                     }
 
@@ -277,7 +294,7 @@ chrome.devtools.panels.create(
                     }
 
                     // observe for changes to the DOM
-                    const observer = new MutationObserver( list => {
+                    const observer = new MutationObserver(() => {
                         if (!rebuildingDom){
                             const domChange = new CustomEvent('dom-changed');
                             window.document.dispatchEvent(domChange)
@@ -291,39 +308,64 @@ chrome.devtools.panels.create(
                     // capture initial DOM load as one snapshot
                     window.onload = () => {
                         // make sure that data is being sent
-                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
-                            ctxHistory.push(JSON.parse(JSON.stringify(ctxObject)));
+                        if (components.length || insertedNodes.length || deletedNodes.length) {
+                            stateHistory.push(deepClone(captureRawAppState()));
                             firstLoadSent = true;
-                            // parse the ctxObject for messaging purposes
                             
                             window.postMessage({
                                 source: 'panel.js',
                                 type: 'firstLoad',
                                 data: {
-                                    ctxObject: parseCtxObject(),
+                                    stateObject: captureParsedAppState(),
                                     components,
                                     insertedNodes,
                                     deletedNodes,
-                                    addedEventListeners,
+                                    snapshotLabel
                                 }
                             })
-                        }
 
-                        // reset arrays
-                        components.splice(0, components.length);
-                        insertedNodes.splice(0, insertedNodes.length);
-                        deletedNodes.splice(0, deletedNodes.length);
-                        addedEventListeners.splice(0, addedEventListeners.length);
+                            // reset arrays
+                            components.splice(0, components.length);
+                            insertedNodes.splice(0, insertedNodes.length);
+                            deletedNodes.splice(0, deletedNodes.length);
+                            snapshotLabel = undefined;
+                        }
 
                         // start MutationObserver
                         observer.observe(window.document, {attributes: true, childList: true, subtree: true});
                     }   
 
+                    function captureRawAppState() {
+                        const appState = {};
+                        for (let component in componentObject) {
+                            const captureStateFunc = componentObject[component].component.$capture_state;
+                            let state = captureStateFunc ? captureStateFunc() : {};
+                            // if state object is empty, may need to use ctx instead (older version of Svelte)
+                            if (state && !Object.keys(state).length) {
+                                if (componentObject[component].component.$$.ctx.constructor.name === "Object") {
+                                    state = componentObject[component].component.$$.ctx;
+                                }
+                            }
+                            appState[component] = state;
+                        }
+                        return appState;
+                    }
+
+                    function captureParsedAppState() {
+                        const appState = {};
+                        for (let component in componentObject) {
+                            appState[component] = captureComponentState(componentObject[component].component);
+                        }
+                        return appState;
+                    }
+
                     // capture subsequent DOM changes to update snapshots
                     window.document.addEventListener('dom-changed', (e) => {
-                        // only send message if something changed in SvelteDOM
-                        if (components.length || insertedNodes.length || deletedNodes.length || addedEventListeners.length) {
-                            ctxHistory.push(JSON.parse(JSON.stringify(ctxObject)));
+                        // only send message if something changed in SvelteDOM or stateObject
+                        const currentState = captureRawAppState();
+                        const stateChange = JSON.stringify(currentState) !== JSON.stringify(stateHistory[stateHistory.length -1]);
+                        if (components.length || insertedNodes.length || deletedNodes.length) {
+                            stateHistory.push(deepClone(currentState));
                             let type;
                             // make sure the first load has already been sent; if not, this is the first load
                             if (!firstLoadSent) {
@@ -336,23 +378,78 @@ chrome.devtools.panels.create(
                                 source: 'panel.js',
                                 type,
                                 data: {
-                                    ctxObject: parseCtxObject(),
+                                    stateObject: captureParsedAppState(),
                                     components,
                                     insertedNodes,
                                     deletedNodes,
-                                    addedEventListeners,
+                                    snapshotLabel
                                 }
                             });
+                        
+                            // reset arrays
+                            components.splice(0, components.length);
+                            insertedNodes.splice(0, insertedNodes.length);
+                            deletedNodes.splice(0, deletedNodes.length);
+                            snapshotLabel = undefined;
+                        }
+                    });
+
+                    // clean up after jumps
+                    window.document.addEventListener('rebuild', (e) => {
+                        deletedComponents = [];
+                        for (let component in componentObject) {
+                            if (componentObject[component].component.$$.fragment === null) {
+                                delete componentObject[component];
+                                deletedComponents.push(component);
+                            }
                         }
                         
-                        // reset arrays
+                        components.forEach(newComponent => {
+                            const { tagName, id } = newComponent;
+                            const component = componentObject[id].component;
+                            const captureStateFunc = component.$capture_state;
+                            let componentState = captureStateFunc ? captureStateFunc() : {}; 
+                            if (componentState && !Object.keys(componentState).length) {
+                                if (component.$$.ctx.constructor.name === "Object") {
+                                    componentState = deepClone(component.$$.ctx);
+                                }
+                            }
+                            
+                            const previousState = stateHistory[jumpIndex];
+                            for (let componentId in previousState) {
+                                if (JSON.stringify(previousState[componentId]) === JSON.stringify(componentState) && !componentObject.hasOwnProperty(componentId)) {
+                                    componentObject[componentId] = {
+                                        component,
+                                        tagName
+                                    }
+                                    newComponent.id = componentId;
+                                    delete componentObject[id];
+                                    componentCounts[tagName]--;
+                                }
+                            }    
+                        })
+                        
+                        window.postMessage({
+                            source: 'panel.js',
+                            type: 'rebuild',
+                            data: {
+                                stateObject: captureParsedAppState(),
+                                components,
+                                insertedNodes,
+                                deletedNodes,
+                                deletedComponents,
+                                snapshotLabel
+                            }
+                        });
+
                         components.splice(0, components.length);
                         insertedNodes.splice(0, insertedNodes.length);
                         deletedNodes.splice(0, deletedNodes.length);
-                        addedEventListeners.splice(0, addedEventListeners.length);
-                    });
+                        snapshotLabel = undefined;
+                        jumpIndex = undefined;
+                    })
 
-                    // listen for devTool requesting state injections 
+                    // listen for devTool messages
                     window.addEventListener('message', function () {
                         // Only accept messages from the same frame
                         if (event.source !== window) {
@@ -366,8 +463,9 @@ chrome.devtools.panels.create(
                         }
 
                         if (event.data.type === 'jumpState') {
-                            const { index, state, tree} = event.data;
-                            rebuildDom(index, state, tree);
+                            const { index, tree} = event.data;
+                            jumpIndex = index;
+                            rebuildDom(tree);
                         }
 
                         if (event.data.type === 'clearSnapshots') {
