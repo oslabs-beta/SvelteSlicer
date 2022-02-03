@@ -521,6 +521,7 @@
 	}
 
 	.toolTipPrev {
+		padding: 0;
 		position: relative;
 		display: inline-block;
 		border-bottom: 1px dotted rgb(83, 81, 81);
@@ -543,6 +544,7 @@
 		padding: 1px;
 		}
 		.toolTipPath {
+		padding: 0;
 		position: relative;
 		display: inline-block;
 		border-bottom: 1px dotted rgb(83, 81, 81);
@@ -566,6 +568,7 @@
 		}
 		.toolTipFwd {
 		position: relative;
+		padding: 0;
 		display: inline-block;
 		border-bottom: 1px dotted rgb(83, 81, 81);
 		}
