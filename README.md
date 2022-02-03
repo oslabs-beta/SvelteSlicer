@@ -1,6 +1,5 @@
 # SvelteSlicer
-<!-- ![SvelteSlicer Logo](/extension/devtools/icon64.png) -->
-![SvelteSlicer Logo](/icon_128.png)
+![SvelteSlicer Logo](/extension/devtools/icon_128.png)
 
                                                 Svelte Slicer
 
