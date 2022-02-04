@@ -227,7 +227,7 @@ function buildSnapshot(data) {
   for (let i in componentData) {
     const component = componentData[i];
     const parent = component.parent;
-    if (parent) {
+    if (parent && componentData.hasOwnProperty(parent)) {
       componentData[parent].children.push(component);
     }
     // if no current nodes, mark component as not active
