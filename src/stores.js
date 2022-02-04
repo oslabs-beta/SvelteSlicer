@@ -223,7 +223,7 @@ function buildSnapshot(data) {
     componentData[component].children = [];
   }
 
-  // re-assign children to components and determine if component is active in the DOM
+  // assign children to components and determine if component is active in the DOM
   for (let i in componentData) {
     const component = componentData[i];
     const parent = component.parent;
@@ -402,8 +402,6 @@ function buildSnapshot(data) {
   };
 
   rebuild = false;
-
-  console.log(snapshot);
 
   const deepCloneSnapshot = JSON.parse(JSON.stringify(snapshot));
 
