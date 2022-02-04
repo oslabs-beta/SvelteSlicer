@@ -362,9 +362,14 @@ chrome.devtools.panels.create(
                     // capture subsequent DOM changes to update snapshots
                     window.document.addEventListener('dom-changed', (e) => {
                         // only send message if something changed in SvelteDOM or stateObject
-                        const currentState = captureRawAppState();
-                        const stateChange = JSON.stringify(currentState) !== JSON.stringify(stateHistory[stateHistory.length -1]);
                         if (components.length || insertedNodes.length || deletedNodes.length) {
+                            // check for deleted components
+                            for (let component in componentObject) {
+                                if (componentObject[component].component.$$.fragment === null) {
+                                    delete componentObject[component];
+                                }
+                            }
+                            const currentState = captureRawAppState();
                             stateHistory.push(deepClone(currentState));
                             let type;
                             // make sure the first load has already been sent; if not, this is the first load
