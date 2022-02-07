@@ -1,9 +1,9 @@
-<script defer>
+<script>
   export let I;
   import { snapshots } from "./stores";
   import * as d3 from "d3";
   import { afterUpdate } from "svelte";
-
+  // acessing the snapshots data from store
   $: label = $snapshots[I].label;
   $: parent = $snapshots[I].parent;
   $: tree = JSON.parse(JSON.stringify($snapshots[I].data[parent]));
@@ -32,7 +32,7 @@
     }
 
     trimTree(tree);
-
+//setting up chart DOM elements
     svg = d3
       .select("#chart")
       .append("div")
@@ -52,7 +52,7 @@
     root = d3.hierarchy(tree, function (d) {
       return d.children;
     });
-
+    //setting root position
     root.x0 = 0;
     root.y0 = width / 2;
 
@@ -69,7 +69,7 @@
       let node = svg.selectAll("g.node").data(nodes, function (d) {
         return d.id || (d.id = ++i);
       });
-      //node start at the parent's position
+      //enter node and node start at the parent's position
       let nodeEnter = node
         .enter()
         .append("g")
@@ -91,7 +91,7 @@
           return d._children ? "moccasin" : "rgb(238, 137, 5)";
         });
 
-      //add text to show the node data
+      //add text to show the node data (component name)
       nodeEnter
         .append("text")
         .attr("dx", ".35em")
@@ -107,13 +107,15 @@
         })
         .style("fill", "white");
 
+      // text appearing on hover over node with node's data(variables and value)
       nodeEnter
         .append("g:title")
         .attr("transform", "translate(0,0)")
         .text(function (d) {
+          //checking if variable objects have properities
           if (Object.keys(d.data.variables).length > 0) {
             let text = "";
-
+            //recursively access the value of variables in nested data then assign the value to text  
             Object.keys(d.data.variables).forEach((item) => {
               function nested(obj) {
                 if (obj.value) {
@@ -235,7 +237,7 @@
         update(d);
       }
     }
-
+    //render chart with most recent data in the browser and remove previous chart from DOM
     preElement = document.getElementsByClassName(`${I}`)[0].previousSibling;
     currElement = document.getElementsByClassName(`${I}`);
     if (svg.previousSibling) {
