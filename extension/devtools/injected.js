@@ -1,4 +1,3 @@
-const insertedNodes = [];
 const listeners = {};
 const nodes = new Map();
 const componentCounts = {};
@@ -14,13 +13,14 @@ let jumpIndex;
 let slicer = (() => {
     const variables = {
         components: [],
-        deletedNodes: []
+        deletedNodes: [],
+        insertedNodes: [],
     }
 
     return {
         get: (variable) => variables[variable],
         add: (variable, data) => variables[variable].push(data),
-        reset: (variable) => variables[variable].splice(0, variables[context].length)
+        reset: (variable) => variables[variable].splice(0, variables[variable].length)
     };
 })();
 
@@ -165,7 +165,7 @@ function svelteDOMInsert(e) {
             componentName = getComponentName(node.__svelte_meta.loc.file)
             nodes.set(node, {id, componentName});
         }
-        insertedNodes.push({
+        slicer.add('insertedNodes', {
             target: ((nodes.get(target)) ? nodes.get(target).id : target.nodeName + target.id),
             id,
             component: componentName, 
@@ -310,6 +310,7 @@ window.onload = () => {
     // make sure that data is being sent
     const components = slicer.get('components');
     const deletedNodes = slicer.get('deletedNodes');
+    const insertedNodes = slicer.get('insertedNodes');
     if (components.length || insertedNodes.length || deletedNodes.length) {
         stateHistory.push(deepClone(captureRawAppState()));
         firstLoadSent = true;
@@ -329,7 +330,7 @@ window.onload = () => {
         // reset arrays
         slicer.reset('components');
         slicer.reset('deletedNodes');
-        insertedNodes.splice(0, insertedNodes.length);
+        slicer.reset('insertedNodes');
         snapshotLabel = undefined;
     }
 
@@ -364,7 +365,8 @@ function captureParsedAppState() {
 // capture subsequent DOM changes to update snapshots
 window.document.addEventListener('dom-changed', (e) => {
     const components = slicer.get('components');
-    const deleteNodes = slicer.get('deletedNodes');
+    const deletedNodes = slicer.get('deletedNodes');
+    const insertedNodes = slicer.get('insertedNodes');
     // only send message if something changed in SvelteDOM or stateObject
     if (components.length || insertedNodes.length || deletedNodes.length) {
         // check for deleted components
@@ -398,7 +400,7 @@ window.document.addEventListener('dom-changed', (e) => {
         // reset arrays
         slicer.reset('components');
         slicer.reset('deletedNodes');
-        insertedNodes.splice(0, insertedNodes.length);
+        slicer.reset('insertedNodes');
         snapshotLabel = undefined;
     }
 });
@@ -406,6 +408,9 @@ window.document.addEventListener('dom-changed', (e) => {
 // clean up after jumps
 window.document.addEventListener('rebuild', (e) => {
     const components = slicer.get('components');
+    const deleteNodes = slicer.get('deletedNodes');
+    const insertedNodes = slicer.get('insertedNodes');
+
     deletedComponents = [];
     for (let component in componentObject) {
         if (componentObject[component].component.$$.fragment === null) {
@@ -454,7 +459,7 @@ window.document.addEventListener('rebuild', (e) => {
 
     slicer.reset('components');
     slicer.reset('deletedNodes');
-    insertedNodes.splice(0, insertedNodes.length);
+    slicer.reset('insertedNodes');
     snapshotLabel = undefined;
     jumpIndex = undefined;
 })
