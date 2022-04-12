@@ -27,6 +27,14 @@
         "run_at": "document_start"
       }
     ],
+    "web-accessible-resources" : [
+      {
+        "resources": [ "devtools/injected.js" ],
+        "matches": [ 
+          "http://*/*",
+          "https://*/*" ]
+      }
+    ],
     "action": {
       "default_icon": {
         "16": "devtools/public/images/icon16.png",
