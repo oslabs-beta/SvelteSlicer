@@ -1,17 +1,26 @@
-const components = [];
 const deletedNodes = [];
-const insertedNodes = [];
-const listeners = {};
-const nodes = new Map();
-const componentCounts = {};
-const componentObject = {};
-let node_id = 0;
-let firstLoadSent = false;
-let stateHistory = [];
-const storeVariables = {};
-let rebuildingDom = false;
-let snapshotLabel = "Init";
-let jumpIndex;
+    const insertedNodes = [];
+    const listeners = {};
+    const nodes = new Map();
+    const componentCounts = {};
+    const componentObject = {};
+    let node_id = 0;
+    let firstLoadSent = false;
+    let stateHistory = [];
+    const storeVariables = {};
+    let rebuildingDom = false;
+    let snapshotLabel = "Init";
+    let jumpIndex;
+
+let slicer = (() => {
+    const components = [];
+
+    return {
+        getComponents: () => components,
+        addComponent: (data) => components.push(data),
+        resetComponents: () => components.splice(0, components.length)
+    };
+})();
 
 function setup(root) {
     root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
@@ -39,7 +48,7 @@ function svelteRegisterComponent (e) {
         instance,
         target: (options.target) ? options.target.nodeName + options.target.id : null
     }
-    components.push(data);
+    slicer.addComponent(data);
 }
 
 function parseState(element, name = null) {
@@ -297,6 +306,7 @@ const observer = new MutationObserver(() => {
 // capture initial DOM load as one snapshot
 window.onload = () => {
     // make sure that data is being sent
+    const components = slicer.getComponents();
     if (components.length || insertedNodes.length || deletedNodes.length) {
         stateHistory.push(deepClone(captureRawAppState()));
         firstLoadSent = true;
@@ -314,7 +324,7 @@ window.onload = () => {
         })
 
         // reset arrays
-        components.splice(0, components.length);
+        slicer.resetComponents();
         insertedNodes.splice(0, insertedNodes.length);
         deletedNodes.splice(0, deletedNodes.length);
         snapshotLabel = undefined;
@@ -350,6 +360,7 @@ function captureParsedAppState() {
 
 // capture subsequent DOM changes to update snapshots
 window.document.addEventListener('dom-changed', (e) => {
+    const components = slicer.getComponents();
     // only send message if something changed in SvelteDOM or stateObject
     if (components.length || insertedNodes.length || deletedNodes.length) {
         // check for deleted components
@@ -381,7 +392,7 @@ window.document.addEventListener('dom-changed', (e) => {
         });
                         
         // reset arrays
-        components.splice(0, components.length);
+        slicer.resetComponents();
         insertedNodes.splice(0, insertedNodes.length);
         deletedNodes.splice(0, deletedNodes.length);
         snapshotLabel = undefined;
@@ -390,6 +401,7 @@ window.document.addEventListener('dom-changed', (e) => {
 
 // clean up after jumps
 window.document.addEventListener('rebuild', (e) => {
+    const components = slicer.getComponents();
     deletedComponents = [];
     for (let component in componentObject) {
         if (componentObject[component].component.$$.fragment === null) {
@@ -436,7 +448,7 @@ window.document.addEventListener('rebuild', (e) => {
         }
     });
 
-    components.splice(0, components.length);
+    slicer.resetComponents();
     insertedNodes.splice(0, insertedNodes.length);
     deletedNodes.splice(0, deletedNodes.length);
     snapshotLabel = undefined;
