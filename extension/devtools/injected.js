@@ -1,6 +1,5 @@
 const listeners = {};
 const nodes = new Map();
-const componentCounts = {};
 const componentObject = {};
 let node_id = 0;
 let firstLoadSent = false;
@@ -15,42 +14,69 @@ let slicer = (() => {
         components: [],
         deletedNodes: [],
         insertedNodes: [],
+        componentCounts: {}
     }
 
     return {
-        get: (variable) => variables[variable],
-        add: (variable, data) => variables[variable].push(data),
-        reset: (variable) => variables[variable].splice(0, variables[variable].length)
+        get: (variableName) => variables[variableName],
+        getValue: (variableName, key) => variables[variableName][key],
+        hasValue: (variableName, key) => variables[variableName].hasOwnProperty(key),
+        add: (variableName, value, key) => {
+            const myVar = variables[variableName];
+            if (Array.isArray(myVar)) {
+                myVar.push(value);
+            }
+            else if (typeof myVar === 'object') {
+                myVar[key] = value;
+            }
+        },
+        reset: (variableName) => variables[variableName].splice(0, variables[variableName].length),
+        update: (variableName, newValue, key) => variables[variableName][key] = newValue,
     };
 })();
 
 function setup(root) {
-    root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
+    root.addEventListener('SvelteRegisterComponent', registerNewComponent);
     root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
     root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
     root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener);
 }
-                  
-function svelteRegisterComponent (e) {                       
-    const { component, tagName, options } = e.detail;
-    // assign sequential instance value
-    let instance = 0;
-    if (componentCounts.hasOwnProperty(tagName)) {
-        instance = ++componentCounts[tagName];
-    }
-    componentCounts[tagName] = instance;
-    const id = tagName + instance;
-
+  
+function registerNewComponent(e) {
+    const {component} = e.detail
+    const data = parseNewComponent(e);
+    const {tagName, instance, id} = data;
+    slicer.add('components', data);
+    slicer.update('componentCounts', instance, tagName);
     componentObject[id] = {component, tagName};
+}
 
-    data = {
+function parseNewComponent (e) {                       
+    const { component, tagName, options } = e.detail;
+    const {id, instance} = assignComponentId(tagName);
+    const state = captureComponentState(component);
+    const target = assignComponentTarget(options);
+
+    return {
         id,
-        state: captureComponentState(component),
+        state,
         tagName,
         instance,
-        target: (options.target) ? options.target.nodeName + options.target.id : null
+        target
     }
-    slicer.add('components', data);
+}
+
+function assignComponentId(tagName) {
+    let instance = 0;
+    if (slicer.hasValue('componentCounts', tagName)) {
+        instance = slicer.getValue('componentCounts', tagName) + 1;
+    }
+    const id = tagName + instance;
+    return {instance, id};
+}
+
+function assignComponentTarget(options) {
+    return (options.target) ? options.target.nodeName + options.target.id : null;
 }
 
 function parseState(element, name = null) {
@@ -439,7 +465,8 @@ window.document.addEventListener('rebuild', (e) => {
                 }
                 newComponent.id = componentId;
                 delete componentObject[id];
-                componentCounts[tagName]--;
+                const newCount = slicer.getValue('componentCounts', tagName) - 1;
+                slicer.update('componentCounts', newCount, tagName);
             }
         }    
     })
