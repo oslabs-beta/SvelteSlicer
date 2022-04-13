@@ -29,7 +29,7 @@
     ],
     "web-accessible-resources" : [
       {
-        "resources": [ "devtools/injected.js" ],
+        "resources": [ "devtools/injected2.js" ],
         "matches": [ 
           "http://*/*",
           "https://*/*" ]

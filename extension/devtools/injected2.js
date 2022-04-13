@@ -27,7 +27,7 @@ function setup(window) {
         const root = frame.document;
         this.addSvelteDomListeners(root);
     }
-}
+};
 
 function registerNewComponent(e) {
     console.log(e.detail);
