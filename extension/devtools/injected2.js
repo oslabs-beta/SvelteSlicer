@@ -37,6 +37,16 @@ class Slicer {
     registerNewComponent(e) {
         console.log(e.detail);
     }
+
+    getComponentName(filePath) {
+        if (filePath.indexOf('/') === -1) {
+            tagName = filePath.slice((filePath.lastIndexOf('\\\\') + 1), -7);
+        }
+        else {
+            tagName = filePath.slice((filePath.lastIndexOf('/') + 1), -7);
+        }
+        return tagName;
+    }
 }
 
 new Slicer(window);
