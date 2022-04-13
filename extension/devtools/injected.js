@@ -39,13 +39,13 @@ function registerNewComponent(e) {
     const {id, state, tagName, instance, target, component} = parseNewComponent(e.detail);
     slicer.add('components', {id, state, tagName, instance, target});
     slicer.update('componentCounts', instance, tagName);
-    slicer.add('componentObject', {component, tagName}, id);
+    slicer.update('componentObject', {component, tagName}, id);
 }
 
 function parseNewComponent (detail) {                       
     const { component, tagName, options } = detail;
     const {id, instance} = assignComponentId(tagName);
-    const state = captureComponentState(component);
+    const state = parseComponentState(component);
     const target = assignComponentTarget(options);
 
     return {
@@ -105,7 +105,23 @@ function parseState(element, name = null) {
     }
 }
 
-function captureComponentState(component) {
+function parseComponentState(component) {
+    const state = getComponentState(component);
+
+    const parsedState = {};
+    for (let variableName in state) {
+        const value = state[variableName];
+        if (type_of(value) === 'writable_store') {
+            storeVariables[variableName] = value;
+        }
+        else if (typeof value !== "function" && typeof value !== 'non-writable_store') {
+            parsedState[variableName] = parseState(value, variableName);
+        }
+    }
+    return parsedState;
+}
+
+function getComponentState(component) {
     const captureStateFunc = component.$capture_state;
     let state = captureStateFunc ? captureStateFunc() : {};
     // if capture_state produces an empty object, may need to use ctx instead (older version of Svelte)
@@ -114,43 +130,29 @@ function captureComponentState(component) {
             state = deepClone(component.$$.ctx);
         }
     }
+    return state;
+}
 
-    const parsedState = {};
-    for (let variable in state) {
-        if (typeof state[variable] === "function") {
-            delete state[variable];
-        }
-        else if (state[variable] === null) {
-            parsedState[variable] = parseState(state[variable], variable);
-        }
-        else if (typeof state[variable] === "object") {
-            if (state[variable].constructor) {
-                if (state[variable].constructor.name === "Object" || state[variable].constructor.name === "Array") {
-                    // check if variable is a store variable
-                    if (state[variable].hasOwnProperty('subscribe')) {
-                        // if a writable store, we need to store the instance
-                        if (state[variable].hasOwnProperty('set') && state[variable].hasOwnProperty('update')) {
-                            storeVariables[variable] = state[variable];
-                        }
-                        delete state[variable];
-                    }
-                    else {
-                        parsedState[variable] = parseState(state[variable], variable);
-                    }
-                }
-                else {
-                    parsedState[variable] = parseState(state[variable], variable)
-                }
+function type_of(value) {
+    let type = Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
+    if (type === "object") {
+        // check if it's a store variable
+        if (value.hasOwnProperty("subscribe")) {
+            // check if it's a writable store
+            if (value.hasOwnProperty("set") && (value.hasOwnProperty("update"))) {
+                type = "writable_store";
             }
             else {
-                delete state[variable];
+                type = "non-writable_store";
             }
         }
         else {
-            parsedState[variable]  = parseState(state[variable], variable);
+            if (value.constructor.name !== "Object") {
+                type = "unknown"
+            }
         }
-    }
-    return parsedState;
+    }    
+    return type;
 }
 
 function svelteDOMRemove(e) {
@@ -368,7 +370,7 @@ function captureParsedAppState() {
     const appState = {};
     const componentObject = slicer.get('componentObject');
     for (let component in componentObject) {
-        appState[component] = captureComponentState(componentObject[component].component);
+        appState[component] = parseComponentState(componentObject[component].component);
     }
     return appState;
 }
