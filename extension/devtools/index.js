@@ -10,7 +10,7 @@ chrome.devtools.panels.create(
             .then((response) => response.text())
             .then((string) => {
                 chrome.devtools.inspectedWindow.reload(
-                    {injectedScript: string}
+                    {injectedScript: string + 'setup(window)'}
                 )
             })
         })
