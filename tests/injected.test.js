@@ -1,9 +1,11 @@
-const Slicer = require('../extension/devtools/injected2.js');
+const rewire = require('rewire');
+const Slicer = rewire('../extension/devtools/injected2.js');
 
 describe('getComponentName', () => {
     test('it should return a tagname given a valid Svelte file path', () => {
         const filePath = 'src/App.svelte';
         const expectedResult = 'App';
-        expect(Slicer.getComponentName(filePath)).toBe(expectedResult);
+        const getComponentName = Slicer.__get__('getComponentName');
+        expect(getComponentName(filePath)).toBe(expectedResult);
     })
 })

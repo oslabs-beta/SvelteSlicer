@@ -42,5 +42,3 @@ function getComponentName(filePath) {
     }
     return tagName;
 }
-
-module.exports = {getComponentName};
