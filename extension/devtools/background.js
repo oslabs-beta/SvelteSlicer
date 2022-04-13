@@ -9,6 +9,7 @@ chrome.runtime.onConnect.addListener(function (port) {
     // DevTools page, so we need to send it explicitly.
     if (message.name == "init") {
       connections[message.tabId] = port;
+      tabId = message.tabId;
       return;
     }
     
