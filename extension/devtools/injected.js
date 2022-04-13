@@ -1,10 +1,5 @@
-const components = [];
-const deletedNodes = [];
-const insertedNodes = [];
 const listeners = {};
 const nodes = new Map();
-const componentCounts = {};
-const componentObject = {};
 let node_id = 0;
 let firstLoadSent = false;
 let stateHistory = [];
@@ -13,80 +8,120 @@ let rebuildingDom = false;
 let snapshotLabel = "Init";
 let jumpIndex;
 
+let slicer = (() => {
+    const variables = {
+        components: [],
+        deletedNodes: [],
+        insertedNodes: [],
+        componentCounts: {},
+        componentObject: {}
+    }
+
+    return {
+        get: (variableName) => variables[variableName],
+        getValue: (variableName, key) => variables[variableName][key],
+        has: (variableName, key) => variables[variableName].hasOwnProperty(key),
+        add: (variableName, value) => variables[variableName].push(value),
+        reset: (variableName) => variables[variableName].splice(0, variables[variableName].length),
+        update: (variableName, newValue, key) => variables[variableName][key] = newValue,
+        delete: (variableName, key) => delete variables[variableName][key]
+    };
+})();
+
 function setup(root) {
-    root.addEventListener('SvelteRegisterComponent', svelteRegisterComponent);
+    root.addEventListener('SvelteRegisterComponent', registerNewComponent);
     root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
     root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
     root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener);
 }
-                  
-function svelteRegisterComponent (e) {                       
-    const { component, tagName, options } = e.detail;
-    // assign sequential instance value
-    let instance = 0;
-    if (componentCounts.hasOwnProperty(tagName)) {
-        instance = ++componentCounts[tagName];
-    }
-    componentCounts[tagName] = instance;
-    const id = tagName + instance;
+  
+function registerNewComponent(e) {
+    const {id, state, tagName, instance, target, component} = parseNewComponent(e.detail);
+    slicer.add('components', {id, state, tagName, instance, target});
+    slicer.update('componentCounts', instance, tagName);
+    slicer.update('componentObject', {component, tagName}, id);
+}
 
-    componentObject[id] = {component, tagName};
+function parseNewComponent (detail) {                       
+    const { component, tagName, options } = detail;
+    const {id, instance} = assignComponentId(tagName);
+    const state = parseComponentState(component);
+    const target = assignComponentTarget(options);
 
-    data = {
+    return {
         id,
-        state: captureComponentState(component),
+        state,
         tagName,
         instance,
-        target: (options.target) ? options.target.nodeName + options.target.id : null
+        target,
+        component
     }
-    components.push(data);
+}
+
+function assignComponentId(tagName) {
+    let instance = 0;
+    if (slicer.has('componentCounts', tagName)) {
+        instance = slicer.getValue('componentCounts', tagName) + 1;
+    }
+    const id = tagName + instance;
+    return {instance, id};
+}
+
+function assignComponentTarget(options) {
+    return (options.target) ? options.target.nodeName + options.target.id : null;
 }
 
 function parseState(element, name = null) {
+    let value;
     if (element === null) {
-        return { 
-            value: element,
-            name
-        };
+        value = element;
     }
     else if (typeof element === "function") {
-        return {
-            name,
-            value: element.toString()
-        };
+        value = element.toString()
     }
     else if (typeof element === "object") {
         if (element.constructor) {
             if (element.constructor.name === "Object" || element.constructor.name === "Array") {
-                const value = {};
+                value = {};
                 for (let i in element) {
                     value[i] = parseState(element[i], i);
                 }
-                return {value, name};
             }
             else {
-                return {
-                    name,
-                    value: '<' + element.constructor.name + '>'
-                }
+                value = '<' + element.constructor.name + '>'
             }
         }
         else {
-            return {
-                name,
-                value: "Unknown Object"
-            }
+            value = "Unknown Object"
         }
     }
     else {
-        return {
-            value: element,
-            name
-        };
+        value = element;
+    }
+
+    return {
+        value,
+        name
     }
 }
 
-function captureComponentState(component) {
+function parseComponentState(component) {
+    const state = getComponentState(component);
+
+    const parsedState = {};
+    for (let variableName in state) {
+        const value = state[variableName];
+        if (type_of(value) === 'writable_store') {
+            storeVariables[variableName] = value;
+        }
+        else if (typeof value !== "function" && typeof value !== 'non-writable_store') {
+            parsedState[variableName] = parseState(value, variableName);
+        }
+    }
+    return parsedState;
+}
+
+function getComponentState(component) {
     const captureStateFunc = component.$capture_state;
     let state = captureStateFunc ? captureStateFunc() : {};
     // if capture_state produces an empty object, may need to use ctx instead (older version of Svelte)
@@ -95,50 +130,36 @@ function captureComponentState(component) {
             state = deepClone(component.$$.ctx);
         }
     }
+    return state;
+}
 
-    const parsedState = {};
-    for (let variable in state) {
-        if (typeof state[variable] === "function") {
-            delete state[variable];
-        }
-        else if (state[variable] === null) {
-            parsedState[variable] = parseState(state[variable], variable);
-        }
-        else if (typeof state[variable] === "object") {
-            if (state[variable].constructor) {
-                if (state[variable].constructor.name === "Object" || state[variable].constructor.name === "Array") {
-                    // check if variable is a store variable
-                    if (state[variable].hasOwnProperty('subscribe')) {
-                        // if a writable store, we need to store the instance
-                        if (state[variable].hasOwnProperty('set') && state[variable].hasOwnProperty('update')) {
-                            storeVariables[variable] = state[variable];
-                        }
-                        delete state[variable];
-                    }
-                    else {
-                        parsedState[variable] = parseState(state[variable], variable);
-                    }
-                }
-                else {
-                    parsedState[variable] = parseState(state[variable], variable)
-                }
+function type_of(value) {
+    let type = Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
+    if (type === "object") {
+        // check if it's a store variable
+        if (value.hasOwnProperty("subscribe")) {
+            // check if it's a writable store
+            if (value.hasOwnProperty("set") && (value.hasOwnProperty("update"))) {
+                type = "writable_store";
             }
             else {
-                delete state[variable];
+                type = "non-writable_store";
             }
         }
         else {
-            parsedState[variable]  = parseState(state[variable], variable);
+            if (value.constructor.name !== "Object") {
+                type = "unknown"
+            }
         }
-    }
-    return parsedState;
+    }    
+    return type;
 }
 
 function svelteDOMRemove(e) {
     const { node } = e.detail;
     const nodeData = nodes.get(node);
     if (nodeData) {
-        deletedNodes.push({
+        slicer.add('deletedNodes', {
             id: nodeData.id,
             component: nodeData.component
         })
@@ -154,7 +175,7 @@ function svelteDOMInsert(e) {
             componentName = getComponentName(node.__svelte_meta.loc.file)
             nodes.set(node, {id, componentName});
         }
-        insertedNodes.push({
+        slicer.add('insertedNodes', {
             target: ((nodes.get(target)) ? nodes.get(target).id : target.nodeName + target.id),
             id,
             component: componentName, 
@@ -227,6 +248,7 @@ function updateLabel(nodeId, event) {
 
 function rebuildDom(tree) {
     rebuildingDom = true;
+    const componentObject = slicer.get('componentObject');
     
     tree.forEach(componentFile => {
         for (let componentInstance in componentObject) {
@@ -248,12 +270,12 @@ function rebuildDom(tree) {
 }
 
 function injectState(componentId, key, value) {
-    const component = componentObject[componentId].component;
+    const component = slicer.get('componentObject')[componentId].component;
     component.$inject_state({ [key]: value })
 }
 
 function updateStore(componentId, name, value) {
-    const component = componentObject[componentId].component;
+    const component = slicer.get('componentObject')[componentId].component;
     const store = storeVariables[name.slice(1)];
     store.set(value);
 }
@@ -297,6 +319,9 @@ const observer = new MutationObserver(() => {
 // capture initial DOM load as one snapshot
 window.onload = () => {
     // make sure that data is being sent
+    const components = slicer.get('components');
+    const deletedNodes = slicer.get('deletedNodes');
+    const insertedNodes = slicer.get('insertedNodes');
     if (components.length || insertedNodes.length || deletedNodes.length) {
         stateHistory.push(deepClone(captureRawAppState()));
         firstLoadSent = true;
@@ -314,9 +339,9 @@ window.onload = () => {
         })
 
         // reset arrays
-        components.splice(0, components.length);
-        insertedNodes.splice(0, insertedNodes.length);
-        deletedNodes.splice(0, deletedNodes.length);
+        slicer.reset('components');
+        slicer.reset('deletedNodes');
+        slicer.reset('insertedNodes');
         snapshotLabel = undefined;
     }
 
@@ -326,6 +351,7 @@ window.onload = () => {
 
 function captureRawAppState() {
     const appState = {};
+    const componentObject = slicer.get('componentObject');
     for (let component in componentObject) {
         const captureStateFunc = componentObject[component].component.$capture_state;
         let state = captureStateFunc ? captureStateFunc() : {};
@@ -342,20 +368,25 @@ function captureRawAppState() {
 
 function captureParsedAppState() {
     const appState = {};
+    const componentObject = slicer.get('componentObject');
     for (let component in componentObject) {
-        appState[component] = captureComponentState(componentObject[component].component);
+        appState[component] = parseComponentState(componentObject[component].component);
     }
     return appState;
 }
 
 // capture subsequent DOM changes to update snapshots
 window.document.addEventListener('dom-changed', (e) => {
+    const components = slicer.get('components');
+    const deletedNodes = slicer.get('deletedNodes');
+    const insertedNodes = slicer.get('insertedNodes');
+    const componentObject = slicer.get('componentObject');
     // only send message if something changed in SvelteDOM or stateObject
     if (components.length || insertedNodes.length || deletedNodes.length) {
         // check for deleted components
         for (let component in componentObject) {
             if (componentObject[component].component.$$.fragment === null) {
-                delete componentObject[component];
+                slicer.delete('componentObject', component);
             }
         }
         const currentState = captureRawAppState();
@@ -381,19 +412,24 @@ window.document.addEventListener('dom-changed', (e) => {
         });
                         
         // reset arrays
-        components.splice(0, components.length);
-        insertedNodes.splice(0, insertedNodes.length);
-        deletedNodes.splice(0, deletedNodes.length);
+        slicer.reset('components');
+        slicer.reset('deletedNodes');
+        slicer.reset('insertedNodes');
         snapshotLabel = undefined;
     }
 });
 
 // clean up after jumps
 window.document.addEventListener('rebuild', (e) => {
+    const components = slicer.get('components');
+    const deleteNodes = slicer.get('deletedNodes');
+    const insertedNodes = slicer.get('insertedNodes');
+    const componentObject = slicer.get('componentObject');
+
     deletedComponents = [];
     for (let component in componentObject) {
         if (componentObject[component].component.$$.fragment === null) {
-            delete componentObject[component];
+            slicer.delete('componentObject', component);
             deletedComponents.push(component);
         }
     }
@@ -412,13 +448,11 @@ window.document.addEventListener('rebuild', (e) => {
         const previousState = stateHistory[jumpIndex];
         for (let componentId in previousState) {
             if (JSON.stringify(previousState[componentId]) === JSON.stringify(componentState) && !componentObject.hasOwnProperty(componentId)) {
-                componentObject[componentId] = {
-                    component,
-                    tagName
-                }
+                slicer.update('componentObject', {component, tagName}, componentId);
                 newComponent.id = componentId;
-                delete componentObject[id];
-                componentCounts[tagName]--;
+                slicer.delete('componentObject', id);
+                const newCount = slicer.getValue('componentCounts', tagName) - 1;
+                slicer.update('componentCounts', newCount, tagName);
             }
         }    
     })
@@ -436,9 +470,9 @@ window.document.addEventListener('rebuild', (e) => {
         }
     });
 
-    components.splice(0, components.length);
-    insertedNodes.splice(0, insertedNodes.length);
-    deletedNodes.splice(0, deletedNodes.length);
+    slicer.reset('components');
+    slicer.reset('deletedNodes');
+    slicer.reset('insertedNodes');
     snapshotLabel = undefined;
     jumpIndex = undefined;
 })
