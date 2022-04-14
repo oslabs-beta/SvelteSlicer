@@ -4,7 +4,7 @@ chrome.devtools.panels.create(
     "devtools/panel.html",
     function (panel) {
         panel.onShown.addListener(() => {
-            const url = chrome.runtime.getURL('devtools/injected2.js');
+            const url = chrome.runtime.getURL('devtools/injected.js');
 
             fetch(url)
             .then((response) => response.text())

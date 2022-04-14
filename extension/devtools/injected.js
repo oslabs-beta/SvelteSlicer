@@ -28,15 +28,19 @@ let slicer = (() => {
     };
 })();
 
-function setup(root) {
+function addSvelteDomListeners(root) {
     root.addEventListener('SvelteRegisterComponent', registerNewComponent);
     root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
     root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
-    root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener);
-    window.onload(() => {captureSnapshot(); startMutationObserver();});
+    root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener); 
+}
+
+function setup() {
+    addSvelteDomListeners(window);
+    window.addEventListener('load', () => {captureSnapshot(); startMutationObserver();});
     window.document.addEventListener('dom-changed', captureSnapshot);
     window.document.addEventListener('rebuild', sendRebuild);
-    window.addEventListener('message', parseDevToolMessage); 
+    window.addEventListener('message', parseDevToolMessage);
 }
   
 function registerNewComponent(e) {
@@ -381,7 +385,7 @@ function captureParsedAppState() {
 function captureSnapshot() {
     const snapshotData = getSnapshotData();
     if (verifyChange(snapshotData)) {
-        snapshotData[deletedComponents] = trimDeletedComponents(snapshotData.componentObject);
+        snapshotData.deletedComponents = trimDeletedComponents(snapshotData.componentObject);
         stateHistory.push(deepClone(captureRawAppState()));
         const type = setSnapshotType();
         sendSnapshot(snapshotData, type);

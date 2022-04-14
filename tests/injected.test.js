@@ -3,7 +3,7 @@
  */
 
 const rewire = require('rewire');
-const injected = rewire('../extension/devtools/injected2.js');
+const injected = rewire('../extension/devtools/injected.js');
 
 describe('getComponentName', () => {
     test('it should return a tagname given a valid Svelte file path', () => {
