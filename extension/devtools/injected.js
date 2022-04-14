@@ -1,4 +1,3 @@
-const nodes = new Map();
 let node_id = 0;
 let firstLoadSent = false;
 const storeVariables = {};
@@ -14,7 +13,8 @@ let slicer = (() => {
         componentCounts: {},
         componentObject: {},
         listeners: {},
-        stateHistory: []
+        stateHistory: [],
+        nodes: {}
     }
 
     return {
@@ -165,7 +165,7 @@ function type_of(value) {
 
 function svelteDOMRemove(e) {
     const { node } = e.detail;
-    const nodeData = nodes.get(node);
+    const nodeData = slicer.getValue('nodes', node);
     if (nodeData) {
         slicer.add('deletedNodes', {
             id: nodeData.id,
@@ -177,14 +177,14 @@ function svelteDOMRemove(e) {
 function svelteDOMInsert(e) {  
     const { node, target } = e.detail;
     if (node.__svelte_meta) {
-        let id = nodes.get(node);
+        let id = slicer.getValue('nodes', node);
         if (!id) {
             id = node_id++;
             componentName = getComponentName(node.__svelte_meta.loc.file)
-            nodes.set(node, {id, componentName});
+            slicer.update('nodes', {id, componentName}, node);
         }
         slicer.add('insertedNodes', {
-            target: ((nodes.get(target)) ? nodes.get(target).id : target.nodeName + target.id),
+            target: ((slicer.get('nodes', target)) ? (slicer.get('nodes', target)).id : target.nodeName + target.id),
             id,
             component: componentName, 
             loc: node.__svelte_meta.loc.char
@@ -195,12 +195,12 @@ function svelteDOMInsert(e) {
 function svelteDOMAddEventListener(e) {
     const { node, event } = e.detail;
     if (node.__svelte_meta) {
-        if (!nodes.has(node)) {
+        if (!slicer.has('nodes', node)) {
             const nodeId = node_id++;
             const componentName = getComponentName(node.__svelte_meta.loc.file)
-            nodes.set(node, {nodeId, componentName});
+            slicer.update('nodes', {nodeId, componentName}, node);
         }
-        const nodeData = nodes.get(node);
+        const nodeData = slicer.getValue('nodes', node);
         const listenerId = nodeData.id + event;
         node.addEventListener(event, () => updateLabel(nodeData.id, event));
         
