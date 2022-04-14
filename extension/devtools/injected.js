@@ -1,38 +1,56 @@
-const listeners = {};
-const nodes = new Map();
-let node_id = 0;
-let firstLoadSent = false;
-let stateHistory = [];
-const storeVariables = {};
-let rebuildingDom = false;
-let snapshotLabel = "Init";
-let jumpIndex;
-
 let slicer = (() => {
     const variables = {
-        components: [],
-        deletedNodes: [],
-        insertedNodes: [],
-        componentCounts: {},
-        componentObject: {}
+        components: [],         // parsed component data to be sent in snapshot
+        deletedNodes: [],       // parsed data re. deleted nodes to be sent in snapshot
+        insertedNodes: [],      // parsed data re. inserted nodes to be sent in snapshot
+        componentCounts: {},    // count of components with shared tagnames for instance numbering
+        componentObject: {},    // actual component instances for injecting state
+        listeners: {},          // data re. app's event listeners to help with snapshot labeling
+        stateHistory: [],       // copies of raw state snapshots to help recreate previous states
+        nodes: {},              // data re. app's nodes stored by node reference 
+        storeVariables: {},     // actual store variable instances for injecting state
+        node_id: 0,             // track next unassigned value for sequential node id numbering
+        firstLoadSent: false,   // track whether or not initial snapshot has been sent
+        snapshotLabel: "Init",  // hold label for snapshot
+        jumpIndex: undefined,   // hold index of 
+        rebuildingDom: false    // track whether we're jumping between past states or creating new ones
     }
 
     return {
+        // method for all
         get: (variableName) => variables[variableName],
+        
+        // methods for componentCounts, componentObject, listeners, nodes and storeVariables
         getValue: (variableName, key) => variables[variableName][key],
         has: (variableName, key) => variables[variableName].hasOwnProperty(key),
+        update: (variableName, newValue, key) => variables[variableName][key] = newValue,
+        delete: (variableName, key) => delete variables[variableName][key],
+        
+        // methods for components, deletedNodes, insertedNodes and stateHistory
         add: (variableName, value) => variables[variableName].push(value),
         reset: (variableName) => variables[variableName].splice(0, variables[variableName].length),
-        update: (variableName, newValue, key) => variables[variableName][key] = newValue,
-        delete: (variableName, key) => delete variables[variableName][key]
+        
+        // method for node_id
+        increment: (variableName) => variables[variableName]++,
+        
+        // method for firstLoadSent, snapshotLabel, jumpIndex and rebuildingDom
+        set: (variableName, value) => variables[variableName] = value
     };
 })();
 
-function setup(root) {
+function addSvelteDomListeners(root) {
     root.addEventListener('SvelteRegisterComponent', registerNewComponent);
     root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
     root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
-    root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener);
+    root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener); 
+}
+
+function setup() {
+    addSvelteDomListeners(window);
+    window.addEventListener('load', () => {captureSnapshot(); startMutationObserver();});
+    window.document.addEventListener('dom-changed', captureSnapshot);
+    window.document.addEventListener('rebuild', sendRebuild);
+    window.addEventListener('message', parseDevToolMessage);
 }
   
 function registerNewComponent(e) {
@@ -112,7 +130,7 @@ function parseComponentState(component) {
     for (let variableName in state) {
         const value = state[variableName];
         if (type_of(value) === 'writable_store') {
-            storeVariables[variableName] = value;
+            slicer.update('storeVariables', value, variableName);
         }
         else if (typeof value !== "function" && typeof value !== 'non-writable_store') {
             parsedState[variableName] = parseState(value, variableName);
@@ -157,7 +175,7 @@ function type_of(value) {
 
 function svelteDOMRemove(e) {
     const { node } = e.detail;
-    const nodeData = nodes.get(node);
+    const nodeData = slicer.getValue('nodes', node);
     if (nodeData) {
         slicer.add('deletedNodes', {
             id: nodeData.id,
@@ -169,14 +187,14 @@ function svelteDOMRemove(e) {
 function svelteDOMInsert(e) {  
     const { node, target } = e.detail;
     if (node.__svelte_meta) {
-        let id = nodes.get(node);
+        let id = slicer.getValue('nodes', node);
         if (!id) {
-            id = node_id++;
+            id = slicer.increment('node_id');
             componentName = getComponentName(node.__svelte_meta.loc.file)
-            nodes.set(node, {id, componentName});
+            slicer.update('nodes', {id, componentName}, node);
         }
         slicer.add('insertedNodes', {
-            target: ((nodes.get(target)) ? nodes.get(target).id : target.nodeName + target.id),
+            target: ((slicer.get('nodes', target)) ? (slicer.get('nodes', target)).id : target.nodeName + target.id),
             id,
             component: componentName, 
             loc: node.__svelte_meta.loc.char
@@ -187,21 +205,21 @@ function svelteDOMInsert(e) {
 function svelteDOMAddEventListener(e) {
     const { node, event } = e.detail;
     if (node.__svelte_meta) {
-        if (!nodes.has(node)) {
-            const nodeId = node_id++;
+        if (!slicer.has('nodes', node)) {
+            const nodeId = slicer.increment('node_id');
             const componentName = getComponentName(node.__svelte_meta.loc.file)
-            nodes.set(node, {nodeId, componentName});
+            slicer.update('nodes', {nodeId, componentName}, node);
         }
-        const nodeData = nodes.get(node);
+        const nodeData = slicer.getValue('nodes', node);
         const listenerId = nodeData.id + event;
         node.addEventListener(event, () => updateLabel(nodeData.id, event));
         
-        listeners[listenerId] = ({
+        slicer.update('listeners', {
             node: nodeData.id,
             event,
             handlerName: e.detail.handler.name,
             component: nodeData.componentName,
-        })
+        }, listenerId)
     }
 }
 
@@ -240,24 +258,26 @@ const deepClone = (inObject) => {
 }
 
 function updateLabel(nodeId, event) {
-    const listener = listeners[nodeId + event];
+    const listener = slicer.getValue('listeners', nodeId + event);
     const { component, handlerName } = listener;
-    snapshotLabel = component + ' - ' + event + " -> " + handlerName;
-    rebuildingDom = false;
+    slicer.set('snapshotLabel', component + ' - ' + event + " -> " + handlerName);
+    slicer.set('rebuildingDom', false);
 }
 
-function rebuildDom(tree) {
-    rebuildingDom = true;
+function rebuildDom(tree, index) {
+    slicer.set('jumpIndex', index);
+    slicer.set('rebuildingDom', true);
     const componentObject = slicer.get('componentObject');
+    const pastState = slicer.get('stateHistory')[index];
     
     tree.forEach(componentFile => {
         for (let componentInstance in componentObject) {
             if (componentObject[componentInstance].tagName === componentFile) {
-                if (stateHistory[jumpIndex].hasOwnProperty(componentInstance)) {
-                    const variables = stateHistory[jumpIndex][componentInstance];
+                if (pastState.hasOwnProperty(componentInstance)) {
+                    const variables = pastState[componentInstance];
                     for (let variable in variables) {
                         if (variable[0] === '$') {
-                            updateStore(componentInstance, variable, variables[variable]);
+                            updateStore(variable, variables[variable]);
                         }
                         else {
                             injectState(componentInstance, variable, variables[variable]);
@@ -274,18 +294,18 @@ function injectState(componentId, key, value) {
     component.$inject_state({ [key]: value })
 }
 
-function updateStore(componentId, name, value) {
-    const component = slicer.get('componentObject')[componentId].component;
-    const store = storeVariables[name.slice(1)];
+function updateStore(name, value) {
+    const store = slicer.getValue('storeVariables', name.slice(1));
     store.set(value);
 }
 
 function clearSnapshots(index, path, clearType) {
+    const stateHistory = slicer.get('stateHistory');
     if (clearType === 'forward') {
-        stateHistory = stateHistory.slice(0, index + 1);
+        slicer.add('stateHistory', ...stateHistory.slice(0, index + 1));
     }
     else if (clearType === 'previous') {
-        stateHistory = stateHistory.slice(index);
+        slicer.add('stateHistory', ...stateHistory.slice(index));
     }
     else if (clearType === 'path') {
         for (let i = stateHistory.length -1; i > 0 ; i--){
@@ -293,61 +313,67 @@ function clearSnapshots(index, path, clearType) {
                 stateHistory.splice(i,1);
             }
         }
+        slicer.reset('stateHistory');
+        slicer.add('stateHistory', ...stateHistory)
     }
 }
 
-setup(window.document);
-                  
-for (let i = 0; i < window.frames.length; i++) {
-    const frame = window.frames[i]
-    const root = frame.document
-    setup(root)
+function startMutationObserver() {
+    const observer = new MutationObserver(() => {
+        const rebuildingDom = slicer.get('rebuildingDom');
+        if (!rebuildingDom){
+            const domChange = new CustomEvent('dom-changed');
+            window.document.dispatchEvent(domChange)
+        }
+        else {
+            const rebuild = new CustomEvent('rebuild');
+            window.document.dispatchEvent(rebuild);
+        }
+    });
+    observer.observe(window.document, {attributes: true, childList: true, subtree: true});
 }
 
-// observe for changes to the DOM
-const observer = new MutationObserver(() => {
-    if (!rebuildingDom){
-        const domChange = new CustomEvent('dom-changed');
-        window.document.dispatchEvent(domChange)
-    }
-    else {
-        const rebuild = new CustomEvent('rebuild');
-        window.document.dispatchEvent(rebuild);
-    }
-});
-        
-// capture initial DOM load as one snapshot
-window.onload = () => {
-    // make sure that data is being sent
+    
+function getSnapshotData() {
     const components = slicer.get('components');
     const deletedNodes = slicer.get('deletedNodes');
     const insertedNodes = slicer.get('insertedNodes');
+    const componentObject = slicer.get('componentObject');
+    const snapshotLabel = slicer.get('snapshotLabel');
+
+    return {components, deletedNodes, insertedNodes, componentObject, snapshotLabel};
+}
+
+function verifyChange(snapshotData) {
+    const { components, insertedNodes, deletedNodes } = snapshotData;
     if (components.length || insertedNodes.length || deletedNodes.length) {
-        stateHistory.push(deepClone(captureRawAppState()));
-        firstLoadSent = true;
-        
-        window.postMessage({
-            source: 'panel.js',
-            type: 'firstLoad',
-            data: {
-                stateObject: captureParsedAppState(),
-                components,
-                insertedNodes,
-                deletedNodes,
-                snapshotLabel
-            }
-        })
-
-        // reset arrays
-        slicer.reset('components');
-        slicer.reset('deletedNodes');
-        slicer.reset('insertedNodes');
-        snapshotLabel = undefined;
+        return true
     }
+    return false;
+}
 
-    // start MutationObserver
-    observer.observe(window.document, {attributes: true, childList: true, subtree: true});
-}   
+function sendSnapshot(snapshotData, type) {
+    const {components, insertedNodes, deletedNodes, deletedComponents, snapshotLabel} = snapshotData;
+    window.postMessage({
+        source: 'panel.js',
+        type,
+        data: {
+            stateObject: captureParsedAppState(),
+            components,
+            insertedNodes,
+            deletedNodes,
+            deletedComponents,
+            snapshotLabel
+        }
+    })
+}
+
+function resetSnapshotData() {
+    slicer.reset('components');
+    slicer.reset('deletedNodes');
+    slicer.reset('insertedNodes');
+    slicer.set('snapshotLabel', undefined);
+}  
 
 function captureRawAppState() {
     const appState = {};
@@ -375,57 +401,18 @@ function captureParsedAppState() {
     return appState;
 }
 
-// capture subsequent DOM changes to update snapshots
-window.document.addEventListener('dom-changed', (e) => {
-    const components = slicer.get('components');
-    const deletedNodes = slicer.get('deletedNodes');
-    const insertedNodes = slicer.get('insertedNodes');
-    const componentObject = slicer.get('componentObject');
-    // only send message if something changed in SvelteDOM or stateObject
-    if (components.length || insertedNodes.length || deletedNodes.length) {
-        // check for deleted components
-        for (let component in componentObject) {
-            if (componentObject[component].component.$$.fragment === null) {
-                slicer.delete('componentObject', component);
-            }
-        }
-        const currentState = captureRawAppState();
-        stateHistory.push(deepClone(currentState));
-        let type;
-        // make sure the first load has already been sent; if not, this is the first load
-        if (!firstLoadSent) {
-            type = "firstLoad";
-            firstLoadSent = true;
-        }
-        else type = "update";
-        
-        window.postMessage({
-            source: 'panel.js',
-            type,
-            data: {
-                stateObject: captureParsedAppState(),
-                components,
-                insertedNodes,
-                deletedNodes,
-                snapshotLabel
-            }
-        });
-                        
-        // reset arrays
-        slicer.reset('components');
-        slicer.reset('deletedNodes');
-        slicer.reset('insertedNodes');
-        snapshotLabel = undefined;
+function captureSnapshot() {
+    const snapshotData = getSnapshotData();
+    if (verifyChange(snapshotData)) {
+        snapshotData.deletedComponents = trimDeletedComponents(snapshotData.componentObject);
+        slicer.add('stateHistory', (deepClone(captureRawAppState())));
+        const type = setSnapshotType();
+        sendSnapshot(snapshotData, type);
+        resetSnapshotData();
     }
-});
+}
 
-// clean up after jumps
-window.document.addEventListener('rebuild', (e) => {
-    const components = slicer.get('components');
-    const deleteNodes = slicer.get('deletedNodes');
-    const insertedNodes = slicer.get('insertedNodes');
-    const componentObject = slicer.get('componentObject');
-
+function trimDeletedComponents(componentObject) {
     deletedComponents = [];
     for (let component in componentObject) {
         if (componentObject[component].component.$$.fragment === null) {
@@ -433,19 +420,31 @@ window.document.addEventListener('rebuild', (e) => {
             deletedComponents.push(component);
         }
     }
+    return deletedComponents;
+}
+
+function setSnapshotType() {
+    slicer.get('firstLoadSent')
+    if (!slicer.get('firstLoadSent')) {
+        slicer.set('firstLoadSent', true);
+        return "firstLoad"
+    }
+    return "update"
+}
+        
+function sendRebuild () {
+    const snapshotData = getSnapshotData();
+    const { components, componentObject } = snapshotData;
+    const jumpIndex = slicer.get('jumpIndex');
+    trimDeletedComponents(componentObject);
+
     
     components.forEach(newComponent => {
         const { tagName, id } = newComponent;
-        const component = componentObject[id].component;
-        const captureStateFunc = component.$capture_state;
-        let componentState = captureStateFunc ? captureStateFunc() : {}; 
-        if (componentState && !Object.keys(componentState).length) {
-            if (component.$$.ctx.constructor.name === "Object") {
-                componentState = deepClone(component.$$.ctx);
-            }
-        }
+        const component = componentObject[newComponent.id].component;
+        const componentState = getComponentState(component);
         
-        const previousState = stateHistory[jumpIndex];
+        const previousState = slicer.get('stateHistory')[jumpIndex];
         for (let componentId in previousState) {
             if (JSON.stringify(previousState[componentId]) === JSON.stringify(componentState) && !componentObject.hasOwnProperty(componentId)) {
                 slicer.update('componentObject', {component, tagName}, componentId);
@@ -457,28 +456,12 @@ window.document.addEventListener('rebuild', (e) => {
         }    
     })
                         
-    window.postMessage({
-        source: 'panel.js',
-        type: 'rebuild',
-        data: {
-            stateObject: captureParsedAppState(),
-            components,
-            insertedNodes,
-            deletedNodes,
-            deletedComponents,
-            snapshotLabel
-        }
-    });
+    sendSnapshot(snapshotData, 'rebuild');
+    resetSnapshotData();
+    slicer.set('jumpIndex', undefined);
+}
 
-    slicer.reset('components');
-    slicer.reset('deletedNodes');
-    slicer.reset('insertedNodes');
-    snapshotLabel = undefined;
-    jumpIndex = undefined;
-})
-
-// listen for devTool messages
-window.addEventListener('message', function () {
+function parseDevToolMessage (event) {
     // Only accept messages from the same frame
     if (event.source !== window) {
         return;
@@ -492,12 +475,11 @@ window.addEventListener('message', function () {
 
     if (event.data.type === 'jumpState') {
         const { index, tree} = event.data;
-        jumpIndex = index;
-        rebuildDom(tree);
+        rebuildDom(tree, index);
     }
 
     if (event.data.type === 'clearSnapshots') {
         const { index, path, clearType } = event.data;
         clearSnapshots(index, path, clearType);
     }
-})
+}

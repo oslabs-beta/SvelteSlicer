@@ -30,7 +30,10 @@ function setup(window) {
 };
 
 function registerNewComponent(e) {
-    console.log(e.detail);
+    const {id, state, tagName, instance, target, component} = parseNewComponent(e.detail);
+    slicer.add('components', {id, state, tagName, instance, target});
+    slicer.update('componentCounts', instance, tagName);
+    slicer.update('componentObject', {component, tagName}, id);
 }
 
 function getComponentName(filePath) {
