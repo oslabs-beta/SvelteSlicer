@@ -1,12 +1,12 @@
-import { writable, get } from 'svelte/store';
-import { compile } from 'svelte/compiler';
-import _ from 'lodash';
+import { writable, get } from "svelte/store";
+import { compile } from "svelte/compiler";
+import _ from "lodash";
 
 export const snapshots = writable([]);
 export const fileTree = writable({});
 export const flatFileTree = writable([]);
 export const backgroundPageConnection = writable(
-  chrome.runtime.connect({ name: 'panel' })
+  chrome.runtime.connect({ name: "panel" })
 );
 export const sharedAppView = writable();
 
@@ -26,7 +26,7 @@ let rebuild = false;
 const connection = get(backgroundPageConnection);
 
 connection.postMessage({
-  name: 'init',
+  name: "init",
   tabId: chrome.devtools.inspectedWindow.tabId,
 });
 
@@ -36,14 +36,14 @@ chrome.runtime.onMessage.addListener((msg) => {
 
   const { data, type } = parsedMessage;
 
-  if (type === 'firstLoad') {
+  if (type === "firstLoad") {
     snapshots.set([]);
     const snapshot = buildSnapshot(data);
     snapshots.update((array) => [...array, snapshot]);
-  } else if (type === 'update') {
+  } else if (type === "update") {
     const newSnapshot = buildSnapshot(data);
     snapshots.update((array) => [...array, newSnapshot]);
-  } else if (type === 'rebuild') {
+  } else if (type === "rebuild") {
     rebuild = true;
     const newSnapshot = buildSnapshot(data);
   }
@@ -52,15 +52,15 @@ chrome.runtime.onMessage.addListener((msg) => {
 // get and parse through the AST for additional variable info
 chrome.devtools.inspectedWindow.getResources((resources) => {
   const arrSvelteFiles = resources.filter((file) =>
-    file.url.includes('.svelte')
+    file.url.includes(".svelte")
   );
   arrSvelteFiles.forEach((svelteFile) => {
     svelteFile.getContent((source) => {
       if (source) {
         const { ast } = compile(source);
         const componentName = svelteFile.url.slice(
-          svelteFile.url.lastIndexOf('/') + 1,
-          svelteFile.url.lastIndexOf('.svelte')
+          svelteFile.url.lastIndexOf("/") + 1,
+          svelteFile.url.lastIndexOf(".svelte")
         );
         const components = {};
         if (ast.instance) {
@@ -68,8 +68,8 @@ chrome.devtools.inspectedWindow.getResources((resources) => {
           astVariables.forEach((variable) => {
             const data = {};
             if (
-              variable.type === 'ImportDeclaration' &&
-              variable.source.value.includes('.svelte')
+              variable.type === "ImportDeclaration" &&
+              variable.source.value.includes(".svelte")
             ) {
               data.name = variable.specifiers[0].local.name;
               data.parent = componentName;
@@ -112,7 +112,7 @@ function buildSnapshot(data) {
       loc: node.loc,
     };
     // add as a child to target node
-    if (typeof node.target === 'number') {
+    if (typeof node.target === "number") {
       nodes[node.target].children.push({ id: node.id });
     }
   });
@@ -288,12 +288,11 @@ function buildSnapshot(data) {
               data = {
                 name: varName,
                 oldValue:
-                  stateHistory[componentId].variables[varName].value !==
-                  undefined
+                  stateHistory[componentId].variables[varName].value !== undefined
                     ? getDiffValue(
                         stateHistory[componentId].variables[varName].value
                       )
-                    : 'undefined',
+                    : "undefined",
                 newValue: getDiffValue(value),
               };
             }
@@ -301,7 +300,7 @@ function buildSnapshot(data) {
 
           // if there are diffs, add to component diff or store diff
           if (!_.isEmpty(data)) {
-            if (varName[0] === '$') {
+            if (varName[0] === "$") {
               storeDiff[varName] = data;
             } else {
               componentDiff[varName] = data;
@@ -309,7 +308,7 @@ function buildSnapshot(data) {
           }
         }
       }
-
+      
       if (stateObject.hasOwnProperty(componentId)) {
         for (let [varName, variable] of Object.entries(component.variables)) {
           // if variable is in componentData but not in stateObject, new value in componentData is null
@@ -329,10 +328,10 @@ function buildSnapshot(data) {
                 oldValue:
                   variable.value !== undefined
                     ? getDiffValue(variable.value)
-                    : 'undefined',
+                    : "undefined",
                 newValue: null,
               };
-              if (varName[0] === '$') {
+              if (varName[0] === "$") {
                 storeDiff[varName] = data;
               } else {
                 componentDiff[varName] = data;
@@ -348,7 +347,7 @@ function buildSnapshot(data) {
     }
 
     if (!_.isEmpty(storeDiff)) {
-      diff.changedVariables['Store'] = storeDiff;
+      diff.changedVariables["Store"] = storeDiff;
     }
   }
 
@@ -398,7 +397,7 @@ function buildSnapshot(data) {
   const snapshot = {
     data: componentData,
     parent: domParent,
-    label: snapshotLabel ? snapshotLabel : 'Unlabeled Snapshot',
+    label: snapshotLabel ? snapshotLabel : "Unlabeled Snapshot",
     diff,
   };
 
@@ -421,12 +420,12 @@ function deleteNode(nodeId) {
 }
 
 function getDiffValue(value) {
-  let text = '';
+  let text = "";
 
-  if (value === null || typeof value !== 'object') {
+  if (value === null || typeof value !== "object") {
     text += value;
   } else {
-    text += '\n';
+    text += "\n";
     for (let i in value) {
       nested(value[i], 1);
     }
@@ -438,14 +437,14 @@ function getDiffValue(value) {
     if (obj.value) {
       // add tabs based on the level in the recursion
       for (let i = 1; i <= tabCount; i++) {
-        text = text + '\t';
+        text = text + "\t";
       }
-      text = text + obj.name + ': ';
-      if (typeof obj.value !== 'object') {
-        text = text + obj.value + '\n';
+      text = text + obj.name + ": ";
+      if (typeof obj.value !== "object") {
+        text = text + obj.value + "\n";
       } else {
         tabCount++;
-        text = text + '\n';
+        text = text + "\n";
         for (let val in obj.value) {
           nested(obj.value[val], tabCount);
         }
