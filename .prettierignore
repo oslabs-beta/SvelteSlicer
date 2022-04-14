@@ -1,0 +1,5 @@
+# Ignore artifacts:
+extension/devtools/build/
+extension/devtools/public/
+node_modules
+README.md

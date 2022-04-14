@@ -1,8 +1,8 @@
 <script>
-  import * as d3 from "d3";
-  import { onMount } from "svelte";
+  import * as d3 from 'd3';
+  import { onMount } from 'svelte';
   export let treeData;
-  console.log("treeData", treeData);
+  console.log('treeData', treeData);
 
   let margin = { top: 20, right: 0, bottom: 20, left: 0 };
   let width = 700 - margin.left - margin.right;
@@ -11,14 +11,14 @@
   let svg;
   onMount(() => {
     svg = d3
-      .select("#chart")
-      .append("div")
-      .attr("class", "container")
-      .append("svg")
-      .attr("width", width + margin.right + margin.left)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      .select('#chart')
+      .append('div')
+      .attr('class', 'container')
+      .append('svg')
+      .attr('width', width + margin.right + margin.left)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
     let i = 0;
     let duration = 750;
@@ -29,7 +29,7 @@
     root = d3.hierarchy(treeData, function (d) {
       return d.children;
     });
-    console.log("root", root);
+    console.log('root', root);
 
     root.x0 = 0;
     root.y0 = width / 2;
@@ -38,75 +38,75 @@
       let treeData = treemap(root);
       //nodes //return thr arr of descendant nodes, staring with this node then followed by each child
       let nodes = treeData.descendants();
-      console.log("nodes", nodes);
+      console.log('nodes', nodes);
       //set depth
       nodes.forEach(function (d) {
         d.y = d.depth * 140;
       });
-      let node = svg.selectAll("g.node").data(nodes, function (d) {
+      let node = svg.selectAll('g.node').data(nodes, function (d) {
         return d.id || (d.id = ++i);
       });
       //node start at the parent's position
       let nodeEnter = node
         .enter()
-        .append("g")
-        .attr("class", "node")
-        .attr("transform", function (d) {
-          return "translate(" + src.x0 + ", " + src.y0 + ")";
+        .append('g')
+        .attr('class', 'node')
+        .attr('transform', function (d) {
+          return 'translate(' + src.x0 + ', ' + src.y0 + ')';
         })
-        .on("click", click);
+        .on('click', click);
       //create circles (this might be the place to set the state datas to deliver to data panel )
       nodeEnter
-        .append("circle")
-        .attr("class", "node")
-        .attr("r", 0)
-        .style("fill", function (d) {
-          return d._children ? "moccasin" : "rgb(238, 137, 5)";
+        .append('circle')
+        .attr('class', 'node')
+        .attr('r', 0)
+        .style('fill', function (d) {
+          return d._children ? 'moccasin' : 'rgb(238, 137, 5)';
         });
       //add text  to show the node data
       nodeEnter
-        .append("text")
-        .attr("dx", ".35em")
-        .attr("y", function (d) {
+        .append('text')
+        .attr('dx', '.35em')
+        .attr('y', function (d) {
           return -12;
         })
-        .attr("text-anchor", function (d) {
-          return d.children || d._children ? "middle" : "middle"; //text position with node
+        .attr('text-anchor', function (d) {
+          return d.children || d._children ? 'middle' : 'middle'; //text position with node
         })
         .text(function (d) {
           return d.data.id;
         })
-        .style("fill", "white");
+        .style('fill', 'white');
 
       //make transition node/ start from parent position to new position
       let nodeUpdate = nodeEnter.merge(node);
       nodeUpdate
         .transition()
         .duration(duration)
-        .attr("transform", function (d) {
-          return "translate(" + d.x + ", " + d.y + ")";
+        .attr('transform', function (d) {
+          return 'translate(' + d.x + ', ' + d.y + ')';
         });
       nodeUpdate
-        .select("circle.node")
-        .attr("r", 10)
-        .style("fill", function (d) {
-          return d._children ? "moccasin" : "rgb(238, 137, 5)";
+        .select('circle.node')
+        .attr('r', 10)
+        .style('fill', function (d) {
+          return d._children ? 'moccasin' : 'rgb(238, 137, 5)';
         })
-        .attr("cursor", "pointer");
+        .attr('cursor', 'pointer');
       //remove exiting node;
       let nodeExit = node
         .exit()
         .transition()
         .duration(duration)
-        .attr("transform", function (d) {
+        .attr('transform', function (d) {
           //from child to parent
-          return "translate(" + src.x + "," + src.y + ")";
+          return 'translate(' + src.x + ',' + src.y + ')';
         })
         .remove();
       //remove circle, dot starts at 0 it goes to 10 and when we click again it goes back to 0
-      nodeExit.select("circle").attr("r", 0);
+      nodeExit.select('circle').attr('r', 0);
       //remove text
-      nodeExit.select("text").style("fill-opacity", 0);
+      nodeExit.select('text').style('fill-opacity', 0);
       //links
       function diagonal(s, d) {
         //path is svg elm which draw lines. Start from M, move to C
@@ -118,14 +118,14 @@
       }
 
       let links = treeData.descendants().slice(1);
-      let link = svg.selectAll("path.link").data(links, function (d) {
+      let link = svg.selectAll('path.link').data(links, function (d) {
         return d.id;
       });
       let linkEnter = link
         .enter()
-        .insert("path", "g")
-        .attr("class", "link")
-        .attr("d", function () {
+        .insert('path', 'g')
+        .attr('class', 'link')
+        .attr('d', function () {
           let o = { x: src.x0, y: src.y0 };
           return diagonal(o, o);
         });
@@ -134,7 +134,7 @@
       linkUpdate
         .transition()
         .duration(duration)
-        .attr("d", function (d) {
+        .attr('d', function (d) {
           //transit from spot to its parent spot
           return diagonal(d, d.parent);
         });
@@ -142,7 +142,7 @@
         .exit()
         .transition()
         .duration(duration)
-        .attr("d", function (d) {
+        .attr('d', function (d) {
           let o = { x: src.x0, y: src.y0 };
           return diagonal(o, o);
         })

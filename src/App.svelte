@@ -5,14 +5,14 @@
     flatFileTree,
     backgroundPageConnection,
     sharedAppView,
-  } from "./stores.js";
-  import { get } from "svelte/store";
-  import Component from "./Component.svelte";
-  import StateChart from "./StateChart.svelte";
-  import FileStructure from "./FileStructure.svelte";
-  import StateTree from "./StateTree.svelte";
-  import Diffs from "./Diffs.svelte";
-  import logo from "../extension/devtools/public/images/svelte_slicer_logo_64X64.png";
+  } from './stores.js';
+  import { get } from 'svelte/store';
+  import Component from './Component.svelte';
+  import StateChart from './StateChart.svelte';
+  import FileStructure from './FileStructure.svelte';
+  import StateTree from './StateTree.svelte';
+  import Diffs from './Diffs.svelte';
+  import logo from '../extension/devtools/public/images/svelte_slicer_logo_64X64.png';
 
   $: CurrentI =
     I === undefined
@@ -49,14 +49,14 @@
   let I;
   let appView;
   let filtered = [];
-  let input = "";
+  let input = '';
   let jumping = false;
   let snapshotLength;
 
-  let view = "state";
+  let view = 'state';
   $: View = view;
 
-  let vis = "tree";
+  let vis = 'tree';
   $: Vis = vis;
 
   const connection = get(backgroundPageConnection);
@@ -80,8 +80,8 @@
     snapshotLength = JSON.parse(JSON.stringify($snapshots)).length;
     jumping = true;
     connection.postMessage({
-      source: "panel",
-      name: "jumpState",
+      source: 'panel',
+      name: 'jumpState',
       index,
       state: $snapshots[index].data,
       tree: $flatFileTree,
@@ -113,7 +113,7 @@
         filtered.push({ snapshot, index });
       }
     });
-    input = " ";
+    input = ' ';
   }
 
   function resetFilter() {
@@ -124,12 +124,12 @@
     let newSnapshotList;
     let path = timeline[CurrentAppView].slice();
 
-    if (clearType === "forward") {
+    if (clearType === 'forward') {
       newSnapshotList = $snapshots.slice(0, CurrentAppView + 1);
       timeline = timeline.slice(0, CurrentAppView + 1);
       appView = undefined;
       I = undefined;
-    } else if (clearType === "previous") {
+    } else if (clearType === 'previous') {
       newSnapshotList = $snapshots.slice(CurrentAppView);
       let count = CurrentAppView;
       timeline = timeline.slice(CurrentAppView);
@@ -145,7 +145,7 @@
       });
       appView = 0;
       I = 0;
-    } else if (clearType === "path") {
+    } else if (clearType === 'path') {
       newSnapshotList = $snapshots.slice();
       for (let i = $snapshots.length - 1; i > 0; i -= 1) {
         if (!path.includes(i)) {
@@ -167,8 +167,8 @@
 
     // message index.js to trim stateHistory stored there
     connection.postMessage({
-      source: "panel",
-      name: "clearSnapshots",
+      source: 'panel',
+      name: 'clearSnapshots',
       clearType,
       index: CurrentAppView,
       path,
@@ -216,7 +216,7 @@
           >
             <span class="snapshotText"
               >Snapshot {i}
-              {snapshot.label ? " : " + snapshot.label : ""}</span
+              {snapshot.label ? ' : ' + snapshot.label : ''}</span
             >
             <div class="snapshotButtonGroup">
               <button
@@ -242,8 +242,8 @@
             <span class="snapshotText"
               >Snapshot {snapshot.index}
               {snapshot.snapshot.label
-                ? " : " + snapshot.snapshot.label
-                : ""}</span
+                ? ' : ' + snapshot.snapshot.label
+                : ''}</span
             >
             <div class="snapshotButtonGroup">
               <button
@@ -262,59 +262,59 @@
     </div>
     <div id="banner">
       <button
-        on:click={() => selectView("files")}
-        class:activeButton={view === "files"}>Components</button
+        on:click={() => selectView('files')}
+        class:activeButton={view === 'files'}>Components</button
       >
       <button
-        on:click={() => selectView("state")}
-        class:activeButton={view === "state"}>State</button
+        on:click={() => selectView('state')}
+        class:activeButton={view === 'state'}>State</button
       >
     </div>
     <div id="buttons">
-      {#if View === "files"}
+      {#if View === 'files'}
         <button
-          on:click={() => selectVis("tree")}
-          class:activeButton={vis === "tree"}>Tree</button
+          on:click={() => selectVis('tree')}
+          class:activeButton={vis === 'tree'}>Tree</button
         >
         <button
-          on:click={() => selectVis("chart")}
-          class:activeButton={vis === "chart"}>Chart</button
+          on:click={() => selectVis('chart')}
+          class:activeButton={vis === 'chart'}>Chart</button
         >
-      {:else if View === "state"}
+      {:else if View === 'state'}
         <button
-          on:click={() => selectVis("tree")}
-          class:activeButton={vis === "tree"}>Tree</button
-        >
-        <button
-          on:click={() => selectVis("chart")}
-          class:activeButton={vis === "chart"}>Chart</button
+          on:click={() => selectVis('tree')}
+          class:activeButton={vis === 'tree'}>Tree</button
         >
         <button
-          on:click={() => selectVis("diff")}
-          class:activeButton={vis === "diff"}>Diff</button
+          on:click={() => selectVis('chart')}
+          class:activeButton={vis === 'chart'}>Chart</button
+        >
+        <button
+          on:click={() => selectVis('diff')}
+          class:activeButton={vis === 'diff'}>Diff</button
         >
       {/if}
     </div>
     <div id="presentation">
       {#if $snapshots.length}
-        {#if View === "files" && Vis === "tree"}
+        {#if View === 'files' && Vis === 'tree'}
           {#if Object.keys($fileTree).length}
             <Component component={$fileTree} />
           {:else}
             <p>File structure data unavailable</p>
           {/if}
-        {:else if View === "files" && Vis === "chart"}
+        {:else if View === 'files' && Vis === 'chart'}
           {#if Object.keys($fileTree).length}
             <FileStructure treeData={$fileTree} />
           {:else}
             <p>File structure data unavailable</p>
           {/if}
-        {:else if View === "state"}
-          {#if Vis === "tree"}
+        {:else if View === 'state'}
+          {#if Vis === 'tree'}
             <StateTree I={CurrentI} />
-          {:else if Vis === "chart"}
+          {:else if Vis === 'chart'}
             <StateChart {view} I={CurrentI} />
-          {:else if Vis === "diff"}
+          {:else if Vis === 'diff'}
             <Diffs I={CurrentI} />
           {/if}
         {/if}
@@ -326,14 +326,14 @@
         <div class="toolTipPrev">
           <button
             class="clearButton"
-            on:click={() => clearSnapshots("previous")}>Previous</button
+            on:click={() => clearSnapshots('previous')}>Previous</button
           >
           <span class="toolTipPrevText"
             >Remove all Snapshots prior to current view</span
           >
         </div>
         <div class="toolTipPath">
-          <button class="clearButton" on:click={() => clearSnapshots("path")}
+          <button class="clearButton" on:click={() => clearSnapshots('path')}
             >Path</button
           >
           <span class="toolTipPathText"
@@ -341,7 +341,7 @@
           >
         </div>
         <div class="toolTipFwd">
-          <button class="clearButton" on:click={() => clearSnapshots("forward")}
+          <button class="clearButton" on:click={() => clearSnapshots('forward')}
             >Forward</button
           >
           <span class="toolTipFwdText"

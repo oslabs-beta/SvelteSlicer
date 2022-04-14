@@ -23,7 +23,7 @@
     "test": "jest",
     "build": "cross-env NODE_ENV=production webpack",
     "dev": "webpack serve --content-base public",
-    "format": "prettier --write '{public,src}/**/*.{css,html,js,svelte}'",
+    "check-format": "prettier --check .",
     "lint": "eslint . --ext .js,.svelte --fix"
   },
   "dependencies": {
