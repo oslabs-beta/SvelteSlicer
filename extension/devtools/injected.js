@@ -1,5 +1,3 @@
-let rebuildingDom = false;
-
 let slicer = (() => {
     const variables = {
         components: [],
@@ -14,7 +12,8 @@ let slicer = (() => {
         node_id: 0,
         firstLoadSent: false,
         snapshotLabel: "Init",
-        jumpIndex: undefined
+        jumpIndex: undefined,
+        rebuildingDom: false
     }
 
     return {
@@ -253,12 +252,12 @@ function updateLabel(nodeId, event) {
     const listener = slicer.getValue('listeners', nodeId + event);
     const { component, handlerName } = listener;
     slicer.reassign('snapshotLabel', component + ' - ' + event + " -> " + handlerName);
-    rebuildingDom = false;
+    slicer.reassign('rebuildingDom', false);
 }
 
 function rebuildDom(tree, index) {
     slicer.reassign('jumpIndex', index);
-    rebuildingDom = true;
+    slicer.reassign('rebuildingDom', true);
     const componentObject = slicer.get('componentObject');
     const pastState = slicer.get('stateHistory')[index];
     
@@ -312,6 +311,7 @@ function clearSnapshots(index, path, clearType) {
 
 function startMutationObserver() {
     const observer = new MutationObserver(() => {
+        const rebuildingDom = slicer.get('rebuildingDom');
         if (!rebuildingDom){
             const domChange = new CustomEvent('dom-changed');
             window.document.dispatchEvent(domChange)
