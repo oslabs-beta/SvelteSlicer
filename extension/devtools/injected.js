@@ -1,6 +1,4 @@
-let node_id = 0;
 let firstLoadSent = false;
-const storeVariables = {};
 let rebuildingDom = false;
 let snapshotLabel = "Init";
 let jumpIndex;
@@ -14,7 +12,9 @@ let slicer = (() => {
         componentObject: {},
         listeners: {},
         stateHistory: [],
-        nodes: {}
+        nodes: {},
+        storeVariables: {},
+        node_id: 0
     }
 
     return {
@@ -24,7 +24,9 @@ let slicer = (() => {
         add: (variableName, value) => variables[variableName].push(value),
         reset: (variableName) => variables[variableName].splice(0, variables[variableName].length),
         update: (variableName, newValue, key) => variables[variableName][key] = newValue,
-        delete: (variableName, key) => delete variables[variableName][key]
+        delete: (variableName, key) => delete variables[variableName][key],
+        increment: (variableName) => variables[variableName]++,
+        reassign: (variableName, value) => variables[variableName] = value
     };
 })();
 
@@ -120,7 +122,7 @@ function parseComponentState(component) {
     for (let variableName in state) {
         const value = state[variableName];
         if (type_of(value) === 'writable_store') {
-            storeVariables[variableName] = value;
+            slicer.update('storeVariables', value, variableName);
         }
         else if (typeof value !== "function" && typeof value !== 'non-writable_store') {
             parsedState[variableName] = parseState(value, variableName);
@@ -179,7 +181,7 @@ function svelteDOMInsert(e) {
     if (node.__svelte_meta) {
         let id = slicer.getValue('nodes', node);
         if (!id) {
-            id = node_id++;
+            id = slicer.increment('node_id');
             componentName = getComponentName(node.__svelte_meta.loc.file)
             slicer.update('nodes', {id, componentName}, node);
         }
@@ -196,7 +198,7 @@ function svelteDOMAddEventListener(e) {
     const { node, event } = e.detail;
     if (node.__svelte_meta) {
         if (!slicer.has('nodes', node)) {
-            const nodeId = node_id++;
+            const nodeId = slicer.increment('node_id');
             const componentName = getComponentName(node.__svelte_meta.loc.file)
             slicer.update('nodes', {nodeId, componentName}, node);
         }
@@ -284,7 +286,7 @@ function injectState(componentId, key, value) {
 }
 
 function updateStore(name, value) {
-    const store = storeVariables[name.slice(1)];
+    const store = slicer.getValue('storeVariables', name.slice(1));
     store.set(value);
 }
 
@@ -340,14 +342,16 @@ function verifyChange(snapshotData) {
 }
 
 function sendSnapshot(snapshotData, type) {
+    const {components, insertedNodes, deletedNodes, deletedComponents} = snapshotData;
     window.postMessage({
         source: 'panel.js',
         type,
         data: {
             stateObject: captureParsedAppState(),
-            components: snapshotData.components,
-            insertedNodes: snapshotData.insertedNodes,
-            deletedNodes: snapshotData.deletedNodes,
+            components,
+            insertedNodes,
+            deletedNodes,
+            deletedComponents,
             snapshotLabel
         }
     })
