@@ -1,6 +1,4 @@
-let firstLoadSent = false;
 let rebuildingDom = false;
-let snapshotLabel = "Init";
 let jumpIndex;
 
 let slicer = (() => {
@@ -14,7 +12,9 @@ let slicer = (() => {
         stateHistory: [],
         nodes: {},
         storeVariables: {},
-        node_id: 0
+        node_id: 0,
+        firstLoadSent: false,
+        snapshotLabel: "Init"
     }
 
     return {
@@ -206,12 +206,12 @@ function svelteDOMAddEventListener(e) {
         const listenerId = nodeData.id + event;
         node.addEventListener(event, () => updateLabel(nodeData.id, event));
         
-        slicer.update('listeners', listenerId, {
+        slicer.update('listeners', {
             node: nodeData.id,
             event,
             handlerName: e.detail.handler.name,
             component: nodeData.componentName,
-        })
+        }, listenerId)
     }
 }
 
@@ -252,14 +252,14 @@ const deepClone = (inObject) => {
 function updateLabel(nodeId, event) {
     const listener = slicer.getValue('listeners', nodeId + event);
     const { component, handlerName } = listener;
-    snapshotLabel = component + ' - ' + event + " -> " + handlerName;
+    slicer.reassign('snapshotLabel', component + ' - ' + event + " -> " + handlerName);
     rebuildingDom = false;
 }
 
 function rebuildDom(tree) {
     rebuildingDom = true;
     const componentObject = slicer.get('componentObject');
-    const pastState = slicer.get('stateHistory')[jumpIndex];
+    const pastState = slicer.get('stateHistory');
     
     tree.forEach(componentFile => {
         for (let componentInstance in componentObject) {
@@ -329,8 +329,9 @@ function getSnapshotData() {
     const deletedNodes = slicer.get('deletedNodes');
     const insertedNodes = slicer.get('insertedNodes');
     const componentObject = slicer.get('componentObject');
+    const snapshotLabel = slicer.get('snapshotLabel');
 
-    return {components, deletedNodes, insertedNodes, componentObject};
+    return {components, deletedNodes, insertedNodes, componentObject, snapshotLabel};
 }
 
 function verifyChange(snapshotData) {
@@ -342,7 +343,7 @@ function verifyChange(snapshotData) {
 }
 
 function sendSnapshot(snapshotData, type) {
-    const {components, insertedNodes, deletedNodes, deletedComponents} = snapshotData;
+    const {components, insertedNodes, deletedNodes, deletedComponents, snapshotLabel} = snapshotData;
     window.postMessage({
         source: 'panel.js',
         type,
@@ -361,7 +362,7 @@ function resetSnapshotData() {
     slicer.reset('components');
     slicer.reset('deletedNodes');
     slicer.reset('insertedNodes');
-    snapshotLabel = undefined;
+    slicer.reassign('snapshotLabel', undefined);
 }  
 
 function captureRawAppState() {
@@ -413,8 +414,9 @@ function trimDeletedComponents(componentObject) {
 }
 
 function setSnapshotType() {
-    if (!firstLoadSent) {
-        firstLoadSent = true;
+    slicer.get('firstLoadSent')
+    if (!slicer.get('firstLoadSent')) {
+        slicer.reassign('firstLoadSent', true);
         return "firstLoad"
     }
     return "update"
@@ -422,9 +424,11 @@ function setSnapshotType() {
         
 function sendRebuild () {
     const snapshotData = getSnapshotData();
-    trimDeletedComponents(snapshotData.componentObject);
+    const { components, componentObject } = snapshotData;
+    console.log(componentObject);
+    trimDeletedComponents(componentObject);
     
-    snapshotData.components.forEach(newComponent => {
+    components.forEach(newComponent => {
         const { tagName, id } = newComponent;
         const component = componentObject[newComponent.id].component;
         const componentState = getComponentState(component);
