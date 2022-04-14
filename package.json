@@ -1,5 +1,5 @@
 {
-  "name": "svelte-app",
+  "name": "svelte_slicer",
   "version": "1.0.0",
   "devDependencies": {
     "cross-env": "^7.0.3",
