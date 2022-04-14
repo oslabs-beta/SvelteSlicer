@@ -33,6 +33,10 @@ function setup(root) {
     root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
     root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
     root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener);
+    window.onload(() => {captureSnapshot(); startMutationObserver();});
+    window.document.addEventListener('dom-changed', captureSnapshot);
+    window.document.addEventListener('rebuild', sendRebuild);
+    window.addEventListener('message', parseDevToolMessage); 
 }
   
 function registerNewComponent(e) {
@@ -257,7 +261,7 @@ function rebuildDom(tree) {
                     const variables = stateHistory[jumpIndex][componentInstance];
                     for (let variable in variables) {
                         if (variable[0] === '$') {
-                            updateStore(componentInstance, variable, variables[variable]);
+                            updateStore(variable, variables[variable]);
                         }
                         else {
                             injectState(componentInstance, variable, variables[variable]);
@@ -274,8 +278,7 @@ function injectState(componentId, key, value) {
     component.$inject_state({ [key]: value })
 }
 
-function updateStore(componentId, name, value) {
-    const component = slicer.get('componentObject')[componentId].component;
+function updateStore(name, value) {
     const store = storeVariables[name.slice(1)];
     store.set(value);
 }
@@ -296,58 +299,58 @@ function clearSnapshots(index, path, clearType) {
     }
 }
 
-setup(window.document);
-                  
-for (let i = 0; i < window.frames.length; i++) {
-    const frame = window.frames[i]
-    const root = frame.document
-    setup(root)
+function startMutationObserver() {
+    const observer = new MutationObserver(() => {
+        if (!rebuildingDom){
+            const domChange = new CustomEvent('dom-changed');
+            window.document.dispatchEvent(domChange)
+        }
+        else {
+            const rebuild = new CustomEvent('rebuild');
+            window.document.dispatchEvent(rebuild);
+        }
+    });
+    observer.observe(window.document, {attributes: true, childList: true, subtree: true});
 }
 
-// observe for changes to the DOM
-const observer = new MutationObserver(() => {
-    if (!rebuildingDom){
-        const domChange = new CustomEvent('dom-changed');
-        window.document.dispatchEvent(domChange)
-    }
-    else {
-        const rebuild = new CustomEvent('rebuild');
-        window.document.dispatchEvent(rebuild);
-    }
-});
-        
-// capture initial DOM load as one snapshot
-window.onload = () => {
-    // make sure that data is being sent
+    
+function getSnapshotData() {
     const components = slicer.get('components');
     const deletedNodes = slicer.get('deletedNodes');
     const insertedNodes = slicer.get('insertedNodes');
+    const componentObject = slicer.get('componentObject');
+
+    return {components, deletedNodes, insertedNodes, componentObject};
+}
+
+function verifyChange(snapshotData) {
+    const { components, insertedNodes, deletedNodes } = snapshotData;
     if (components.length || insertedNodes.length || deletedNodes.length) {
-        stateHistory.push(deepClone(captureRawAppState()));
-        firstLoadSent = true;
-        
-        window.postMessage({
-            source: 'panel.js',
-            type: 'firstLoad',
-            data: {
-                stateObject: captureParsedAppState(),
-                components,
-                insertedNodes,
-                deletedNodes,
-                snapshotLabel
-            }
-        })
-
-        // reset arrays
-        slicer.reset('components');
-        slicer.reset('deletedNodes');
-        slicer.reset('insertedNodes');
-        snapshotLabel = undefined;
+        return true
     }
+    return false;
+}
 
-    // start MutationObserver
-    observer.observe(window.document, {attributes: true, childList: true, subtree: true});
-}   
+function sendSnapshot(snapshotData, type) {
+    window.postMessage({
+        source: 'panel.js',
+        type,
+        data: {
+            stateObject: captureParsedAppState(),
+            components: snapshotData.components,
+            insertedNodes: snapshotData.insertedNodes,
+            deletedNodes: snapshotData.deletedNodes,
+            snapshotLabel
+        }
+    })
+}
+
+function resetSnapshotData() {
+    slicer.reset('components');
+    slicer.reset('deletedNodes');
+    slicer.reset('insertedNodes');
+    snapshotLabel = undefined;
+}  
 
 function captureRawAppState() {
     const appState = {};
@@ -375,57 +378,18 @@ function captureParsedAppState() {
     return appState;
 }
 
-// capture subsequent DOM changes to update snapshots
-window.document.addEventListener('dom-changed', (e) => {
-    const components = slicer.get('components');
-    const deletedNodes = slicer.get('deletedNodes');
-    const insertedNodes = slicer.get('insertedNodes');
-    const componentObject = slicer.get('componentObject');
-    // only send message if something changed in SvelteDOM or stateObject
-    if (components.length || insertedNodes.length || deletedNodes.length) {
-        // check for deleted components
-        for (let component in componentObject) {
-            if (componentObject[component].component.$$.fragment === null) {
-                slicer.delete('componentObject', component);
-            }
-        }
-        const currentState = captureRawAppState();
-        stateHistory.push(deepClone(currentState));
-        let type;
-        // make sure the first load has already been sent; if not, this is the first load
-        if (!firstLoadSent) {
-            type = "firstLoad";
-            firstLoadSent = true;
-        }
-        else type = "update";
-        
-        window.postMessage({
-            source: 'panel.js',
-            type,
-            data: {
-                stateObject: captureParsedAppState(),
-                components,
-                insertedNodes,
-                deletedNodes,
-                snapshotLabel
-            }
-        });
-                        
-        // reset arrays
-        slicer.reset('components');
-        slicer.reset('deletedNodes');
-        slicer.reset('insertedNodes');
-        snapshotLabel = undefined;
+function captureSnapshot() {
+    const snapshotData = getSnapshotData();
+    if (verifyChange(snapshotData)) {
+        snapshotData[deletedComponents] = trimDeletedComponents(snapshotData.componentObject);
+        stateHistory.push(deepClone(captureRawAppState()));
+        const type = setSnapshotType();
+        sendSnapshot(snapshotData, type);
+        resetSnapshotData();
     }
-});
+}
 
-// clean up after jumps
-window.document.addEventListener('rebuild', (e) => {
-    const components = slicer.get('components');
-    const deleteNodes = slicer.get('deletedNodes');
-    const insertedNodes = slicer.get('insertedNodes');
-    const componentObject = slicer.get('componentObject');
-
+function trimDeletedComponents(componentObject) {
     deletedComponents = [];
     for (let component in componentObject) {
         if (componentObject[component].component.$$.fragment === null) {
@@ -433,17 +397,25 @@ window.document.addEventListener('rebuild', (e) => {
             deletedComponents.push(component);
         }
     }
+    return deletedComponents;
+}
+
+function setSnapshotType() {
+    if (!firstLoadSent) {
+        firstLoadSent = true;
+        return "firstLoad"
+    }
+    return "update"
+}
+        
+function sendRebuild () {
+    const snapshotData = getSnapshotData();
+    trimDeletedComponents(snapshotData.componentObject);
     
-    components.forEach(newComponent => {
+    snapshotData.components.forEach(newComponent => {
         const { tagName, id } = newComponent;
-        const component = componentObject[id].component;
-        const captureStateFunc = component.$capture_state;
-        let componentState = captureStateFunc ? captureStateFunc() : {}; 
-        if (componentState && !Object.keys(componentState).length) {
-            if (component.$$.ctx.constructor.name === "Object") {
-                componentState = deepClone(component.$$.ctx);
-            }
-        }
+        const component = componentObject[newComponent.id].component;
+        const componentState = getComponentState(component);
         
         const previousState = stateHistory[jumpIndex];
         for (let componentId in previousState) {
@@ -457,28 +429,12 @@ window.document.addEventListener('rebuild', (e) => {
         }    
     })
                         
-    window.postMessage({
-        source: 'panel.js',
-        type: 'rebuild',
-        data: {
-            stateObject: captureParsedAppState(),
-            components,
-            insertedNodes,
-            deletedNodes,
-            deletedComponents,
-            snapshotLabel
-        }
-    });
-
-    slicer.reset('components');
-    slicer.reset('deletedNodes');
-    slicer.reset('insertedNodes');
-    snapshotLabel = undefined;
+    sendSnapshot(snapshotData, 'rebuild');
+    resetSnapshotData();
     jumpIndex = undefined;
-})
+}
 
-// listen for devTool messages
-window.addEventListener('message', function () {
+function parseDevToolMessage (event) {
     // Only accept messages from the same frame
     if (event.source !== window) {
         return;
@@ -500,4 +456,4 @@ window.addEventListener('message', function () {
         const { index, path, clearType } = event.data;
         clearSnapshots(index, path, clearType);
     }
-})
+}
