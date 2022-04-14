@@ -1,31 +1,40 @@
 let slicer = (() => {
     const variables = {
-        components: [],
-        deletedNodes: [],
-        insertedNodes: [],
-        componentCounts: {},
-        componentObject: {},
-        listeners: {},
-        stateHistory: [],
-        nodes: {},
-        storeVariables: {},
-        node_id: 0,
-        firstLoadSent: false,
-        snapshotLabel: "Init",
-        jumpIndex: undefined,
-        rebuildingDom: false
+        components: [],         // parsed component data to be sent in snapshot
+        deletedNodes: [],       // parsed data re. deleted nodes to be sent in snapshot
+        insertedNodes: [],      // parsed data re. inserted nodes to be sent in snapshot
+        componentCounts: {},    // count of components with shared tagnames for instance numbering
+        componentObject: {},    // actual component instances for injecting state
+        listeners: {},          // data re. app's event listeners to help with snapshot labeling
+        stateHistory: [],       // copies of raw state snapshots to help recreate previous states
+        nodes: {},              // data re. app's nodes stored by node reference 
+        storeVariables: {},     // actual store variable instances for injecting state
+        node_id: 0,             // track next unassigned value for sequential node id numbering
+        firstLoadSent: false,   // track whether or not initial snapshot has been sent
+        snapshotLabel: "Init",  // hold label for snapshot
+        jumpIndex: undefined,   // hold index of 
+        rebuildingDom: false    // track whether we're jumping between past states or creating new ones
     }
 
     return {
+        // method for all
         get: (variableName) => variables[variableName],
+        
+        // methods for componentCounts, componentObject, listeners, nodes and storeVariables
         getValue: (variableName, key) => variables[variableName][key],
         has: (variableName, key) => variables[variableName].hasOwnProperty(key),
-        add: (variableName, value) => variables[variableName].push(value),
-        reset: (variableName) => variables[variableName].splice(0, variables[variableName].length),
         update: (variableName, newValue, key) => variables[variableName][key] = newValue,
         delete: (variableName, key) => delete variables[variableName][key],
+        
+        // methods for components, deletedNodes, insertedNodes and stateHistory
+        add: (variableName, value) => variables[variableName].push(value),
+        reset: (variableName) => variables[variableName].splice(0, variables[variableName].length),
+        
+        // method for node_id
         increment: (variableName) => variables[variableName]++,
-        reassign: (variableName, value) => variables[variableName] = value
+        
+        // method for firstLoadSent, snapshotLabel, jumpIndex and rebuildingDom
+        set: (variableName, value) => variables[variableName] = value
     };
 })();
 
@@ -251,13 +260,13 @@ const deepClone = (inObject) => {
 function updateLabel(nodeId, event) {
     const listener = slicer.getValue('listeners', nodeId + event);
     const { component, handlerName } = listener;
-    slicer.reassign('snapshotLabel', component + ' - ' + event + " -> " + handlerName);
-    slicer.reassign('rebuildingDom', false);
+    slicer.set('snapshotLabel', component + ' - ' + event + " -> " + handlerName);
+    slicer.set('rebuildingDom', false);
 }
 
 function rebuildDom(tree, index) {
-    slicer.reassign('jumpIndex', index);
-    slicer.reassign('rebuildingDom', true);
+    slicer.set('jumpIndex', index);
+    slicer.set('rebuildingDom', true);
     const componentObject = slicer.get('componentObject');
     const pastState = slicer.get('stateHistory')[index];
     
@@ -363,7 +372,7 @@ function resetSnapshotData() {
     slicer.reset('components');
     slicer.reset('deletedNodes');
     slicer.reset('insertedNodes');
-    slicer.reassign('snapshotLabel', undefined);
+    slicer.set('snapshotLabel', undefined);
 }  
 
 function captureRawAppState() {
@@ -417,7 +426,7 @@ function trimDeletedComponents(componentObject) {
 function setSnapshotType() {
     slicer.get('firstLoadSent')
     if (!slicer.get('firstLoadSent')) {
-        slicer.reassign('firstLoadSent', true);
+        slicer.set('firstLoadSent', true);
         return "firstLoad"
     }
     return "update"
@@ -449,7 +458,7 @@ function sendRebuild () {
                         
     sendSnapshot(snapshotData, 'rebuild');
     resetSnapshotData();
-    slicer.reassign('jumpIndex', undefined);
+    slicer.set('jumpIndex', undefined);
 }
 
 function parseDevToolMessage (event) {
