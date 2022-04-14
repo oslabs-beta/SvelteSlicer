@@ -288,7 +288,8 @@ function buildSnapshot(data) {
               data = {
                 name: varName,
                 oldValue:
-                  stateHistory[componentId].variables[varName].value !== undefined
+                  stateHistory[componentId].variables[varName].value !==
+                  undefined
                     ? getDiffValue(
                         stateHistory[componentId].variables[varName].value
                       )
@@ -308,7 +309,7 @@ function buildSnapshot(data) {
           }
         }
       }
-      
+
       if (stateObject.hasOwnProperty(componentId)) {
         for (let [varName, variable] of Object.entries(component.variables)) {
           // if variable is in componentData but not in stateObject, new value in componentData is null
