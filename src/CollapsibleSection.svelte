@@ -44,7 +44,7 @@
     padding: 1em 0.5em;
   }
 
-  button[aria-expanded='true'] .vert {
+  button[aria-expanded="true"] .vert {
     display: none;
   }
 
