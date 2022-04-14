@@ -1,5 +1,4 @@
 let rebuildingDom = false;
-let jumpIndex;
 
 let slicer = (() => {
     const variables = {
@@ -14,7 +13,8 @@ let slicer = (() => {
         storeVariables: {},
         node_id: 0,
         firstLoadSent: false,
-        snapshotLabel: "Init"
+        snapshotLabel: "Init",
+        jumpIndex: undefined
     }
 
     return {
@@ -256,10 +256,11 @@ function updateLabel(nodeId, event) {
     rebuildingDom = false;
 }
 
-function rebuildDom(tree) {
+function rebuildDom(tree, index) {
+    slicer.reassign('jumpIndex', index);
     rebuildingDom = true;
     const componentObject = slicer.get('componentObject');
-    const pastState = slicer.get('stateHistory');
+    const pastState = slicer.get('stateHistory')[index];
     
     tree.forEach(componentFile => {
         for (let componentInstance in componentObject) {
@@ -425,8 +426,9 @@ function setSnapshotType() {
 function sendRebuild () {
     const snapshotData = getSnapshotData();
     const { components, componentObject } = snapshotData;
-    console.log(componentObject);
+    const jumpIndex = slicer.get('jumpIndex');
     trimDeletedComponents(componentObject);
+
     
     components.forEach(newComponent => {
         const { tagName, id } = newComponent;
@@ -447,7 +449,7 @@ function sendRebuild () {
                         
     sendSnapshot(snapshotData, 'rebuild');
     resetSnapshotData();
-    jumpIndex = undefined;
+    slicer.reassign('jumpIndex', undefined);
 }
 
 function parseDevToolMessage (event) {
@@ -464,8 +466,7 @@ function parseDevToolMessage (event) {
 
     if (event.data.type === 'jumpState') {
         const { index, tree} = event.data;
-        jumpIndex = index;
-        rebuildDom(tree);
+        rebuildDom(tree, index);
     }
 
     if (event.data.type === 'clearSnapshots') {
