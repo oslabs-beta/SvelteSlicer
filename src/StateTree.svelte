@@ -1,8 +1,8 @@
 <script>
   export let I;
-  import { snapshots } from "./stores.js";
-  import Variable from "./Variable.svelte";
-  import CollapsibleSection from "./CollapsibleSection.svelte";
+  import { snapshots } from './stores.js';
+  import Variable from './Variable.svelte';
+  import CollapsibleSection from './CollapsibleSection.svelte';
 
   $: data = $snapshots[I].data;
   $: label = $snapshots[I].label;

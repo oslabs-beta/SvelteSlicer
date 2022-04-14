@@ -1,8 +1,8 @@
 <script defer>
   export let I;
-  import { snapshots } from "./stores";
-  import * as d3 from "d3";
-  import { afterUpdate } from "svelte";
+  import { snapshots } from './stores';
+  import * as d3 from 'd3';
+  import { afterUpdate } from 'svelte';
 
   $: label = $snapshots[I].label;
   $: parent = $snapshots[I].parent;
@@ -34,14 +34,14 @@
     trimTree(tree);
 
     svg = d3
-      .select("#chart")
-      .append("div")
-      .attr("class", I)
-      .append("svg")
-      .attr("width", width + margin.right + margin.left)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      .select('#chart')
+      .append('div')
+      .attr('class', I)
+      .append('svg')
+      .attr('width', width + margin.right + margin.left)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
     let i = 0;
     let duration = 750;
@@ -66,62 +66,62 @@
         d.y = d.depth * 180;
       });
 
-      let node = svg.selectAll("g.node").data(nodes, function (d) {
+      let node = svg.selectAll('g.node').data(nodes, function (d) {
         return d.id || (d.id = ++i);
       });
       //node start at the parent's position
       let nodeEnter = node
         .enter()
-        .append("g")
-        .attr("class", "node")
-        .attr("id", function (d) {
+        .append('g')
+        .attr('class', 'node')
+        .attr('id', function (d) {
           return d.data.id;
         })
-        .attr("transform", function (d) {
-          return "translate(" + src.x0 + ", " + src.y0 + ")";
+        .attr('transform', function (d) {
+          return 'translate(' + src.x0 + ', ' + src.y0 + ')';
         })
-        .on("click", click);
+        .on('click', click);
 
       //create circles
       nodeEnter
-        .append("circle")
-        .attr("class", "node")
-        .attr("r", 0)
-        .style("fill", function (d) {
-          return d._children ? "moccasin" : "rgb(238, 137, 5)";
+        .append('circle')
+        .attr('class', 'node')
+        .attr('r', 0)
+        .style('fill', function (d) {
+          return d._children ? 'moccasin' : 'rgb(238, 137, 5)';
         });
 
       //add text to show the node data
       nodeEnter
-        .append("text")
-        .attr("dx", ".35em")
+        .append('text')
+        .attr('dx', '.35em')
 
-        .attr("y", function (d) {
+        .attr('y', function (d) {
           return -12;
         })
-        .attr("text-anchor", function (d) {
-          return d.children || d._children ? "middle" : "middle";
+        .attr('text-anchor', function (d) {
+          return d.children || d._children ? 'middle' : 'middle';
         })
         .text(function (d) {
           return d.data.id;
         })
-        .style("fill", "white");
+        .style('fill', 'white');
 
       nodeEnter
-        .append("g:title")
-        .attr("transform", "translate(0,0)")
+        .append('g:title')
+        .attr('transform', 'translate(0,0)')
         .text(function (d) {
           if (Object.keys(d.data.variables).length > 0) {
-            let text = "";
+            let text = '';
 
             Object.keys(d.data.variables).forEach((item) => {
               function nested(obj) {
                 if (obj.value) {
-                  text = text + obj.name + ":";
-                  if (typeof obj.value !== "object") {
-                    text = text + obj.value + "\n";
+                  text = text + obj.name + ':';
+                  if (typeof obj.value !== 'object') {
+                    text = text + obj.value + '\n';
                   } else {
-                    text = text + "\n";
+                    text = text + '\n';
                     for (let val in obj.value) {
                       nested(obj.value[val]);
                     }
@@ -143,32 +143,32 @@
       nodeUpdate
         .transition()
         .duration(duration)
-        .attr("transform", function (d) {
-          return "translate(" + d.x + ", " + d.y + ")";
+        .attr('transform', function (d) {
+          return 'translate(' + d.x + ', ' + d.y + ')';
         });
 
       nodeUpdate
-        .select("circle.node")
-        .attr("r", 10)
-        .style("fill", function (d) {
-          return d._children ? "moccasin" : "rgb(238, 137, 5)";
+        .select('circle.node')
+        .attr('r', 10)
+        .style('fill', function (d) {
+          return d._children ? 'moccasin' : 'rgb(238, 137, 5)';
         })
-        .attr("cursor", "pointer");
+        .attr('cursor', 'pointer');
 
       //remove exiting node;
       let nodeExit = node
         .exit()
         .transition()
         .duration(duration)
-        .attr("transform", function (d) {
+        .attr('transform', function (d) {
           //from child to parent
-          return "translate(" + src.x + "," + src.y + ")";
+          return 'translate(' + src.x + ',' + src.y + ')';
         })
         .remove();
       //remove circle, dot starts at 0 it goes to 10 and when we click again it goes back to 0
-      nodeExit.select("circle").attr("r", 0);
+      nodeExit.select('circle').attr('r', 0);
       //remove text
-      nodeExit.select("text").style("fill-opacity", 0);
+      nodeExit.select('text').style('fill-opacity', 0);
 
       //links
       function diagonal(s, d) {
@@ -188,15 +188,15 @@
         }
       });
 
-      let link = svg.selectAll("path.link").data(links, function (d) {
+      let link = svg.selectAll('path.link').data(links, function (d) {
         return d.id;
       });
 
       let linkEnter = link
         .enter()
-        .insert("path", "g")
-        .attr("class", "link")
-        .attr("d", function () {
+        .insert('path', 'g')
+        .attr('class', 'link')
+        .attr('d', function () {
           let o = { x: src.x0, y: src.y0 };
           return diagonal(o, o);
         });
@@ -205,7 +205,7 @@
       linkUpdate
         .transition()
         .duration(duration)
-        .attr("d", function (d) {
+        .attr('d', function (d) {
           //transit from spot to its parent spot
           return diagonal(d, d.parent);
         });
@@ -213,7 +213,7 @@
         .exit()
         .transition()
         .duration(duration)
-        .attr("d", function (d) {
+        .attr('d', function (d) {
           let o = { x: src.x0, y: src.y0 };
           return diagonal(o, o);
         })
