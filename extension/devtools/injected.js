@@ -41,7 +41,7 @@ let slicer = (() => {
     // methods for nodes
     getNodeData: (node) => variables.nodes.get(node),
     setNodeData: (node, data) => variables.nodes.set(node, data),
-    hasNode: (node) => variables.nodes.has(node)
+    hasNode: (node) => variables.nodes.has(node),
   };
 })();
 
