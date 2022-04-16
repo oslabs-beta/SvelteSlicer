@@ -12,7 +12,7 @@ let slicer = (() => {
     node_id: 0, // track next unassigned value for sequential node id numbering
     firstLoadSent: false, // track whether or not initial snapshot has been sent
     snapshotLabel: 'Init', // hold label for snapshot
-    jumpIndex: undefined, // hold index of
+    jumpIndex: undefined, // hold index to most current jump
     rebuildingDom: false, // track whether we're jumping between past states or creating new ones
   };
 
