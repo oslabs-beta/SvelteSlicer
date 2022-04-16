@@ -1,5 +1,5 @@
 {
-  "name": "svelte-app",
+  "name": "svelte_slicer",
   "version": "1.0.0",
   "devDependencies": {
     "cross-env": "^7.0.3",
@@ -8,9 +8,11 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-svelte3": "^3.4.0",
     "file-loader": "^6.2.0",
+    "jest": "^27.5.1",
     "mini-css-extract-plugin": "^1.3.4",
     "prettier": "^2.5.1",
     "prettier-plugin-svelte": "^2.6.0",
+    "rewire": "^6.0.0",
     "svelte": "^3.31.2",
     "svelte-loader": "^3.0.0",
     "webpack": "^5.16.0",
@@ -18,6 +20,7 @@
     "webpack-dev-server": "^3.11.2"
   },
   "scripts": {
+    "test": "jest",
     "build": "cross-env NODE_ENV=production webpack",
     "dev": "webpack serve --content-base public",
     "format": "prettier --write '{public,src}/**/*.{css,html,js,svelte}'",
