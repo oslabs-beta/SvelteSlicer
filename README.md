@@ -38,9 +38,7 @@ Snapshots outside the timeline of the currently rendered snapshot are retained a
 The *Previous* and *Forward* buttons also clear out unwanted snapshots, removing all snapshots respectively before or after the currently rendered one.
 
 # Contributing
-Found a bug or have suggestions for improvement? We would love to hear from you!
-
-Please open an issue to submit feedback or problems you come across.
+Found a bug or have suggestions for improvement? We would love to hear from you! Please open an issue to submit feedback or problems you come across.
 
 # Authors
 - Heather Barney - [LinkedIn](https://www.linkedin.com/in/heather-barney-81ab2834/)
