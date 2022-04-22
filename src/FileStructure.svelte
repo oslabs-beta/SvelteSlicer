@@ -51,7 +51,7 @@
         .enter()
         .append("g")
         .attr("class", "node")
-        .attr("transform", function (d) {
+        .attr("transform", () => {
           return "translate(" + src.x0 + ", " + src.y0 + ")";
         })
         .on("click", click);
@@ -67,7 +67,7 @@
       nodeEnter
         .append("text")
         .attr("dx", ".35em")
-        .attr("y", function (d) {
+        .attr("y", () => {
           return -12;
         })
         .attr("text-anchor", function (d) {
@@ -98,7 +98,7 @@
         .exit()
         .transition()
         .duration(duration)
-        .attr("transform", function (d) {
+        .attr("transform", () => {
           //from child to parent
           return "translate(" + src.x + "," + src.y + ")";
         })
@@ -142,7 +142,7 @@
         .exit()
         .transition()
         .duration(duration)
-        .attr("d", function (d) {
+        .attr("d", () => {
           let o = { x: src.x0, y: src.y0 };
           return diagonal(o, o);
         })
