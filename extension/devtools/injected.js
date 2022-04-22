@@ -1,48 +1,55 @@
 let slicer = (() => {
-    const variables = {
-        components: [],         // parsed component data to be sent in snapshot
-        deletedNodes: [],       // parsed data re. deleted nodes to be sent in snapshot
-        insertedNodes: [],      // parsed data re. inserted nodes to be sent in snapshot
-        componentCounts: {},    // count of components with shared tagnames for instance numbering
-        componentObject: {},    // actual component instances for injecting state
-        listeners: {},          // data re. app's event listeners to help with snapshot labeling
-        stateHistory: [],       // copies of raw state snapshots to help recreate previous states
-        nodes: {},              // data re. app's nodes stored by node reference 
-        storeVariables: {},     // actual store variable instances for injecting state
-        node_id: 0,             // track next unassigned value for sequential node id numbering
-        firstLoadSent: false,   // track whether or not initial snapshot has been sent
-        snapshotLabel: "Init",  // hold label for snapshot
-        jumpIndex: undefined,   // hold index of 
-        rebuildingDom: false    // track whether we're jumping between past states or creating new ones
-    }
+  const variables = {
+    components: [], // parsed component data to be sent in snapshot
+    deletedNodes: [], // parsed data re. deleted nodes to be sent in snapshot
+    insertedNodes: [], // parsed data re. inserted nodes to be sent in snapshot
+    componentCounts: {}, // count of components with shared tagnames for instance numbering
+    componentObject: {}, // actual component instances for injecting state
+    listeners: {}, // data re. app's event listeners to help with snapshot labeling
+    stateHistory: [], // copies of raw state snapshots to help recreate previous states
+    nodes: new Map(), // data re. app's nodes stored with node instance as key
+    storeVariables: {}, // actual store variable instances for injecting state
+    node_id: 0, // track next unassigned value for sequential node id numbering
+    firstLoadSent: false, // track whether or not initial snapshot has been sent
+    snapshotLabel: 'Init', // hold label for snapshot
+    jumpIndex: undefined, // hold index to most current jump
+    rebuildingDom: false, // track whether we're jumping between past states or creating new ones
+  };
 
-    return {
-        // method for all
-        get: (variableName) => variables[variableName],
-        
-        // methods for componentCounts, componentObject, listeners, nodes and storeVariables
-        getValue: (variableName, key) => variables[variableName][key],
-        has: (variableName, key) => variables[variableName].hasOwnProperty(key),
-        update: (variableName, newValue, key) => variables[variableName][key] = newValue,
-        delete: (variableName, key) => delete variables[variableName][key],
-        
-        // methods for components, deletedNodes, insertedNodes and stateHistory
-        add: (variableName, value) => variables[variableName].push(value),
-        reset: (variableName) => variables[variableName].splice(0, variables[variableName].length),
-        
-        // method for node_id
-        increment: (variableName) => variables[variableName]++,
-        
-        // method for firstLoadSent, snapshotLabel, jumpIndex and rebuildingDom
-        set: (variableName, value) => variables[variableName] = value
-    };
+  return {
+    // method for all
+    get: (variableName) => variables[variableName],
+
+    // methods for componentCounts, componentObject, listeners, and storeVariables
+    getValue: (variableName, key) => variables[variableName][key],
+    has: (variableName, key) => variables[variableName].hasOwnProperty(key),
+    update: (variableName, newValue, key) =>
+      (variables[variableName][key] = newValue),
+    delete: (variableName, key) => delete variables[variableName][key],
+
+    // methods for components, deletedNodes, insertedNodes and stateHistory
+    add: (variableName, value) => variables[variableName].push(value),
+    reset: (variableName) =>
+      variables[variableName].splice(0, variables[variableName].length),
+
+    // method for node_id
+    increment: (variableName) => variables[variableName]++,
+
+    // method for firstLoadSent, snapshotLabel, jumpIndex and rebuildingDom
+    set: (variableName, value) => (variables[variableName] = value),
+
+    // methods for nodes
+    getNodeData: (node) => variables.nodes.get(node),
+    setNodeData: (node, data) => variables.nodes.set(node, data),
+    hasNode: (node) => variables.nodes.has(node),
+  };
 })();
 
 function addSvelteDomListeners(root) {
-    root.addEventListener('SvelteRegisterComponent', registerNewComponent);
-    root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
-    root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
-    root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener); 
+  root.addEventListener('SvelteRegisterComponent', registerNewComponent);
+  root.addEventListener('SvelteDOMInsert', insertNewNode);
+  root.addEventListener('SvelteDOMRemove', removeNode);
+  root.addEventListener('SvelteDOMAddEventListener', addEventListener);
 }
 
 function setup() {
@@ -54,35 +61,37 @@ function setup() {
 }
   
 function registerNewComponent(e) {
-    const {id, state, tagName, instance, target, component} = parseNewComponent(e.detail);
-    slicer.add('components', {id, state, tagName, instance, target});
-    slicer.update('componentCounts', instance, tagName);
-    slicer.update('componentObject', {component, tagName}, id);
+  const { id, state, tagName, instance, target, component } = parseNewComponent(
+    e.detail
+  );
+  slicer.add('components', { id, state, tagName, instance, target });
+  slicer.update('componentObject', { component, tagName }, id);
 }
 
-function parseNewComponent (detail) {                       
-    const { component, tagName, options } = detail;
-    const {id, instance} = assignComponentId(tagName);
-    const state = parseComponentState(component);
-    const target = assignComponentTarget(options);
+function parseNewComponent(detail) {
+  const { component, tagName, options } = detail;
+  const instance = assignComponentInstance(tagName);
+  const id = tagName + instance;
+  const state = parseComponentState(component);
+  const target = assignComponentTarget(options);
 
-    return {
-        id,
-        state,
-        tagName,
-        instance,
-        target,
-        component
-    }
+  return {
+    id,
+    state,
+    tagName,
+    instance,
+    target,
+    component,
+  };
 }
 
-function assignComponentId(tagName) {
-    let instance = 0;
-    if (slicer.has('componentCounts', tagName)) {
-        instance = slicer.getValue('componentCounts', tagName) + 1;
-    }
-    const id = tagName + instance;
-    return {instance, id};
+function assignComponentInstance(tagName) {
+  let instance = 0;
+  if (slicer.has('componentCounts', tagName)) {
+    instance = slicer.getValue('componentCounts', tagName) + 1;
+  }
+  slicer.update('componentCounts', instance, tagName);
+  return instance;
 }
 
 function assignComponentTarget(options) {
@@ -173,54 +182,60 @@ function type_of(value) {
     return type;
 }
 
-function svelteDOMRemove(e) {
-    const { node } = e.detail;
-    const nodeData = slicer.getValue('nodes', node);
-    if (nodeData) {
-        slicer.add('deletedNodes', {
-            id: nodeData.id,
-            component: nodeData.component
-        })
-    }
+function removeNode(e) {
+  const { node } = e.detail;
+  const nodeData = slicer.getNodeData(node);
+  if (nodeData) {
+    slicer.add('deletedNodes', {
+      id: nodeData.id,
+      component: nodeData.component,
+    });
+  }
 }
 
-function svelteDOMInsert(e) {  
-    const { node, target } = e.detail;
-    if (node.__svelte_meta) {
-        let id = slicer.getValue('nodes', node);
-        if (!id) {
-            id = slicer.increment('node_id');
-            componentName = getComponentName(node.__svelte_meta.loc.file)
-            slicer.update('nodes', {id, componentName}, node);
-        }
-        slicer.add('insertedNodes', {
-            target: ((slicer.get('nodes', target)) ? (slicer.get('nodes', target)).id : target.nodeName + target.id),
-            id,
-            component: componentName, 
-            loc: node.__svelte_meta.loc.char
-        });
+function insertNewNode(e) {
+  const { node, target } = e.detail;
+  if (node.__svelte_meta) {
+    let id = slicer.getNodeData(node);
+    if (!id) {
+      id = slicer.increment('node_id');
+      componentName = getComponentName(node.__svelte_meta.loc.file);
+      slicer.setNodeData(node, { id, componentName });
     }
+    slicer.add('insertedNodes', {
+      target: slicer.getNodeData(target)
+        ? slicer.getNodeData(target).id
+        : target.nodeName + target.id,
+      id,
+      component: componentName,
+      loc: node.__svelte_meta.loc.char,
+    });
+  }
 }
 
-function svelteDOMAddEventListener(e) {
-    const { node, event } = e.detail;
-    if (node.__svelte_meta) {
-        if (!slicer.has('nodes', node)) {
-            const nodeId = slicer.increment('node_id');
-            const componentName = getComponentName(node.__svelte_meta.loc.file)
-            slicer.update('nodes', {nodeId, componentName}, node);
-        }
-        const nodeData = slicer.getValue('nodes', node);
-        const listenerId = nodeData.id + event;
-        node.addEventListener(event, () => updateLabel(nodeData.id, event));
-        
-        slicer.update('listeners', {
-            node: nodeData.id,
-            event,
-            handlerName: e.detail.handler.name,
-            component: nodeData.componentName,
-        }, listenerId)
+function addEventListener(e) {
+  const { node, event } = e.detail;
+  if (node.__svelte_meta) {
+    if (!slicer.hasNode(node)) {
+      const nodeId = slicer.increment('node_id');
+      const componentName = getComponentName(node.__svelte_meta.loc.file);
+      slicer.setNodeData(node, { nodeId, componentName });
     }
+    const nodeData = slicer.getNodeData(node);
+    const listenerId = nodeData.id + event;
+    node.addEventListener(event, () => updateLabel(nodeData.id, event));
+
+    slicer.update(
+      'listeners',
+      {
+        node: nodeData.id,
+        event,
+        handlerName: e.detail.handler.name,
+        component: nodeData.componentName,
+      },
+      listenerId
+    );
+  }
 }
 
 function getComponentName(file) {
