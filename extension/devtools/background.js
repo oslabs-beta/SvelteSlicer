@@ -3,7 +3,8 @@ var connections = {};
 // Set up listeniing connection with devtool
 chrome.runtime.onConnect.addListener(function (port) {
   // Listen to messages sent from the DevTools page
-  port.onMessage.addListener((message) => {
+    
+  var extensionListener = function (message) {
     // Store tabID from initial message from devtool
     if (message.name == "init") {
       connections[message.tabId] = port;
@@ -14,7 +15,9 @@ chrome.runtime.onConnect.addListener(function (port) {
     if (message.name === "jumpState" || message.name === "clearSnapshots") {
       chrome.tabs.sendMessage(message.tabId, message);
     }
-  });
+  };
+
+  port.onMessage.addListener(extensionListener);
 
   port.onDisconnect.addListener(function (port) {
     port.onMessage.removeListener(extensionListener);
