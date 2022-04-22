@@ -4,8 +4,8 @@
 </script>
 
 <main>
-  {#if typeof variable.value !== 'object' || variable.value === null}
-    {#if variable.value === ''}
+  {#if typeof variable.value !== "object" || variable.value === null}
+    {#if variable.value === ""}
       <p class="variableVal">{variable.name}: ' '</p>
     {:else}
       <p class="variableVal">{variable.name}: {variable.value}</p>

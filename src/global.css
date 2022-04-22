@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@100&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Overpass:wght@100&display=swap");
 
 body {
   margin: 0;
@@ -7,7 +7,7 @@ body {
   height: 100%;
   font-size: 16px;
   color: whitesmoke;
-  font-family: 'Overpass', sans-serif;
+  font-family: "Overpass", sans-serif;
 }
 
 h2 {
@@ -32,7 +32,7 @@ a {
 }
 
 ol li::marker {
-  content: '▼';
+  content: "▼";
 }
 
 a:hover {
@@ -55,7 +55,7 @@ textarea {
   outline: none;
   margin: 2px;
   font-size: 16px;
-  font-family: 'Overpass', sans-serif;
+  font-family: "Overpass", sans-serif;
   padding: 0.4em;
   border: none;
   border-radius: 2px;
@@ -68,7 +68,7 @@ button {
   margin: 2px;
   font-size: 16px;
   font-weight: bold;
-  font-family: 'Overpass', sans-serif;
+  font-family: "Overpass", sans-serif;
   padding: 5px;
   border: none;
   border-radius: 2px;
@@ -135,7 +135,7 @@ span {
 }
 
 .test {
-  content: '▼';
+  content: "▼";
 }
 
 .no-arrow {

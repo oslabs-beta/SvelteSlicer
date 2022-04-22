@@ -57,13 +57,13 @@ beforeAll(() => {
 });
 
 describe('getComponentName', () => {
-  test('it should return a tagname given a valid Svelte file path', () => {
-    const filePath = 'src/App.svelte';
-    const expectedResult = 'App';
-    const getComponentName = injected.__get__('getComponentName');
-    expect(getComponentName(filePath)).toBe(expectedResult);
-  });
-});
+    test('it should return a tagname given a valid Svelte file path', () => {
+        const filePath = 'src/App.svelte';
+        const expectedResult = 'App';
+        const getComponentName = injected.__get__('getComponentName');
+        expect(getComponentName(filePath)).toBe(expectedResult);
+    })
+})
 
 describe('addSvelteDomListeners', () => {
   test('it should call correct function when given custom event is fired', () => {
