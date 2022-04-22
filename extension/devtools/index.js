@@ -1,11 +1,11 @@
 chrome.devtools.panels.create(
-    "Slicer",
+    "Svelte Slicer",
     "svelte_logo.png",
     "devtools/panel.html",
     function (panel) {
         panel.onShown.addListener(() => {
+            // reload page and inject script from injected.js 
             const url = chrome.runtime.getURL('devtools/injected.js');
-
             fetch(url)
             .then((response) => response.text())
             .then((string) => {
