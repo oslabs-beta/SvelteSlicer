@@ -1,0 +1,4 @@
+# Ignore artifacts:
+node_modules
+extension/devtools/build/
+**/.DS_Store
