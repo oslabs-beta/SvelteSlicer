@@ -5,13 +5,13 @@ chrome.runtime.onConnect.addListener(function (port) {
 
     // Listen to messages sent from the DevTools page
     port.onMessage.addListener((message) => {
-      // store tabID from initial message from devtool
+      // Store tabID from initial message from devtool
       if (message.name == "init") {
         connections[message.tabId] = port;
         return;
       }
       
-      // forward messages from devtool on to the content script
+      // Forward messages from devtool on to the content script
       if (message.name === "jumpState" || message.name === "clearSnapshots") {
         chrome.tabs.sendMessage(message.tabId, message);
       }
@@ -35,7 +35,7 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
     // Messages from content scripts should have sender.tab set
     if (sender.tab) {
       var tabId = sender.tab.id;
-      // if valid message, forward to devtool
+      // If valid message, forward to devtool
       if (tabId in connections) {
         connections[tabId].postMessage(message);
       } else {
