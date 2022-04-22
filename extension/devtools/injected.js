@@ -448,7 +448,7 @@ function captureSnapshot() {
 }
 
 function trimDeletedComponents(componentObject) {
-  deletedComponents = [];
+  const deletedComponents = [];
   for (let component in componentObject) {
     if (componentObject[component].component.$$.fragment === null) {
       slicer.delete("componentObject", component);
