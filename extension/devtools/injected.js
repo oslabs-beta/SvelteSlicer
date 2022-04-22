@@ -197,12 +197,9 @@ function removeNode(e) {
 function insertNewNode(e) {
   const { node, target } = e.detail;
   if (node.__svelte_meta) {
-    let id = slicer.getNodeData(node);
-    if (!id) {
-      id = slicer.increment("node_id");
-      componentName = getComponentName(node.__svelte_meta.loc.file);
-      slicer.setNodeData(node, { id, componentName });
-    }
+    const id = slicer.increment("node_id");
+    const componentName = getComponentName(node.__svelte_meta.loc.file);
+    slicer.setNodeData(node, { id, componentName });
     slicer.add("insertedNodes", {
       target: slicer.getNodeData(target)
         ? slicer.getNodeData(target).id
