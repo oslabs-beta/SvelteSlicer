@@ -45,7 +45,7 @@ chrome.runtime.onMessage.addListener((msg) => {
     snapshots.update((array) => [...array, newSnapshot]);
   } else if (type === "rebuild") {
     rebuild = true;
-    const newSnapshot = buildSnapshot(data);
+    buildSnapshot(data);
   }
 });
 

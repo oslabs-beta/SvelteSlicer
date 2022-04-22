@@ -22,7 +22,6 @@
   "scripts": {
     "test": "jest",
     "build": "cross-env NODE_ENV=production webpack",
-    "dev": "webpack serve --content-base public",
     "check-format": "prettier --check .",
     "lint": "eslint . --ext .js,.svelte --fix",
     "format": "prettier --write ."
