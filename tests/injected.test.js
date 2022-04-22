@@ -69,6 +69,7 @@ describe('addSvelteDomListeners', () => {
   test('it should call correct function when given custom event is fired', () => {
     const addSvelteDomListeners = injected.__get__('addSvelteDomListeners');
 
+    // mock associated functions
     const registerNewComponentMock = jest.fn();
     const insertNewNodeMock = jest.fn();
     const removeNodeMock = jest.fn();
@@ -78,8 +79,10 @@ describe('addSvelteDomListeners', () => {
     injected.__set__('removeNode', removeNodeMock);
     injected.__set__('addEventListener', addEventListenerMock);
 
+    // invoke function
     addSvelteDomListeners(window.document);
 
+    // dispatch events
     const componentEvent = new Event('SvelteRegisterComponent');
     document.dispatchEvent(componentEvent);
     const insertEvent = new Event('SvelteDOMInsert');
