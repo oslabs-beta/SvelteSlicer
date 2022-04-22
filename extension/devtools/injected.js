@@ -45,8 +45,6 @@ let slicer = (() => {
   };
 })();
 
-setup();
-
 function addSvelteDomListeners(root) {
   root.addEventListener("SvelteRegisterComponent", registerNewComponent);
   root.addEventListener("SvelteDOMInsert", insertNewNode);
