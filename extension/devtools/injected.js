@@ -143,7 +143,7 @@ function parseComponentState(component) {
       slicer.update("storeVariables", value, variableName);
     } else if (
       typeof value !== "function" &&
-      typeof value !== "non-writable_store"
+      type_of(value) !== "non-writable_store"
     ) {
       parsedState[variableName] = parseState(value, variableName);
     }
