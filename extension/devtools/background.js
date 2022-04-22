@@ -1,25 +1,21 @@
-// background.js
 var connections = {};
 
+// Set up listeniing connection with devtool
 chrome.runtime.onConnect.addListener(function (port) {
 
-  var extensionListener = function (message, sender, sendResponse) {
-
-    // The original connection event doesn't include the tab ID of the
-    // DevTools page, so we need to send it explicitly.
-    if (message.name == "init") {
-      connections[message.tabId] = port;
-      tabId = message.tabId;
-      return;
-    }
-    
-    if (message.name === "jumpState" || message.name === "clearSnapshots") {
-      chrome.tabs.sendMessage(message.tabId, message);
-    }
-  }
-
     // Listen to messages sent from the DevTools page
-    port.onMessage.addListener(extensionListener);
+    port.onMessage.addListener((message) => {
+      // store tabID from initial message from devtool
+      if (message.name == "init") {
+        connections[message.tabId] = port;
+        return;
+      }
+      
+      // forward messages from devtool on to the content script
+      if (message.name === "jumpState" || message.name === "clearSnapshots") {
+        chrome.tabs.sendMessage(message.tabId, message);
+      }
+    });
 
     port.onDisconnect.addListener(function(port) {
         port.onMessage.removeListener(extensionListener);
@@ -34,12 +30,12 @@ chrome.runtime.onConnect.addListener(function (port) {
     });
 });
 
-// Receive message from content script and relay to the devTools page for the
-// current tab
+// Receive messages from content script and relay to the devtool
 chrome.runtime.onMessage.addListener(function(message, sender) {
     // Messages from content scripts should have sender.tab set
     if (sender.tab) {
       var tabId = sender.tab.id;
+      // if valid message, forward to devtool
       if (tabId in connections) {
         connections[tabId].postMessage(message);
       } else {
