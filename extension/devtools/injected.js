@@ -237,6 +237,7 @@ function addEventListener(e) {
 }
 
 function getComponentName(file) {
+  let tagName;
   if (file.indexOf("/") === -1) {
     tagName = file.slice(file.lastIndexOf("\\\\") + 1, -7);
   } else {
