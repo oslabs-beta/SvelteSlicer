@@ -1,6 +1,6 @@
 var connections = {};
 
-// Set up listeniing connection with devtool
+// Set up listening connection with devtool
 chrome.runtime.onConnect.addListener(function (port) {
   // Listen to messages sent from the DevTools page
     
