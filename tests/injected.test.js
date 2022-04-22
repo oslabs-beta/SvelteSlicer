@@ -5,7 +5,7 @@
 const rewire = require('rewire');
 const injected = rewire('../extension/devtools/injected.js');
 
-let slicer = (() => {
+let slicer = () => {
   const variables = {
     components: [], // parsed component data to be sent in snapshot
     deletedNodes: [], // parsed data re. deleted nodes to be sent in snapshot
@@ -50,11 +50,11 @@ let slicer = (() => {
     setNodeData: (node, data) => variables.nodes.set(node, data),
     hasNode: (node) => variables.nodes.has(node),
   };
-});
+};
 
-beforeAll(()=> {
+beforeAll(() => {
   slicer();
-})
+});
 
 describe('getComponentName', () => {
   test('it should return a tagname given a valid Svelte file path', () => {
@@ -68,7 +68,7 @@ describe('getComponentName', () => {
 describe('addSvelteDomListeners', () => {
   test('it should call correct function when given custom event is fired', () => {
     const addSvelteDomListeners = injected.__get__('addSvelteDomListeners');
-    
+
     const registerNewComponentMock = jest.fn();
     const insertNewNodeMock = jest.fn();
     const removeNodeMock = jest.fn();
@@ -77,7 +77,7 @@ describe('addSvelteDomListeners', () => {
     injected.__set__('insertNewNode', insertNewNodeMock);
     injected.__set__('removeNode', removeNodeMock);
     injected.__set__('addEventListener', addEventListenerMock);
-    
+
     addSvelteDomListeners(window.document);
 
     const componentEvent = new Event('SvelteRegisterComponent');
@@ -105,5 +105,5 @@ describe('assignComponentInstance', () => {
     expect(assignComponentInstance(componentName1)).toBe(1);
     expect(assignComponentInstance(componentName2)).toBe(0);
     expect(assignComponentInstance(componentName2)).toBe(1);
-  }) 
-})
+  });
+});
