@@ -31,5 +31,9 @@ module.exports = {
       chrome: "readonly",
       module: "writable",
       require: "readonly",
+      describe: "readonly",
+      jest: "readonly",
+      expect: "readonly",
+      test: "readonly"
     }
   };
