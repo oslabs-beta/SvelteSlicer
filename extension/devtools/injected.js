@@ -7,7 +7,7 @@ let slicer = (() => {
     componentObject: {}, // actual component instances for injecting state
     listeners: {}, // data re. app's event listeners to help with snapshot labeling
     stateHistory: [], // copies of raw state snapshots to help recreate previous states
-    nodes: new Map(), // data re. app's nodes stored by node reference
+    nodes: new Map(), // data re. app's nodes stored with node instance as key
     storeVariables: {}, // actual store variable instances for injecting state
     node_id: 0, // track next unassigned value for sequential node id numbering
     firstLoadSent: false, // track whether or not initial snapshot has been sent
@@ -47,9 +47,9 @@ let slicer = (() => {
 
 function addSvelteDomListeners(root) {
   root.addEventListener('SvelteRegisterComponent', registerNewComponent);
-  root.addEventListener('SvelteDOMInsert', svelteDOMInsert);
-  root.addEventListener('SvelteDOMRemove', svelteDOMRemove);
-  root.addEventListener('SvelteDOMAddEventListener', svelteDOMAddEventListener);
+  root.addEventListener('SvelteDOMInsert', insertNewNode);
+  root.addEventListener('SvelteDOMRemove', removeNode);
+  root.addEventListener('SvelteDOMAddEventListener', addEventListener);
 }
 
 function setup() {
@@ -68,13 +68,13 @@ function registerNewComponent(e) {
     e.detail
   );
   slicer.add('components', { id, state, tagName, instance, target });
-  slicer.update('componentCounts', instance, tagName);
   slicer.update('componentObject', { component, tagName }, id);
 }
 
 function parseNewComponent(detail) {
   const { component, tagName, options } = detail;
-  const { id, instance } = assignComponentId(tagName);
+  const instance = assignComponentInstance(tagName);
+  const id = tagName + instance;
   const state = parseComponentState(component);
   const target = assignComponentTarget(options);
 
@@ -88,13 +88,13 @@ function parseNewComponent(detail) {
   };
 }
 
-function assignComponentId(tagName) {
+function assignComponentInstance(tagName) {
   let instance = 0;
   if (slicer.has('componentCounts', tagName)) {
     instance = slicer.getValue('componentCounts', tagName) + 1;
   }
-  const id = tagName + instance;
-  return { instance, id };
+  slicer.update('componentCounts', instance, tagName);
+  return instance;
 }
 
 function assignComponentTarget(options) {
@@ -183,7 +183,7 @@ function type_of(value) {
   return type;
 }
 
-function svelteDOMRemove(e) {
+function removeNode(e) {
   const { node } = e.detail;
   const nodeData = slicer.getNodeData(node);
   if (nodeData) {
@@ -194,7 +194,7 @@ function svelteDOMRemove(e) {
   }
 }
 
-function svelteDOMInsert(e) {
+function insertNewNode(e) {
   const { node, target } = e.detail;
   if (node.__svelte_meta) {
     let id = slicer.getNodeData(node);
@@ -214,7 +214,7 @@ function svelteDOMInsert(e) {
   }
 }
 
-function svelteDOMAddEventListener(e) {
+function addEventListener(e) {
   const { node, event } = e.detail;
   if (node.__svelte_meta) {
     if (!slicer.hasNode(node)) {
