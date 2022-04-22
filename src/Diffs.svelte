@@ -1,6 +1,6 @@
 <script>
   export let I;
-  import { snapshots } from './stores.js';
+  import { snapshots } from "./stores.js";
   $: snapshot = $snapshots[I];
   $: newComponents = snapshot.diff.newComponents;
   $: deletedComponents = snapshot.diff.deletedComponents;
@@ -28,18 +28,18 @@
         <h4 class="diffComponentName">{componentName}</h4>
         <ul>
           {#each Object.entries(component) as [variableName, variable]}
-            {#if variable.oldValue !== '' && variable.newValue !== ''}
+            {#if variable.oldValue !== "" && variable.newValue !== ""}
               <li class="oldAndNewVals">
                 {variableName}:
                 <span class="oldValue">{variable.oldValue}</span>
                 <span class="newValue"> &#8594; {variable.newValue}</span>
               </li>
-            {:else if variable.oldValue === ''}
+            {:else if variable.oldValue === ""}
               <li class="oldAndNewVals">
                 {variableName}: <span class="oldValue">' '</span>
                 <span class="newValue"> &#8594; {variable.newValue}</span>
               </li>
-            {:else if variable.newValue === ''}
+            {:else if variable.newValue === ""}
               <li class="oldAndNewVals">
                 {variableName}:
                 <span class="oldValue">{variable.oldValue}</span>
