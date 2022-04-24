@@ -2,7 +2,7 @@ name: Run all tests
 on: [push, pull_request]
 jobs:
   run-all-tests:
-    runs-on: unbuntu-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js
