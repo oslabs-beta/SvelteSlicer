@@ -1,5 +1,4 @@
-module.exports = {
-    root: true,  
+module.exports = {  
 
     extends: 'eslint:recommended', 
 
@@ -21,16 +20,13 @@ module.exports = {
       }
     ],
     rules: {
-      // ...
+      "no-unused-vars": [2, {vars: "all", varsIgnorePattern: "slicer"}]
     },
     settings: {
       // ...
     },
     ignorePatterns: ['node_modules', '**/build/**'],
     globals: {
-      chrome: "readonly",
-      module: "writable",
-      require: "readonly",
       describe: "readonly",
       jest: "readonly",
       expect: "readonly",

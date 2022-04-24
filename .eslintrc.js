@@ -30,6 +30,6 @@ module.exports = {
     globals: {
       chrome: "readonly",
       module: "writable",
-      require: "readonly",
+      require: "readonly"
     }
   };
