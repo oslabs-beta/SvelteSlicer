@@ -1,6 +1,6 @@
 name: Run all tests
 on: [push, pull-request]
-job:
+jobs:
   run-all-tests:
     runs-on: unbuntu-latest
     steps:
