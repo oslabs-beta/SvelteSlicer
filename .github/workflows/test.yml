@@ -1,5 +1,5 @@
 name: Run all tests
-on: [push, pull-request]
+on: [push, pull_request]
 jobs:
   run-all-tests:
     runs-on: unbuntu-latest
