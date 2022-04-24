@@ -208,8 +208,7 @@
         .attr("d", function (d) {
           //transit from spot to its parent spot
           return diagonal(d, d.parent);
-        });
-      let linkExit = link
+        })
         .exit()
         .transition()
         .duration(duration)
