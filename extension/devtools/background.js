@@ -3,7 +3,7 @@ var connections = {};
 // Set up listening connection with devtool
 chrome.runtime.onConnect.addListener(function (port) {
   // Listen to messages sent from the DevTools page
-    
+
   var extensionListener = function (message) {
     // Store tabID from initial message from devtool
     if (message.name == "init") {
