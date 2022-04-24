@@ -1,8 +1,8 @@
-/*eslint-env jest */
-/*eslint no-unused-vars: [2, {vars: "all", varsIgnorePattern: "slicer"}] */
 /**
  * @jest-environment jsdom
  */
+/*eslint-env jest */
+/*eslint no-unused-vars: [2, {vars: "all", varsIgnorePattern: "slicer"}] */
 
 const rewire = require("rewire");
 const injected = rewire("../extension/devtools/injected.js");
