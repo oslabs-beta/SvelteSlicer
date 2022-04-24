@@ -373,22 +373,13 @@ function buildSnapshot(data) {
     }
 
     //create depth-first ordering of tree for state injections
-    const flatTreeArray = [];
+    let flatTreeArray;
 
     // if AST came through, make flat file tree based on that; otherwise use componentData
     if (!_.isEmpty(componentTree)) {
-      depthFirstTraverse(componentTree[parentComponent]);
+      flatTreeArray = getFlatTree(componentTree[parentComponent]);
     } else {
-      depthFirstTraverse(componentData[domParent]);
-    }
-
-    function depthFirstTraverse(tree) {
-      flatTreeArray.push(tree.tagName || tree.id);
-      if (tree.children.length) {
-        tree.children.forEach((child) => {
-          depthFirstTraverse(child);
-        });
-      }
+      flatTreeArray = getFlatTree(componentData[domParent]);
     }
 
     flatFileTree.set(flatTreeArray);
@@ -451,4 +442,21 @@ function getDiffValue(value) {
       }
     }
   }
+}
+
+function getFlatTree(tree) {
+  const flatTreeArray = [];
+
+  function depthFirstTraverse(tree) {
+    flatTreeArray.push(tree.tagName || tree.id);
+    if (tree.children.length) {
+      tree.children.forEach((child) => {
+        depthFirstTraverse(child);
+      });
+    }
+  }
+
+  depthFirstTraverse(tree);
+
+  return flatTreeArray;
 }
