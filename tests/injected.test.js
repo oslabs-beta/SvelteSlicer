@@ -1,3 +1,5 @@
+/*eslint-env jest */
+/*eslint no-unused-vars: [2, {vars: "all", varsIgnorePattern: "slicer"}] */
 /**
  * @jest-environment jsdom
  */
