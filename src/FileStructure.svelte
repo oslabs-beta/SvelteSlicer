@@ -1,8 +1,7 @@
 <script>
   import * as d3 from "d3";
   import { onMount } from "svelte";
-  export let treeData;
-  console.log("treeData", treeData);
+  export let treeData; 
 
   let margin = { top: 20, right: 0, bottom: 20, left: 0 };
   let width = 700 - margin.left - margin.right;
@@ -55,7 +54,7 @@
           return "translate(" + src.x0 + ", " + src.y0 + ")";
         })
         .on("click", click);
-      //create circles (this might be the place to set the state datas to deliver to data panel )
+      //create circles 
       nodeEnter
         .append("circle")
         .attr("class", "node")
@@ -63,7 +62,7 @@
         .style("fill", function (d) {
           return d._children ? "moccasin" : "rgb(238, 137, 5)";
         });
-      //add text  to show the node data
+      //add text to show the node data(component name)
       nodeEnter
         .append("text")
         .attr("dx", ".35em")
