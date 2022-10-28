@@ -2,6 +2,8 @@
   "name": "svelte_slicer",
   "version": "1.0.0",
   "devDependencies": {
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
     "cross-env": "^7.0.3",
     "css-loader": "^5.0.1",
     "eslint": "^8.8.0",
