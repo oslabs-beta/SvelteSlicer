@@ -377,8 +377,10 @@ function getSnapshotData() {
 function isNewState(snapshotData, currentState) {
   const { components, insertedNodes, deletedNodes } = snapshotData;
   const oldState = slicer.peek("stateHistory");
+  console.log(oldState);
+  console.log(currentState);
   if (
-    JSON.stringify(currentState) === JSON.stringify(oldState) ||
+    JSON.stringify(currentState) !== JSON.stringify(oldState) ||
     components.length ||
     insertedNodes.length ||
     deletedNodes.length
@@ -395,12 +397,13 @@ function sendSnapshot(snapshotData, type) {
     deletedNodes,
     deletedComponents,
     snapshotLabel,
+    stateObject,
   } = snapshotData;
   window.postMessage({
     source: "panel.js",
     type,
     data: {
-      stateObject: captureParsedAppState(),
+      stateObject,
       components,
       insertedNodes,
       deletedNodes,
@@ -459,6 +462,7 @@ function captureSnapshot() {
     );
     slicer.add("stateHistory", deepClone(rawState));
     const type = setSnapshotType();
+    snapshotData.stateObject = captureParsedAppState();
     sendSnapshot(snapshotData, type);
     resetSnapshotData();
   }
