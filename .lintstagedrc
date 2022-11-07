@@ -1,0 +1,3 @@
+{ 
+    "*.{js, svelte}": "eslint",
+    "*.{js,jsx,ts,tsx,json,css,html,yml}": ["prettier --check"] }
