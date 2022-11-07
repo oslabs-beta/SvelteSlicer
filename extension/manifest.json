@@ -18,7 +18,7 @@
       "run_at": "document_start"
     }
   ],
-  "web-accessible-resources": [
+  "web_accessible_resources": [
     {
       "resources": ["devtools/injected.js"],
       "matches": ["http://*/*", "https://*/*"]
