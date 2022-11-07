@@ -52,12 +52,6 @@ function addSvelteDomListeners(root) {
   root.addEventListener("SvelteDOMInsert", insertNewNode);
   root.addEventListener("SvelteDOMRemove", removeNode);
   root.addEventListener("SvelteDOMAddEventListener", addEventListener);
-  root.addEventListener("SvelteDOMSetProperty", () =>
-    console.log("Set Property fired")
-  );
-  root.addEventListener("SvelteDOMSetAttribute", () =>
-    console.log("Set Attribute fired")
-  );
 }
 
 function setup() {
@@ -377,8 +371,6 @@ function getSnapshotData() {
 function isNewState(snapshotData, currentState) {
   const { components, insertedNodes, deletedNodes } = snapshotData;
   const oldState = slicer.peek("stateHistory");
-  console.log(oldState);
-  console.log(currentState);
   if (
     JSON.stringify(currentState) !== JSON.stringify(oldState) ||
     components.length ||
@@ -456,7 +448,6 @@ function captureSnapshot() {
   const snapshotData = getSnapshotData();
   const rawState = captureRawAppState();
   if (isNewState(snapshotData, rawState)) {
-    console.log("capturing new State");
     snapshotData.deletedComponents = trimDeletedComponents(
       snapshotData.componentObject
     );
