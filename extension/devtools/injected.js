@@ -31,6 +31,8 @@ let slicer = (() => {
     add: (variableName, value) => variables[variableName].push(value),
     reset: (variableName) =>
       variables[variableName].splice(0, variables[variableName].length),
+    peek: (variableName) =>
+      variables[variableName][variables[variableName].length - 1],
 
     // method for node_id
     increment: (variableName) => variables[variableName]++,
@@ -50,6 +52,12 @@ function addSvelteDomListeners(root) {
   root.addEventListener("SvelteDOMInsert", insertNewNode);
   root.addEventListener("SvelteDOMRemove", removeNode);
   root.addEventListener("SvelteDOMAddEventListener", addEventListener);
+  root.addEventListener("SvelteDOMSetProperty", () =>
+    console.log("Set Property fired")
+  );
+  root.addEventListener("SvelteDOMSetAttribute", () =>
+    console.log("Set Attribute fired")
+  );
 }
 
 function setup() {
@@ -346,6 +354,7 @@ function startMutationObserver() {
     attributes: true,
     childList: true,
     subtree: true,
+    characterData: true,
   });
 }
 
@@ -365,9 +374,15 @@ function getSnapshotData() {
   };
 }
 
-function verifyChange(snapshotData) {
+function isNewState(snapshotData, currentState) {
   const { components, insertedNodes, deletedNodes } = snapshotData;
-  if (components.length || insertedNodes.length || deletedNodes.length) {
+  const oldState = slicer.peek("stateHistory");
+  if (
+    JSON.stringify(currentState) === JSON.stringify(oldState) ||
+    components.length ||
+    insertedNodes.length ||
+    deletedNodes.length
+  ) {
     return true;
   }
   return false;
@@ -436,11 +451,13 @@ function captureParsedAppState() {
 
 function captureSnapshot() {
   const snapshotData = getSnapshotData();
-  if (verifyChange(snapshotData)) {
+  const rawState = captureRawAppState();
+  if (isNewState(snapshotData, rawState)) {
+    console.log("capturing new State");
     snapshotData.deletedComponents = trimDeletedComponents(
       snapshotData.componentObject
     );
-    slicer.add("stateHistory", deepClone(captureRawAppState()));
+    slicer.add("stateHistory", deepClone(rawState));
     const type = setSnapshotType();
     sendSnapshot(snapshotData, type);
     resetSnapshotData();
