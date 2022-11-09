@@ -9,12 +9,12 @@
   "permissions": ["activeTab", "scripting"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "background": {
-    "service_worker": "devtools/background.js"
+    "service_worker": "devtools/backgroundScript.js"
   },
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-      "js": ["devtools/listener.js"],
+      "js": ["devtools/contentScript.js"],
       "run_at": "document_start"
     }
   ],
