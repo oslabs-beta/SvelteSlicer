@@ -13,6 +13,7 @@ module.exports = {
   resolve: {
     alias: {
       svelte: path.dirname(require.resolve("svelte/package.json")),
+      modules: path.join(__dirname, "../node_modules"),
     },
     extensions: [".mjs", ".js", ".svelte"],
     mainFields: ["svelte", "browser", "module", "main"],
