@@ -12,7 +12,7 @@
   import FileStructure from "./FileStructure.svelte";
   import StateTree from "./StateTree.svelte";
   import Diffs from "./Diffs.svelte";
-  import logo from "../extension/devtools/public/images/svelte_slicer_logo_64X64.png";
+  import logo from "../extension/devtools/public/images/logo64.png";
 
   $: CurrentI =
     I === undefined

@@ -21,3 +21,6 @@ jobs:
 
       - name: Run Prettier
         run: npm run check-format
+
+      - name: Run Build
+        run: npm run build
