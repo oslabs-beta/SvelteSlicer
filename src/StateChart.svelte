@@ -1,9 +1,9 @@
-<script defer>
+<script>
   export let I;
   import { snapshots } from "./stores";
   import * as d3 from "d3";
   import { afterUpdate } from "svelte";
-
+  // acessing the snapshots data from store
   $: label = $snapshots[I].label;
   $: parent = $snapshots[I].parent;
   $: tree = JSON.parse(JSON.stringify($snapshots[I].data[parent]));
@@ -32,7 +32,7 @@
     }
 
     trimTree(tree);
-
+    //setting up chart DOM elements
     svg = d3
       .select("#chart")
       .append("div")
@@ -52,7 +52,7 @@
     root = d3.hierarchy(tree, function (d) {
       return d.children;
     });
-
+    //setting root position
     root.x0 = 0;
     root.y0 = width / 2;
 
@@ -69,7 +69,7 @@
       let node = svg.selectAll("g.node").data(nodes, function (d) {
         return d.id || (d.id = ++i);
       });
-      //node start at the parent's position
+      //enter node and node start at the parent's position
       let nodeEnter = node
         .enter()
         .append("g")
@@ -77,7 +77,7 @@
         .attr("id", function (d) {
           return d.data.id;
         })
-        .attr("transform", () => {
+        .attr("transform", function (d) {
           return "translate(" + src.x0 + ", " + src.y0 + ")";
         })
         .on("click", click);
@@ -91,12 +91,12 @@
           return d._children ? "moccasin" : "rgb(238, 137, 5)";
         });
 
-      //add text to show the node data
+      //add text to show the node data (component name)
       nodeEnter
         .append("text")
         .attr("dx", ".35em")
 
-        .attr("y", () => {
+        .attr("y", function (d) {
           return -12;
         })
         .attr("text-anchor", function (d) {
@@ -107,13 +107,15 @@
         })
         .style("fill", "white");
 
+      // text appearing on hover over node with node's data(variables and value)
       nodeEnter
         .append("g:title")
         .attr("transform", "translate(0,0)")
         .text(function (d) {
+          //checking if variable objects have properities
           if (Object.keys(d.data.variables).length > 0) {
             let text = "";
-
+            //recursively access the value of variables in nested data then assign the value to text
             Object.keys(d.data.variables).forEach((item) => {
               function nested(obj) {
                 if (obj.value) {
@@ -160,7 +162,7 @@
         .exit()
         .transition()
         .duration(duration)
-        .attr("transform", () => {
+        .attr("transform", function (d) {
           //from child to parent
           return "translate(" + src.x + "," + src.y + ")";
         })
@@ -208,11 +210,12 @@
         .attr("d", function (d) {
           //transit from spot to its parent spot
           return diagonal(d, d.parent);
-        })
+        });
+      let linkExit = link
         .exit()
         .transition()
         .duration(duration)
-        .attr("d", () => {
+        .attr("d", function (d) {
           let o = { x: src.x0, y: src.y0 };
           return diagonal(o, o);
         })
@@ -223,7 +226,7 @@
         d.x0 = d.x;
         d.y0 = d.y;
       });
-      function click(event, d) {
+      function click(event, d, e) {
         if (d.children) {
           d._children = d.children;
           d.children = null;
@@ -234,9 +237,11 @@
         update(d);
       }
     }
-
+    //render chart with most recent data in the browser and remove previous chart from DOM
     preElement = document.getElementsByClassName(`${I}`)[0].previousSibling;
     currElement = document.getElementsByClassName(`${I}`);
+    if (svg.previousSibling) {
+    }
     if (preElement) {
       preElement.remove();
     }
