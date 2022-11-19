@@ -1,8 +1,8 @@
 <script>
+  /* eslint no-unused-vars: 1 */
   import * as d3 from "d3";
   import { onMount } from "svelte";
   export let treeData;
-  console.log("treeData", treeData);
 
   let margin = { top: 20, right: 0, bottom: 20, left: 0 };
   let width = 700 - margin.left - margin.right;
@@ -51,11 +51,11 @@
         .enter()
         .append("g")
         .attr("class", "node")
-        .attr("transform", () => {
+        .attr("transform", function (d) {
           return "translate(" + src.x0 + ", " + src.y0 + ")";
         })
         .on("click", click);
-      //create circles (this might be the place to set the state datas to deliver to data panel )
+      //create circles
       nodeEnter
         .append("circle")
         .attr("class", "node")
@@ -63,11 +63,11 @@
         .style("fill", function (d) {
           return d._children ? "moccasin" : "rgb(238, 137, 5)";
         });
-      //add text  to show the node data
+      //add text to show the node data(component name)
       nodeEnter
         .append("text")
         .attr("dx", ".35em")
-        .attr("y", () => {
+        .attr("y", function (d) {
           return -12;
         })
         .attr("text-anchor", function (d) {
@@ -98,7 +98,7 @@
         .exit()
         .transition()
         .duration(duration)
-        .attr("transform", () => {
+        .attr("transform", function (d) {
           //from child to parent
           return "translate(" + src.x + "," + src.y + ")";
         })
@@ -137,11 +137,12 @@
         .attr("d", function (d) {
           //transit from spot to its parent spot
           return diagonal(d, d.parent);
-        })
+        });
+      let linkExit = link
         .exit()
         .transition()
         .duration(duration)
-        .attr("d", () => {
+        .attr("d", function (d) {
           let o = { x: src.x0, y: src.y0 };
           return diagonal(o, o);
         })
