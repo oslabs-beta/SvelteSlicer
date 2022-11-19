@@ -1,4 +1,5 @@
 <script>
+  /* eslint no-unused-vars: 1 */
   export let I;
   import { snapshots } from "./stores";
   import * as d3 from "d3";
@@ -240,8 +241,6 @@
     //render chart with most recent data in the browser and remove previous chart from DOM
     preElement = document.getElementsByClassName(`${I}`)[0].previousSibling;
     currElement = document.getElementsByClassName(`${I}`);
-    if (svg.previousSibling) {
-    }
     if (preElement) {
       preElement.remove();
     }

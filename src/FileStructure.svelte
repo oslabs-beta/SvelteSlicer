@@ -1,4 +1,5 @@
 <script>
+  /* eslint no-unused-vars: 1 */
   import * as d3 from "d3";
   import { onMount } from "svelte";
   export let treeData;
