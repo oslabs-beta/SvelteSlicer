@@ -1,5 +1,6 @@
 <script>
   /* eslint no-unused-vars: 1 */
+
   export let I;
   import { snapshots } from "./stores";
   import * as d3 from "d3";
@@ -33,6 +34,7 @@
     }
 
     trimTree(tree);
+
     //setting up chart DOM elements
     svg = d3
       .select("#chart")
@@ -116,6 +118,7 @@
           //checking if variable objects have properities
           if (Object.keys(d.data.variables).length > 0) {
             let text = "";
+
             //recursively access the value of variables in nested data then assign the value to text
             Object.keys(d.data.variables).forEach((item) => {
               function nested(obj) {
