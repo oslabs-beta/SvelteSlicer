@@ -45,7 +45,7 @@ chrome.runtime.onMessage.addListener((msg) => {
     snapshots.update((array) => [...array, newSnapshot]);
   } else if (type === "rebuild") {
     rebuild = true;
-    const newSnapshot = buildSnapshot(data);
+    buildSnapshot(data);
   }
 });
 
@@ -288,7 +288,8 @@ function buildSnapshot(data) {
               data = {
                 name: varName,
                 oldValue:
-                  stateHistory[componentId].variables[varName].value !== undefined
+                  stateHistory[componentId].variables[varName].value !==
+                  undefined
                     ? getDiffValue(
                         stateHistory[componentId].variables[varName].value
                       )
@@ -308,7 +309,7 @@ function buildSnapshot(data) {
           }
         }
       }
-      
+
       if (stateObject.hasOwnProperty(componentId)) {
         for (let [varName, variable] of Object.entries(component.variables)) {
           // if variable is in componentData but not in stateObject, new value in componentData is null
@@ -373,22 +374,13 @@ function buildSnapshot(data) {
     }
 
     //create depth-first ordering of tree for state injections
-    const flatTreeArray = [];
+    let flatTreeArray;
 
     // if AST came through, make flat file tree based on that; otherwise use componentData
     if (!_.isEmpty(componentTree)) {
-      depthFirstTraverse(componentTree[parentComponent]);
+      flatTreeArray = getFlatTree(componentTree[parentComponent]);
     } else {
-      depthFirstTraverse(componentData[domParent]);
-    }
-
-    function depthFirstTraverse(tree) {
-      flatTreeArray.push(tree.tagName || tree.id);
-      if (tree.children.length) {
-        tree.children.forEach((child) => {
-          depthFirstTraverse(child);
-        });
-      }
+      flatTreeArray = getFlatTree(componentData[domParent]);
     }
 
     flatFileTree.set(flatTreeArray);
@@ -451,4 +443,21 @@ function getDiffValue(value) {
       }
     }
   }
+}
+
+function getFlatTree(tree) {
+  const flatTreeArray = [];
+
+  function depthFirstTraverse(tree) {
+    flatTreeArray.push(tree.tagName || tree.id);
+    if (tree.children.length) {
+      tree.children.forEach((child) => {
+        depthFirstTraverse(child);
+      });
+    }
+  }
+
+  depthFirstTraverse(tree);
+
+  return flatTreeArray;
 }

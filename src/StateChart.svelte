@@ -1,4 +1,6 @@
 <script>
+  /* eslint no-unused-vars: 1 */
+
   export let I;
   import { snapshots } from "./stores";
   import * as d3 from "d3";
@@ -32,7 +34,8 @@
     }
 
     trimTree(tree);
-//setting up chart DOM elements
+
+    //setting up chart DOM elements
     svg = d3
       .select("#chart")
       .append("div")
@@ -115,7 +118,8 @@
           //checking if variable objects have properities
           if (Object.keys(d.data.variables).length > 0) {
             let text = "";
-            //recursively access the value of variables in nested data then assign the value to text  
+
+            //recursively access the value of variables in nested data then assign the value to text
             Object.keys(d.data.variables).forEach((item) => {
               function nested(obj) {
                 if (obj.value) {
@@ -240,8 +244,6 @@
     //render chart with most recent data in the browser and remove previous chart from DOM
     preElement = document.getElementsByClassName(`${I}`)[0].previousSibling;
     currElement = document.getElementsByClassName(`${I}`);
-    if (svg.previousSibling) {
-    }
     if (preElement) {
       preElement.remove();
     }
