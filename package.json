@@ -25,7 +25,9 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "cross-env NODE_ENV=production webpack",
+    "dev-build-client": "cross-env NODE_ENV=development webpack --config webpack.config.client.js",
+    "prod-build-client": "cross-env NODE_ENV=production webpack --config webpack.config.client.js",
+    "build-backend": "cross-env webpack --config webpack.config.script.js",
     "check-format": "prettier --check .",
     "lint": "eslint . --ext .js,.svelte --fix",
     "format": "prettier --write .",
