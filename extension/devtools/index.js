@@ -9,7 +9,6 @@ chrome.devtools.panels.create(
       fetch(url)
         .then((response) => response.text())
         .then((string) => {
-          console.log(string);
           chrome.devtools.inspectedWindow.reload({
             injectedScript: string,
           });
