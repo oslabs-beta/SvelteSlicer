@@ -1,6 +1,6 @@
-import { type_of, deepClone } from "./utils.js";
+const { type_of, deepClone } = require("./utils.js");
 
-class ComponentParser {
+module.exports = class ComponentParser {
   constructor() {
     this.componentCounts = {};
     const callback = this.sendNewComponentData.bind(this);
@@ -137,6 +137,4 @@ class ComponentParser {
       name,
     };
   }
-}
-
-export default ComponentParser;
+};

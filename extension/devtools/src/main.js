@@ -1,4 +1,4 @@
-import ComponentParser from "./ComponentParser.js";
+const ComponentParser = require("./ComponentParser.js");
 
 let slicer = (() => {
   const variables = {
@@ -181,7 +181,7 @@ function addEventListener(e) {
   if (node.__svelte_meta) {
     if (!slicer.hasNode(node)) {
       const nodeId = slicer.increment("node_id");
-      const componentName = getComponentName(node.__svelte_meta.loc.file);
+      const componentName = getComponentName(node);
       slicer.setNodeData(node, { nodeId, componentName });
     }
     const nodeData = slicer.getNodeData(node);

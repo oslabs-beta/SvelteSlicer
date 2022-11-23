@@ -45,4 +45,4 @@ const deepClone = (inObject) => {
   return outObject;
 };
 
-export { type_of, deepClone };
+module.exports = { type_of, deepClone };
