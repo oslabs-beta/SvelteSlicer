@@ -1,4 +1,10 @@
-const ComponentParser = require("./ComponentParser.js");
+import Slicer from "./Slicer.js";
+
+(function start() {
+  new Slicer();
+})();
+
+/* const ComponentParser = require("./ComponentParser.js");
 
 let slicer = (() => {
   const variables = {
@@ -411,6 +417,7 @@ function captureSnapshot() {
     slicer.add("stateHistory", deepClone(rawState));
     const type = setSnapshotType();
     snapshotData.stateObject = captureParsedAppState();
+    console.log(snapshotData.stateObject);
     sendSnapshot(snapshotData, type);
     resetSnapshotData();
   }
@@ -556,4 +563,4 @@ function parseState(element, name = null) {
     value,
     name,
   };
-}
+} */
