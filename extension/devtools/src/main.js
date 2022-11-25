@@ -1,24 +1,18 @@
-import Slicer from "./Slicer.js";
+import Listener from "./Listener.js";
 
-(function start() {
-  new Slicer();
+(function startListener() {
+  new Listener();
 })();
 
 /* const ComponentParser = require("./ComponentParser.js");
 
 let slicer = (() => {
   const variables = {
-    components: [], // parsed component data to be sent in snapshot
-    deletedNodes: [], // parsed data re. deleted nodes to be sent in snapshot
-    insertedNodes: [], // parsed data re. inserted nodes to be sent in snapshot
-    componentObject: {}, // actual component instances for injecting state
     listeners: {}, // data re. app's event listeners to help with snapshot labeling
-    stateHistory: [], // copies of raw state snapshots to help recreate previous states
     nodes: new Map(), // data re. app's nodes stored with node instance as key
     storeVariables: {}, // actual store variable instances for injecting state
     node_id: 0, // track next unassigned value for sequential node id numbering
     firstLoadSent: false, // track whether or not initial snapshot has been sent
-    snapshotLabel: "Init", // hold label for snapshot
     jumpIndex: undefined, // hold index to most current jump
     rebuildingDom: false, // track whether we're jumping between past states or creating new ones
   };
@@ -71,30 +65,6 @@ function addSvelteDomListeners(root) {
   window.document.addEventListener("rebuild", sendRebuild);
   window.addEventListener("message", parseDevToolMessage);
 })();
-
-window.addEventListener("storeParsedComponent", storeParsedComponent);
-
-function storeParsedComponent(event) {
-  const { id, parsedState, tagName, instance, target } = event.detail;
-  slicer.add("components", { id, parsedState, tagName, instance, target });
-}
-
-window.addEventListener("updateStoreVariables", updateStoreVariables);
-
-function updateStoreVariables(event) {
-  const { newStoreVariables } = event.detail;
-  const variables = Object.entries(newStoreVariables);
-  variables.forEach(([key, value]) => {
-    slicer.update("storeVariables", value, key);
-  });
-}
-
-window.addEventListener("updateComponentObject", updateComponentObject);
-
-function updateComponentObject(event) {
-  const { component, id, tagName } = event.detail;
-  slicer.update("componentObject", { component, tagName }, id);
-}
 
 const deepClone = (inObject) => {
   let outObject, value, key;

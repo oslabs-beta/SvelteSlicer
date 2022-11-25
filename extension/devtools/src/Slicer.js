@@ -1,62 +1,44 @@
-//import DOMEventParser from './DOMEventParser';
+import DOMEventParser from "./DOMEventParser";
 //import ComponentInjector from './ComponentInjector';
-//import SnapshotProducer from './SnapshotProducer';
+import SnapshotProducer from "./SnapshotProducer";
 
 export default class Slicer {
   constructor() {
     // data stores
-    this.componentInstances = new Map();
-    this.newComponentRepresentations = [];
+    this.componentInstances = {};
+    this.newComponents = [];
     this.stateHistory = [];
     this.label = "Init";
     this.componentRepresentations = {};
 
     // services
-    //this.parser = new DOMEventParser();
+    this.parser = new DOMEventParser();
     //this.injector = new ComponentInjector();
-    //this.producer = new SnapshotProducer();
-
-    this.addEventListeners();
+    this.producer = new SnapshotProducer();
   }
 
-  addEventListeners() {
-    //window.addEventListener("SvelteDOMInsert", this.parseNewNode.bind(this));
-    //window.addEventListener("SvelteRegisterComponent", this.parseNewComponent.bind(this));
-    //window.addEventListener("SvelteDOMAddEventListener", this.parseNewEventListener.bind(this));
-    window.addEventListener("load", () => {
-      this.createSnapshot();
-      this.startMutationObserver();
-    });
+  processNewComponentEvent(eventDetail) {
+    const { component, tagName } = eventDetail;
+    const id = this.parser.assignComponentId(tagName);
+    this.componentInstances[id] = component;
+    this.newComponents.push(id);
+    this.componentRepresentations[id] = { id, tagName };
   }
 
-  parseNewNode(event) {
-    //const newRelationships = this.parser.getRelationships(event);
-    console.log(event);
+  processNewNodeEvent(eventDetail) {
+    console.log("new node");
+    console.log(eventDetail);
   }
 
-  parseNewComponent(event) {
-    //const newComponents = this.parser.getNewComponents(event);
-    console.log(event);
+  processNewEventListenerEvent(eventDetail) {
+    console.log("new event listener");
+    console.log(eventDetail);
   }
 
-  parseNewEventListener(event) {
-    //this.parser.addNewEventListener(event);
-    console.log(event);
-  }
-
-  startMutationObserver() {
-    const observer = new MutationObserver(() => {
-      this.createSnapshot();
-    });
-    observer.observe(window.document, {
-      attributes: true,
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-  }
-
-  createSnapshot() {
-    console.log("create snapshot");
+  captureSnapshot() {
+    console.log(this.componentInstances);
+    console.log(this.newComponents);
+    console.log(this.componentRepresentations);
+    this.producer.createSnapshot();
   }
 }
