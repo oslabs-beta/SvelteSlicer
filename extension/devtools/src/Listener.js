@@ -4,7 +4,6 @@ export default class Listener {
   constructor() {
     this.slicer = new Slicer();
     this.addEventListeners();
-    console.log(this.slicer);
   }
 
   addEventListeners() {

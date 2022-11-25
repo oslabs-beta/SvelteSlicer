@@ -1,4 +1,4 @@
-const { type_of, deepClone } = require("./utils.js");
+/* const { type_of, deepClone } = require("./utils.js");
 
 module.exports = class ComponentParser {
   constructor() {
@@ -71,3 +71,5 @@ module.exports = class ComponentParser {
     };
   }
 };
+
+*/
