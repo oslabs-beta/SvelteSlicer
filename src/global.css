@@ -1,108 +1,109 @@
-@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@100&display=swap');
-
+@import url("https://fonts.googleapis.com/css2?family=Overpass:wght@100&display=swap");
 
 body {
-	margin: 0;
-	background: rgb(83, 81, 81);
-	margin: 0;
-	height: 100%;
-	font-size: 16px;
-	color:whitesmoke;
-	font-family: 'Overpass', sans-serif;
+  margin: 0;
+  background: rgb(83, 81, 81);
+  margin: 0;
+  height: 100%;
+  font-size: 16px;
+  color: whitesmoke;
+  font-family: "Overpass", sans-serif;
 }
 
 h2 {
-	font-weight: Bold 700;
-	/* font-size: 25px; */
-	margin: 2px;
+  font-weight: 700;
+  font-size: 19px;
+  margin: 2px;
+  padding: 10px;
 }
 
 div {
-	padding: 1em;
+  padding: 1em;
 }
 
 .panelDiv {
-	/* border-top: 1px solid whitesmoke; */
-	text-align: center;
+  /* border-top: 1px solid whitesmoke; */
+  text-align: center;
 }
 
 a {
-	color: rgb(0,100,200);
-	text-decoration: none;
+  color: rgb(0, 100, 200);
+  text-decoration: none;
 }
 
 ol li::marker {
-	content: "▼";
+  content: "▼";
 }
-  
+
 a:hover {
-	text-decoration: underline;
+  text-decoration: underline;
 }
 
 a:visited {
-	color: rgb(0,80,160);
+  color: rgb(0, 80, 160);
 }
 
 label {
-	display: block;
+  display: block;
 }
 
-input, select, textarea {
-	color: whitesmoke;
-	background: #333;
-	outline: none;
-	margin: 2px;
-	font-size: 16px;
-	font-family: 'Overpass', sans-serif;
-	padding: 0.4em;
-	border: none;
-	border-radius: 2px;
+input,
+select,
+textarea {
+  color: whitesmoke;
+  background: #333;
+  outline: none;
+  margin: 2px;
+  font-size: 16px;
+  font-family: "Overpass", sans-serif;
+  padding: 0.4em;
+  border: none;
+  border-radius: 2px;
 }
 
 button {
-	color: whitesmoke;
-	background: #333;
-	outline: none;
-	margin: 2px;
-	font-size: 16px;
-	font-weight: bold;
-	font-family: 'Overpass', sans-serif;
-	padding: 5px;
-	border: none;
-	border-radius: 2px;
+  color: whitesmoke;
+  background: #333;
+  outline: none;
+  margin: 2px;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: "Overpass", sans-serif;
+  padding: 5px;
+  border: none;
+  border-radius: 2px;
 }
 
 input {
-	width: 150px;
+  width: 150px;
 }
 
 input:disabled {
-	color: #ccc;
+  color: #ccc;
 }
 
 button:disabled {
-	color: #999;
+  color: #999;
 }
 
 button:not(:disabled):active {
-	background-color: #ddd;
+  background-color: #ddd;
 }
 
 button:focus {
-	border-color: #666;
+  border-color: #666;
 }
 
 main {
-
-	margin: 0px;
-	align-items: center;
-	color: whitesmoke;
-	/* background: rgb(83, 81, 81); */
+  margin: 0px;
+  align-items: center;
+  color: whitesmoke;
+  /* background: rgb(83, 81, 81); */
 }
 
 span {
-/* padding: 1em; */
-font-size: 16px;
+  /* padding: 1em; */
+  font-size: 16px;
 }
 
 .xAxis path,
@@ -115,7 +116,6 @@ font-size: 16px;
   font-weight: bold;
   font-size: 14px;
   fill: teal;
-  
 }
 
 .node circle {
@@ -126,7 +126,6 @@ font-size: 16px;
 
 .node text {
   font: 12px Overpass;
-  
 }
 
 .link {
@@ -136,76 +135,53 @@ font-size: 16px;
 }
 
 .test {
-	content: "▼";
-  }
+  content: "▼";
+}
 
-.no-arrow { 
-	font-size: 16px;
+.no-arrow {
+  font-size: 16px;
 }
 
 ul.ulArrows {
-	list-style-type: none;
+  list-style-type: none;
 }
 
 ul.variableVal {
-	font-size: 16px;
-	list-style-type: none;
+  font-size: 16px;
+  list-style-type: none;
 }
 
 #variableName {
-	/* font-size: 16px; */
-	list-style-type: none;
+  /* font-size: 16px; */
+  list-style-type: none;
 }
 .arrow {
-	cursor: pointer;
-	font-weight: bold;
-	display: inline-block;
-	transition: transform 200ms;
-	text-align: center;
+  cursor: pointer;
+  font-weight: bold;
+  display: inline-block;
+  transition: transform 200ms;
+  text-align: center;
 }
 
-.arrowDown { 
-	transform: rotate(90deg); 
-}
-
-
-.oldValue{
-	text-decoration: line-through;
-	color:rgb(238, 137, 5);
-	font-size: 16px;
-}
-.diffComponentName{
-	color:white;
-	font-weight: bold;
-	font-size: 16px;
-
-
-}
-.deletedComponent{
-	text-decoration: line-through;
-	color:red;
-	font-size: 16px;
+.arrowDown {
+  transform: rotate(90deg);
 }
 
 .search-button {
-	color: rgb(162, 159, 159);
-	background: transparent;
-	border: none;
-	outline: none;
-	margin-right: -25px;
+  color: rgb(162, 159, 159);
+  background: transparent;
+  border: none;
+  outline: none;
+  margin-right: -25px;
 }
 form.form button:hover {
   background: rgb(238, 137, 5);
-
 }
 
-  
-   .content {
-	padding: 2px;
-	font-size: 16px;
-	font-weight: bold;
-	border: none;
-	/* transition: max-height 0.2s ease-out; */
-  } 
-
-  
+.content {
+  padding: 2px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  /* transition: max-height 0.2s ease-out; */
+}
