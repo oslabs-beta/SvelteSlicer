@@ -2,7 +2,7 @@
   /* eslint no-unused-vars: 1 */
   import * as d3 from "d3";
   import { onMount } from "svelte";
-  
+
   export let treeData;
 
   let margin = { top: 20, right: 0, bottom: 20, left: 0 };
