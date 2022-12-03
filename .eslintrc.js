@@ -14,7 +14,7 @@ module.exports = {
     browser: true,
     node: true,
   },
-  plugins: ["svelte3"],
+  plugins: ["svelte3", "jest"],
   overrides: [
     {
       files: ["*.svelte"],
