@@ -39,39 +39,6 @@ export default class DOMEventParser {
     return nodeComponentId;
   }
 
-  getNodeComponents(node, target) {
-    // get the component id of the target node
-    const targetComponentId = this.nodeComponents.get(target);
-    
-    // determine the component id of the new node
-    let nodeComponentId;
-  
-      console.log('Node: ' + node.__svelte_meta.loc.file);
-      console.log('Target: ' + target.__svelte_meta.loc.file);
-      const nodeTagName = this.getComponentTagName(node);
-      
-      // check if the current node instance for this tagName has been assigned a node from this line of code
-      const nodeLine = node.__svelte_meta.loc.line;
-      const currentInstance = this.unassignedComponentInstances[nodeTagName][0];
-      const { id, lines } = currentInstance;
-      // if this is the first element from this line of code for this instance, we're still in the same instance
-      if (!lines.includes(nodeLine)) {
-        nodeComponentId = id;
-        lines.push(nodeLine);
-      }
-      // otherwise this element is from the next instance of this tagName, so remove current instance and get new id
-      else {
-        const newInstance = this.unassignedComponentInstances[nodeTagName].shift();
-        nodeComponentId = newInstance.id;
-      }
-
-    // store node/component relationship for later use
-    this.nodeComponents.set(node, nodeComponentId);
-
-    const nodeComponents = { nodeComponent: nodeComponentId, targetComponent: targetComponentId }
-    return nodeComponents;
-  }
-
   getComponentTagName(node) {
     const fileName = node.__svelte_meta.loc.file
     // if this is a Windows based file naming, ie. \ instead of /
