@@ -1,4 +1,4 @@
-import DOMEventParser from "./DOMEventParser";
+import DOMEventParser from "./DOMEventParser.js";
 //import ComponentInjector from './ComponentInjector';
 //import SnapshotProducer from "./SnapshotProducer";
 

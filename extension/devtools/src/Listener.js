@@ -1,4 +1,4 @@
-import Slicer from "./Slicer";
+import Slicer from "./Slicer.js";
 
 /**  Class responsible for managing event listeners within the user context. */
 export default class Listener {
