@@ -1,4 +1,5 @@
 import DOMEventParser from "./DOMEventParser.js";
+import SnapshotProducer from "./SnapshotProducer.js";
 
 /** Class responsible for coordinating data for snapshot production and state injections. */
 export default class Slicer {
@@ -12,6 +13,7 @@ export default class Slicer {
 
     // services
     this.parser = new DOMEventParser();
+    this.producer = new SnapshotProducer();
   }
 
   /**
@@ -29,8 +31,12 @@ export default class Slicer {
    * Gather data about current application state and send to SnapshotProducer.
    */
   captureSnapshot() {
-    console.log(this.componentInstances);
-    console.log(this.componentRepresentations);
+    const instances = JSON.parse(JSON.stringify(this.componentInstances));
+    const representations = JSON.parse(
+      JSON.stringify(this.componentRepresentations)
+    );
+    console.log(instances);
+    console.log(representations);
     this.producer.createSnapshot();
   }
 }
