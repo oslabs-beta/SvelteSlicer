@@ -10,12 +10,12 @@ export default class Slicer {
   constructor() {
     // data stores
     this.componentInstances = {};
-    //this.newComponents = {};
-    //this.unassignedChildrenComponents = new Set();
     this.componentRepresentations = {};
     //this.rootComponent = null;
     //this.stateHistory = [];
     //this.label = "Initial Page Load";
+    //this.newComponents = {};
+    //this.unassignedChildrenComponents = new Set();
 
     // services
     this.parser = new DOMEventParser();

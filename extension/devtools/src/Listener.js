@@ -12,6 +12,7 @@ export default class Listener {
 
   /**
    * Initializes event listeners on the window object.
+   *
    */
   addEventListeners() {
     //window.addEventListener("SvelteDOMInsert", (e) =>

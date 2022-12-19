@@ -1,7 +1,7 @@
 export default class DOMEventParser {
   constructor() {
-    this.componentCounts = {};
-    this.newComponents = [];
+    this.componentCounts = {}; // map of counts of instances for each component tagName
+    this.newComponents = []; // sequence of component registrations (post-order traversal of overall component hierarchy)
     //this.rootComponent = null;
     //this.nodeComponents = new Map();
   }
@@ -9,21 +9,19 @@ export default class DOMEventParser {
   /**
    * Assigns an id string for given component and adds to newComponents list.
    * @param {string} tagName
-   * @returns {string} The id of the component (tagName + instance number)
+   * @returns {string} The id of the component - concatenation of tagName and instance number.
    */
   assignComponentId(tagName) {
     const instanceNumber = this.assignInstanceNumber(tagName);
     const id = tagName + instanceNumber;
     this.newComponents.push(id);
-    console.log(this.newComponents);
-
     return id;
   }
 
   /**
-   * Determines instance number and updates componentCounts for given tagName.
+   * Determines component instance number and updates componentCounts for given tagName.
    * @param {string} tagName
-   * @return {number}
+   * @return {number} The instance number - one-indexed, based on how many components of same tagName have been registered previously.
    */
   assignInstanceNumber(tagName) {
     const instanceNumber = (this.componentCounts[tagName] || 0) + 1;
