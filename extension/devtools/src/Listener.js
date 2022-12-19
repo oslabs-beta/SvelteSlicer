@@ -15,22 +15,9 @@ export default class Listener {
    *
    */
   addEventListeners() {
-    //window.addEventListener("SvelteDOMInsert", (e) =>
-    //  this.slicer.processNewNode(e.detail)
-    //);
-
     window.addEventListener("SvelteRegisterComponent", (event) => {
       this.slicer.processNewComponent(event);
     });
-
-    //window.addEventListener("SvelteRegisterBlock", (e) => {
-
-    //}
-    //);
-
-    //window.addEventListener("SvelteDOMAddEventListener", (e) =>
-    //  this.slicer.processNewEventListenerEvent(e.detail)
-    //);
 
     //on completion of page load, capture first state snapshot and start watching for subsequent DOM updates
     window.addEventListener("load", () => {
