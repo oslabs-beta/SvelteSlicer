@@ -2,10 +2,10 @@
  * @jest-environment jsdom
  */
 /*eslint-env jest */
-import DOMEventParser from "../src/DOMEventParser.js";
+import SvelteEventParser from "../src/SvelteEventParser.js";
 
 describe("assignInstanceNumber", () => {
-  const parser = new DOMEventParser();
+  const parser = new SvelteEventParser();
   test("it returns correct instance number based on component count", () => {
     const componentName1 = "App";
     const componentName2 = "Test";
@@ -17,7 +17,7 @@ describe("assignInstanceNumber", () => {
 });
 
 describe("assignComponentId", () => {
-  const parser = new DOMEventParser();
+  const parser = new SvelteEventParser();
   test("it returns correct id string based on tagName and component count", () => {
     const componentName1 = "App";
     const componentName2 = "Test";
