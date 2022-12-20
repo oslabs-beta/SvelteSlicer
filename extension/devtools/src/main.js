@@ -1,9 +1,10 @@
-import Listener from "./Listener.js";
+import Router from "./Router.js";
 
 /**
- * Instantiates a Listener object.
- * This is an IIFE so that Listener object instantiates immediately on injection into user context without polluting global namespace.
+ * Instantiates a Router object.
+ * This is an IIFE so that Router object instantiates immediately on
+ * injection into user context without polluting global namespace.
  */
 (() => {
-  new Listener();
+  new Router();
 })();

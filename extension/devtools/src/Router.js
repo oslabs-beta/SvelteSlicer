@@ -1,12 +1,16 @@
-import Slicer from "./Slicer.js";
+import DataStore from "./DataStore.js";
+import SnapshotProducer from "./SnapshotProducer.js";
+import SvelteEventParser from "./SvelteEventParser.js";
 
-/**  Class responsible for managing event listeners within the user context. */
-export default class Listener {
+/**  Class responsible for listening for and routing events within the user context. */
+export default class Router {
   /**
-   * Creates a Listener object
+   * Creates a Router object
    */
   constructor() {
-    this.slicer = new Slicer();
+    this.dataStore = new DataStore();
+    this.parser = new SvelteEventParser(this.dataStore);
+    this.producer = new SnapshotProducer(this.dataStore);
     this.addEventListeners();
   }
 
@@ -16,12 +20,12 @@ export default class Listener {
    */
   addEventListeners() {
     window.addEventListener("SvelteRegisterComponent", (event) => {
-      this.slicer.processNewComponent(event);
+      this.parser.handleRegisterComponent(event);
     });
 
-    //on completion of page load, capture first state snapshot and start watching for subsequent DOM updates
+    //on completion of initial page load, capture first state snapshot and start watching for subsequent DOM updates
     window.addEventListener("load", () => {
-      this.slicer.captureSnapshot();
+      this.producer.createSnapshot();
       this.startMutationObserver();
     });
   }
@@ -32,7 +36,7 @@ export default class Listener {
   startMutationObserver() {
     const observer = new MutationObserver(() => {
       // on completion of each set of DOM updates, capture a new state snapshot
-      this.slicer.captureSnapshot();
+      this.producer.createSnapshot();
     });
 
     observer.observe(window.document, {

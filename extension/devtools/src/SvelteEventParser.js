@@ -1,9 +1,32 @@
-export default class DOMEventParser {
-  constructor() {
+/** Class responsible for processing data from Svelte produced events. */
+
+export default class SvelteEventParser {
+  /**
+   * Creates a SvelteEventParser object.
+   * @param {DataStore} dataStore The instance of DataStore shared by the system.
+   */
+  constructor(dataStore) {
+    this.dataStore = dataStore; // dataStore instance to write to
     this.componentCounts = {}; // map of counts of instances for each component tagName
     this.newComponents = []; // sequence of component registrations (post-order traversal of overall component hierarchy)
     //this.rootComponent = null;
     //this.nodeComponents = new Map();
+  }
+
+  /**
+   * Processes data from SvelteRegisterComponent events.
+   * @param {CustomEvent} event
+   */
+  handleRegisterComponent(event) {
+    const { component, tagName } = event.detail;
+    const id = this.assignComponentId(tagName);
+
+    this.dataStore.insertComponentInstance(id, component);
+    this.dataStore.insertComponentRepresentation(id, {
+      id,
+      tagName,
+      children: [],
+    });
   }
 
   /**
