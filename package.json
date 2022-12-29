@@ -32,10 +32,10 @@
   },
   "scripts": {
     "build-client": "cross-env NODE_ENV=production webpack --config webpack.config.client.js",
-    "build-script": "cross-env webpack --config webpack.config.script.js",
+    "build-script": "cross-env NODE_ENV=production webpack --config webpack.config.script.js",
     "build-all": "npm run build-client && npm run build-script",
     "watch-client": "cross-env NODE_ENV=development webpack --config webpack.config.client.js --watch",
-    "watch-script": "cross-env webpack --config webpack.config.script.js --watch",
+    "watch-script": "cross-env NODE_ENV=development webpack --config webpack.config.script.js --watch",
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "check-format": "prettier --check .",
     "format": "prettier --write .",
