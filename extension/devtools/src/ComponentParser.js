@@ -1,77 +1,10 @@
-const { type_of, deepClone } = require("./utils.js");
+/* const { type_of, deepClone } = require("./utils.js");
 
 module.exports = class ComponentParser {
   constructor() {
     this.componentCounts = {};
     const callback = this.sendNewComponentData.bind(this);
     window.addEventListener("SvelteRegisterComponent", callback);
-  }
-
-  sendNewComponentData(event) {
-    const {
-      id,
-      parsedState,
-      tagName,
-      instance,
-      target,
-      newStoreVariables,
-      component,
-    } = this.parseNewComponent(event.detail);
-
-    const storeParsedComponent = new CustomEvent("storeParsedComponent", {
-      detail: {
-        id,
-        parsedState,
-        tagName,
-        instance,
-        target,
-      },
-    });
-
-    const updateStoreVariables = new CustomEvent("updateStoreVariables", {
-      detail: { newStoreVariables },
-    });
-
-    const updateComponentObject = new CustomEvent("updateComponentObject", {
-      detail: {
-        component,
-        id,
-        tagName,
-      },
-    });
-
-    window.dispatchEvent(storeParsedComponent);
-    window.dispatchEvent(updateStoreVariables);
-    window.dispatchEvent(updateComponentObject);
-  }
-
-  parseNewComponent(eventDetail) {
-    const { component, tagName, options } = eventDetail;
-    const instance = this.assignComponentInstance(tagName);
-    const id = tagName + instance;
-    console.log(id);
-    const { parsedState, newStoreVariables } =
-      this.parseComponentState(component);
-    const target = this.assignComponentTarget(options);
-
-    return {
-      id,
-      parsedState,
-      tagName,
-      instance,
-      target,
-      component,
-      newStoreVariables,
-    };
-  }
-
-  assignComponentInstance(tagName) {
-    this.componentCounts[tagName] = (this.componentCounts[tagName] || 0) + 1;
-    return this.componentCounts[tagName];
-  }
-
-  assignComponentTarget(options) {
-    return options.target ? options.target.nodeName + options.target.id : null;
   }
 
   parseComponentState(component) {
@@ -138,3 +71,5 @@ module.exports = class ComponentParser {
     };
   }
 };
+
+*/

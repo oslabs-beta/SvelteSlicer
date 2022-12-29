@@ -6,7 +6,7 @@ module.exports = {
   extends: "eslint:recommended",
 
   parserOptions: {
-    ecmaVersion: 2019,
+    ecmaVersion: 2020,
     sourceType: "module",
   },
   env: {
@@ -23,8 +23,6 @@ module.exports = {
   ],
   rules: {
     "no-prototype-builtins": "off",
-    // setup function is intentionally uninvoked in injected script to allow for testing suite to run
-    "no-unused-vars": [2, { vars: "all", varsIgnorePattern: "setup" }],
   },
   ignorePatterns: ["node_modules", "**/build/**"],
   globals: {

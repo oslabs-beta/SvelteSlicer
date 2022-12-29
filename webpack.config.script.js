@@ -1,6 +1,8 @@
-const path = require("path");
+import { fileURLToPath } from "node:url";
+import path from "path";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-module.exports = {
+export default {
   entry: {
     injected: ["./extension/devtools/src/main.js"],
   },

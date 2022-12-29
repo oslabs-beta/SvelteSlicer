@@ -1,12 +1,16 @@
 /* eslint-env node */
 
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const path = require("path");
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import { fileURLToPath } from "node:url";
+import path from "path";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const mode = process.env.NODE_ENV || "development";
 const prod = mode === "production";
 
-module.exports = {
+export default {
   entry: {
     bundle: ["./src/main.js"],
   },

@@ -1,4 +1,4 @@
-function type_of(value) {
+/* function type_of(value) {
   let type = Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
   if (type === "object") {
     // check if it's a store variable
@@ -45,4 +45,4 @@ const deepClone = (inObject) => {
   return outObject;
 };
 
-module.exports = { type_of, deepClone };
+module.exports = { type_of, deepClone }; */
