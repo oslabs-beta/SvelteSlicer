@@ -1,5 +1,5 @@
-import SingleChildApp from "./appEntries.SingleChildApp.svelte";
-import SimpleSiblingsApp from "./appEntries.SimpleSiblingsApp.svelte";
+import SingleChildApp from "./appEntries/SingleChildApp.svelte";
+import SimpleSiblingsApp from "./appEntries/SimpleSiblingsApp.svelte";
 
 export const testData = [
   {
