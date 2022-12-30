@@ -9,18 +9,18 @@ export default class SvelteEventParser {
     this.dataStore = dataStore; // dataStore instance to write to
     this.componentCounts = {}; // map of counts of instances for each component tagName
     this.newComponents = []; // sequence of component registrations (post-order traversal of overall component hierarchy)
-    //this.rootComponent = null;
-    //this.nodeComponents = new Map();
   }
 
   /**
-   * Processes data from SvelteRegisterComponent events.
-   * @param {CustomEvent} event
+   * Processes data from SvelteRegisterComponent events  and stores representation and instance in DataStore.
+   * @param {CustomEvent} event The SvelteRegisterComponent event.
    */
   handleRegisterComponent(event) {
     const { component, tagName } = event.detail;
-    const id = this.assignComponentId(tagName);
+    const instanceNumber = this.assignInstanceNumber(tagName);
+    const id = this.assignComponentId(tagName, instanceNumber);
 
+    this.componentCounts[tagName] = instanceNumber;
     this.dataStore.insertComponentInstance(id, component);
     this.dataStore.insertComponentRepresentation(id, {
       id,
@@ -29,47 +29,24 @@ export default class SvelteEventParser {
     });
   }
 
-  /**
-   * Assigns an id string for given component and adds to newComponents list.
-   * @param {string} tagName
-   * @returns {string} The id of the component - concatenation of tagName and instance number.
+  /** Assigns an id string for given component.
+   *
+   * @param {string}    tagName   The component's "tagName" e.g., the name of the source file where it is defined and exported.
+   * @returns {string}            The id of the component - concatenation of tagName and instance number.
    */
-  assignComponentId(tagName) {
-    const instanceNumber = this.assignInstanceNumber(tagName);
+  assignComponentId(tagName, instanceNumber) {
     const id = tagName + instanceNumber;
-    this.newComponents.push(id);
     return id;
   }
 
   /**
-   * Determines component instance number and updates componentCounts for given tagName.
-   * @param {string} tagName
-   * @return {number} The instance number - one-indexed, based on how many components of same tagName have been registered previously.
+   * Assigns component sequential instance number for given tagName.
+   *
+   * @param {string} tagName  The component's "tagName" e.g., the name of the source file where it is defined and exported.
+   * @return {number}         The instance number - one-indexed, based on how many components of same tagName have been registered previously.
    */
   assignInstanceNumber(tagName) {
     const instanceNumber = (this.componentCounts[tagName] || 0) + 1;
-    this.componentCounts[tagName] = instanceNumber;
     return instanceNumber;
   }
-
-  /*
-  assignRootComponent(node) {
-    const nodeTagName = this.getComponentTagName(node);
-    const nodeComponentId = nodeTagName + '1';
-    this.rootComponent = nodeComponentId;
-    this.nodeComponents.add(node, nodeComponentId);
-
-    return nodeComponentId;
-  }
-
-  getComponentTagName(node) {
-    const fileName = node.__svelte_meta.loc.file
-    // if this is a Windows based file naming, ie. \ instead of /
-    if (fileName.indexOf("/") === -1) {
-      return fileName.slice(fileName.lastIndexOf("\\\\") + 1, -7);
-    }
-  
-    return fileName.slice(fileName.lastIndexOf("/") + 1, -7);
-  }
-  */
 }
