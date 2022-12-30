@@ -10,14 +10,12 @@ import { SvelteComponent } from "svelte";
 const context = new TestAppContext();
 
 describe.each(testData)("Test $name", (testApp) => {
-  let expected;
-  let dataStore;
+  const expected = testApp.data;
+  let dataStore; // can't be assigned until router instance is created and stored in the context
 
   beforeAll(async () => {
-    const { app, data } = testApp;
-    await context.testSetUp(app);
-    expected = data;
-    dataStore = context.router.dataStore;
+    await context.testSetUp(testApp.app);
+    dataStore = context.router.dataStore; // reassign after set up to bring data from router instance into "describe" scope
     return;
   });
 
@@ -27,8 +25,9 @@ describe.each(testData)("Test $name", (testApp) => {
 
   describe("Handle RegisterComponent events", () => {
     it("Adds new component representations to componentRepresentations map", () => {
-      const components = Object.keys(dataStore.componentRepresentations);
-      const representation = dataStore.componentRepresentations[components[0]];
+      const { componentRepresentations } = dataStore;
+      const components = Object.keys(componentRepresentations);
+      const representation = componentRepresentations[components[0]];
       const { totalComponents, componentIds } = expected;
       expect(components.length).toBe(totalComponents);
       expect(components).toEqual(expect.arrayContaining(componentIds));
@@ -42,8 +41,9 @@ describe.each(testData)("Test $name", (testApp) => {
     });
 
     it("Adds new component instances to componentInstances map", () => {
-      const components = Object.keys(dataStore.componentInstances);
-      const instance = dataStore.componentInstances[components[0]];
+      const { componentInstances } = dataStore;
+      const components = Object.keys(componentInstances);
+      const instance = componentInstances[components[0]];
       const { totalComponents, componentIds } = expected;
       expect(components.length).toBe(totalComponents);
       expect(components).toEqual(expect.arrayContaining(componentIds));
