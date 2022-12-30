@@ -19,13 +19,13 @@ export default class Router {
    *
    */
   addEventListeners() {
-    window.addEventListener("SvelteRegisterComponent", (event) => {
-      this.parser.handleRegisterComponent(event);
+    window.addEventListener("SvelteRegisterComponent", (e) => {
+      this.parser.handleRegisterComponent(e);
     });
 
     //on completion of initial page load, capture first state snapshot and start watching for subsequent DOM updates
     window.addEventListener("load", () => {
-      this.producer.createSnapshot();
+      this.producer.processDOMUpdate();
       this.startMutationObserver();
     });
   }
@@ -36,7 +36,7 @@ export default class Router {
   startMutationObserver() {
     const observer = new MutationObserver(() => {
       // on completion of each set of DOM updates, capture a new state snapshot
-      this.producer.createSnapshot();
+      this.producer.processDOMUpdate();
     });
 
     observer.observe(window.document, {
