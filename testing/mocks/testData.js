@@ -1,5 +1,6 @@
 import SingleChildApp from "./appEntries/SingleChildApp.svelte";
 import SimpleSiblingsApp from "./appEntries/SimpleSiblingsApp.svelte";
+import NestedChildrenApp from "./appEntries/NestedChildrenApp.svelte";
 
 export const testData = [
   {
@@ -21,6 +22,18 @@ export const testData = [
       componentIds: ["SimpleSiblingsApp1", "LeafChild1", "LeafChild2"],
       children: {
         SimpleSiblingsApp1: ["LeafChild1", "LeafChild2"],
+      },
+    },
+  },
+  {
+    name: "NestedChildrenApp",
+    app: NestedChildrenApp.default,
+    data: {
+      totalComponents: 3,
+      componentIds: ["NestedChildrenApp1", "Child1", "LeafChild1"],
+      children: {
+        NestedChildrenApp1: ["Child1"],
+        Child1: ["LeafChild1"],
       },
     },
   },
