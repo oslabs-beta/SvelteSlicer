@@ -9,7 +9,7 @@ import { SvelteComponent } from "svelte";
 
 const context = new TestAppContext();
 
-describe.each(testData)("Test $name", (testApp) => {
+describe.each(testData)("$name", (testApp) => {
   const expected = testApp.data;
   let dataStore; // can't be assigned until router instance is created and stored in the context
 
