@@ -23,6 +23,10 @@ export default class Router {
       this.parser.handleRegisterComponent(e);
     });
 
+    window.addEventListener("SvelteDOMAddEventListener", (e) => {
+      this.addAppEventListener(e);
+    });
+
     //on completion of initial page load, capture first state snapshot and start watching for subsequent DOM updates
     window.addEventListener("load", () => {
       this.producer.processDOMUpdate();
@@ -45,5 +49,22 @@ export default class Router {
       subtree: true,
       characterData: true,
     });
+  }
+
+  /**
+   * Creates event listener on node in user app mirroring a newly added within-app listener.
+   *
+   * This function handles a SvelteAddEventListener event by adding a listener corresponding to the in-app listener that will
+   * send data about this particular user interaction to the SvelteEventParser. This data will be used by the Parser to label
+   * the snapshot representing changes related to this user interaction with the event type that was fired, the component where
+   * interaction originated, and the name of the handler function that triggered the state change.
+   *
+   * @param {*} e
+   */
+  addAppEventListener(e) {
+    const { event, handler, node } = e.detail;
+    node.addEventListener(event, () =>
+      this.parser.processAppEvent(node, event, handler)
+    );
   }
 }
