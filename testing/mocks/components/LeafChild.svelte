@@ -1,13 +1,16 @@
 <script>
-  function clickHandlerOne() {
-    console.log("Button One clicked");
+  $: text = null;
+
+  function clickHandler() {
+    text = "Click Handled";
   }
-  function clickHandlerTwo() {
-    console.log("Button Two clicked");
+  function inputHandler() {
+    text = "Input Handled!";
   }
 </script>
 
 <main>
-  <button on:click={clickHandlerOne} class="button-one"> Click me </button>
-  <button on:click={clickHandlerTwo} class="button-two"> Click me </button>
+  <button on:click={clickHandler}> Click me </button>
+  <input type="text" on:input={inputHandler} />
+  <p>{text}</p>
 </main>

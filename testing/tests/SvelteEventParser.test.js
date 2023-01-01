@@ -55,17 +55,21 @@ describe.each(testData)("$name", (testApp) => {
 
   describe("AddEventListenerEvents", () => {
     it("Correctly updates snapshot label based on user event", () => {
-      const buttonOneList = appWindow.document.querySelectorAll(".button-one");
-      const buttonTwoList = appWindow.document.querySelectorAll(".button-two");
-      buttonOneList.forEach((button) => {
+      const buttonList = appWindow.document.querySelectorAll("button");
+      const inputList = appWindow.document.querySelectorAll("input");
+      expect(dataStore.snapshotLabel).toMatch("Initial Load");
+      buttonList.forEach((button) => {
         button.click();
-        expect(dataStore.snapshotLabel).toMatch(/(- click -> clickHandlerOne)/);
-        expect(dataStore.snapshotLabel).toMatch(/(LeafChild)/);
+        expect(dataStore.snapshotLabel).toMatch(
+          "LeafChild - click -> clickHandler"
+        );
       });
-      buttonTwoList.forEach((button) => {
-        button.click();
-        expect(dataStore.snapshotLabel).toMatch(/(- click -> clickHandlerTwo)/);
-        expect(dataStore.snapshotLabel).toMatch(/(LeafChild)/);
+      inputList.forEach((input) => {
+        const inputEvent = new Event("input");
+        input.dispatchEvent(inputEvent);
+        expect(dataStore.snapshotLabel).toMatch(
+          "LeafChild - input -> inputHandler"
+        );
       });
     });
   });
