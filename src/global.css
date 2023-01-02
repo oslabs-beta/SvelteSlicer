@@ -3,7 +3,6 @@
 body {
   margin: 0;
   background: rgb(83, 81, 81);
-  margin: 0;
   height: 100%;
   font-size: 16px;
   color: whitesmoke;
@@ -14,11 +13,11 @@ h2 {
   font-weight: 700;
   font-size: 19px;
   margin: 2px;
-  padding: 10px;
+  padding: 0px 10px;
 }
 
 div {
-  padding: 1em;
+  padding: 0.5em;
 }
 
 .panelDiv {

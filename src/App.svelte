@@ -12,6 +12,7 @@
   import FileStructure from "./FileStructure.svelte";
   import StateTree from "./StateTree.svelte";
   import Diffs from "./Diffs.svelte";
+  import Header from "./Header.svelte";
   import logo from "../extension/devtools/public/images/logo64.png";
 
   $: CurrentI =
@@ -182,11 +183,12 @@
   }
 </script>
 
+<Header />
 <main>
   <div id="mainContainer">
     <div id="title">
       <img src={logo} id="slicerImg" alt="logo" />
-      <h2 id="titleText">Svelte Slicer</h2>
+      <h2 id="titleText">Svelte Slicer 2.0</h2>
     </div>
     <div id="filter">
       <form
