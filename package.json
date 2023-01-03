@@ -37,7 +37,7 @@
     "build-test": "cross-env webpack --config webpack.config.scriptTest.js",
     "watch-client": "cross-env NODE_ENV=development webpack --config webpack.config.client.js --watch",
     "watch-script": "cross-env NODE_ENV=development webpack --config webpack.config.script.js --watch",
-    "test": "npm run build-test && NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "test": "npm run build-test && NODE_OPTIONS=--experimental-vm-modules jest",
     "check-format": "prettier --check .",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.svelte --fix",
