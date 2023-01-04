@@ -13,7 +13,8 @@
     flex-direction: row;
     height: fit-content;
     align-items: center;
-    margin: 5px;
+    /* margin: 5px; */
+    background-color: #333;
   }
   #logo {
     height: 33px;

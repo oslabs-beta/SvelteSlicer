@@ -13,6 +13,7 @@
   import StateTree from "./StateTree.svelte";
   import Diffs from "./Diffs.svelte";
   import Header from "./Header.svelte";
+  import Snapshot from "./Snapshot.svelte";
   import logo from "../extension/devtools/public/images/logo64.png";
 
   $: CurrentI =
@@ -184,6 +185,7 @@
 </script>
 
 <Header />
+<Snapshot />
 <main>
   <div id="mainContainer">
     <div id="title">
