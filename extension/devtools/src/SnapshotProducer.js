@@ -11,11 +11,29 @@ export default class SnapshotProducer {
   /**
    * Collect data from DataStore to create snapshot.
    */
+  processDOMUpdate() {
+    this.createSnapshot();
+  }
+
+  /**
+   * Eventually... Package current state data into a snapshot object
+   * Currently... Collects current state data and logs to console.
+   */
   createSnapshot() {
-    const instances = this.dataStore.getComponentInstances();
-    const representations = this.dataStore.getComponentRepresentations();
+    const { instances, representations } = this.getSnapshotData();
+
     console.log(instances);
     console.log(representations);
     console.log("capture snapshot");
+  }
+
+  /**
+   * Collect data from DataStore to create snapshot.
+   */
+  getSnapshotData() {
+    const instances = this.dataStore.getComponentInstances();
+    const representations = this.dataStore.getComponentRepresentations();
+
+    return { instances, representations };
   }
 }

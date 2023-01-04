@@ -4,14 +4,14 @@ export default class DataStore {
    * Creates a DataStore object.
    */
   constructor() {
-    this.componentInstances = {};
-    this.componentRepresentations = {};
+    this.componentInstances = {}; // Map with keys of component ID's and values of references to component instances
+    this.componentRepresentations = {}; // Map with keys of component ID's and values of component representations
   }
 
   /**
    * Adds a component instance to componentInstance map.
-   * @param {string} id
-   * @param {SvelteComponent} instance
+   * @param {string} id                   The component's id (tagName + instance number)
+   * @param {SvelteComponent} instance    The reference to the component instance.
    */
   insertComponentInstance(id, instance) {
     this.componentInstances[id] = instance;
@@ -19,8 +19,8 @@ export default class DataStore {
 
   /**
    * Adds a component representation to componentRepresentation map.
-   * @param {string} id
-   * @param {ComponentRepresentation} representation
+   * @param {string} id                               The component's id (tagName + instance number)
+   * @param {ComponentRepresentation} representation  The map of component properties to be sent to UI.
    */
   insertComponentRepresentation(id, representation) {
     this.componentRepresentations[id] = representation;
@@ -28,7 +28,7 @@ export default class DataStore {
 
   /**
    * Gets componentInstance map
-   * @returns
+   * @returns { Object }  Map with keys of component ID's and value of component representations
    */
   getComponentInstances() {
     return this.componentInstances;
@@ -36,7 +36,7 @@ export default class DataStore {
 
   /**
    * Gets componentRepresentations map.
-   * @returns
+   * @returns { Object }  Map with keys of component ID's and values of component representations
    */
   getComponentRepresentations() {
     return this.componentRepresentations;
