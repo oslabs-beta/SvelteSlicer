@@ -20,11 +20,11 @@ export default class SnapshotProducer {
    * Currently... Collects current state data and logs to console.
    */
   createSnapshot() {
-    const { instances, representations } = this.getSnapshotData();
+    const { instances, representations, label } = this.getSnapshotData();
 
     console.log(instances);
     console.log(representations);
-    console.log("capture snapshot");
+    console.log("capture snapshot - " + label);
   }
 
   /**
@@ -33,7 +33,8 @@ export default class SnapshotProducer {
   getSnapshotData() {
     const instances = this.dataStore.getComponentInstances();
     const representations = this.dataStore.getComponentRepresentations();
+    const label = this.dataStore.getLabel();
 
-    return { instances, representations };
+    return { instances, representations, label };
   }
 }
