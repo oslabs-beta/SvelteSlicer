@@ -9,10 +9,16 @@ export default class SnapshotProducer {
   }
 
   /**
-   * Collect data from DataStore to create snapshot.
+   * Respond to DOMUpdate events. (Still a work in progress! Comments outline future functionality...)
    */
   processDOMUpdate() {
+    // verify that this is actually a new state
+    // if it is...
+    // create a new snapshot object
     this.createSnapshot();
+    // send snapshot object to devtool context
+    // store copy of current state in DataStore's stateHistory
+    // reset system to prepare for next snapshot capture
   }
 
   /**
@@ -28,7 +34,7 @@ export default class SnapshotProducer {
   }
 
   /**
-   * Collect data from DataStore to create snapshot.
+   * Get snapshot data from DataStore..
    */
   getSnapshotData() {
     const instances = this.dataStore.getComponentInstances();
