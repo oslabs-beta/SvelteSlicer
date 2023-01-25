@@ -16,7 +16,7 @@ describe.each(testData)("$name", (testApp) => {
 
   beforeAll(async () => {
     await context.testSetUp(testApp.app);
-    dataStore = context.router.dataStore; // reassign after set up to bring data from router instance into "describe" scope
+    dataStore = context.dataStore; // reassign after set up to bring data from router instance into "describe" scope
     appWindow = context.appWindow;
     return;
   });
@@ -27,7 +27,7 @@ describe.each(testData)("$name", (testApp) => {
 
   describe("Handle RegisterComponent events", () => {
     it("Adds new component representations to componentRepresentations map", () => {
-      const { componentRepresentations } = dataStore;
+      const componentRepresentations = dataStore.getComponentRepresentations();
       const components = Object.keys(componentRepresentations);
       const representation = componentRepresentations[components[0]];
       const { totalComponents, componentIds } = expected;
@@ -43,7 +43,7 @@ describe.each(testData)("$name", (testApp) => {
     });
 
     it("Adds new component instances to componentInstances map", () => {
-      const { componentInstances } = dataStore;
+      const componentInstances = dataStore.getComponentInstances();
       const components = Object.keys(componentInstances);
       const instance = componentInstances[components[0]];
       const { totalComponents, componentIds } = expected;
@@ -57,17 +57,17 @@ describe.each(testData)("$name", (testApp) => {
     it("Correctly updates snapshot label based on user event", () => {
       const buttonList = appWindow.document.querySelectorAll("button");
       const inputList = appWindow.document.querySelectorAll("input");
-      expect(dataStore.snapshotLabel).toMatch("Initial Load");
+      expect(dataStore.getLabel()).toMatch("Application Event");
       buttonList.forEach((button) => {
         button.click();
-        expect(dataStore.snapshotLabel).toMatch(
+        expect(dataStore.getLabel()).toMatch(
           "LeafChild - click -> clickHandler"
         );
       });
       inputList.forEach((input) => {
         const inputEvent = new Event("input");
         input.dispatchEvent(inputEvent);
-        expect(dataStore.snapshotLabel).toMatch(
+        expect(dataStore.getLabel()).toMatch(
           "LeafChild - input -> inputHandler"
         );
       });
