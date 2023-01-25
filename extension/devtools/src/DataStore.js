@@ -1,12 +1,16 @@
 /** Class responsible for storing and sharing data for snapshot production and state injections. */
 export default class DataStore {
+  #componentInstances;
+  #componentRepresentations;
+  #snapshotLabel;
+
   /**
    * Creates a DataStore object.
    */
   constructor() {
-    this.componentInstances = {}; // Map with keys of component ID's and values of references to component instances
-    this.componentRepresentations = {}; // Map with keys of component ID's and values of component representations
-    this.snapshotLabel = "Initial Load";
+    this.#componentInstances = {}; // Map with keys of component ID's and values of references to component instances
+    this.#componentRepresentations = {}; // Map with keys of component ID's and values of component representations
+    this.#snapshotLabel = "Initial Load";
   }
 
   /**
@@ -15,7 +19,7 @@ export default class DataStore {
    * @param {SvelteComponent} instance    The reference to the component instance.
    */
   insertComponentInstance(id, instance) {
-    this.componentInstances[id] = instance;
+    this.#componentInstances[id] = instance;
   }
 
   /**
@@ -24,7 +28,7 @@ export default class DataStore {
    * @param {ComponentRepresentation} representation  The map of component properties to be sent to UI.
    */
   insertComponentRepresentation(id, representation) {
-    this.componentRepresentations[id] = representation;
+    this.#componentRepresentations[id] = representation;
   }
 
   /**
@@ -32,7 +36,7 @@ export default class DataStore {
    * @returns { Object }  Map with keys of component ID's and value of component representations
    */
   getComponentInstances() {
-    return this.componentInstances;
+    return this.#componentInstances;
   }
 
   /**
@@ -40,7 +44,7 @@ export default class DataStore {
    * @returns { Object }  Map with keys of component ID's and values of component representations
    */
   getComponentRepresentations() {
-    return this.componentRepresentations;
+    return this.#componentRepresentations;
   }
 
   /**
@@ -48,7 +52,7 @@ export default class DataStore {
    * @param {string} label Label for next snapshot
    */
   setLabel(label) {
-    this.snapshotLabel = label;
+    this.#snapshotLabel = label;
   }
 
   /**
@@ -56,6 +60,6 @@ export default class DataStore {
    * @returns {string}  The current label (data on most recent user interaction).
    */
   getLabel() {
-    return this.snapshotLabel;
+    return this.#snapshotLabel;
   }
 }
