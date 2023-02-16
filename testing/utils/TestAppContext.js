@@ -11,7 +11,7 @@ export default class TestAppContext {
    * Creates a TestAppContext object
    */
   constructor() {
-    this.app = null;
+    this.appWindow = null;
     this.router = null;
     this.registrator = GlobalRegistrator;
   }
@@ -19,6 +19,7 @@ export default class TestAppContext {
   async testSetUp(appInstance) {
     // create a happy-dom instance and registers it globally
     this.registrator.register();
+    this.appWindow = window;
 
     // create the router instance and store it
     this.router = init();

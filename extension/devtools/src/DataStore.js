@@ -6,6 +6,7 @@ export default class DataStore {
   constructor() {
     this.componentInstances = {}; // Map with keys of component ID's and values of references to component instances
     this.componentRepresentations = {}; // Map with keys of component ID's and values of component representations
+    this.snapshotLabel = "Initial Load";
   }
 
   /**
@@ -40,5 +41,21 @@ export default class DataStore {
    */
   getComponentRepresentations() {
     return this.componentRepresentations;
+  }
+
+  /**
+   * Updates snapshot label to reflect most recent user interaction
+   * @param {string} label Label for next snapshot
+   */
+  setLabel(label) {
+    this.snapshotLabel = label;
+  }
+
+  /**
+   * Get the current snapshot label.
+   * @returns {string}  The current label (data on most recent user interaction).
+   */
+  getLabel() {
+    return this.snapshotLabel;
   }
 }

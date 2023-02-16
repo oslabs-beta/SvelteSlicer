@@ -5,6 +5,7 @@ import TestApp4 from "./appEntries/TestApp4.svelte";
 import TestApp5 from "./appEntries/TestApp5.svelte";
 import TestApp6 from "./appEntries/TestApp6.svelte";
 import TestApp7 from "./appEntries/TestApp7.svelte";
+import TestApp8 from "./appEntries/TestApp8.svelte";
 
 export const testData = [
   {
@@ -91,8 +92,21 @@ export const testData = [
       totalComponents: 4,
       componentIds: ["TestApp71", "Child1", "LeafChild1", "LeafChild2"],
       children: {
-        TestApp51: ["Child1", "LeafChild1"],
+        TestApp71: ["Child1", "LeafChild1"],
         Child1: ["LeafChild2"],
+      },
+    },
+  },
+  {
+    name: "TestApp8",
+    app: TestApp8.default,
+    data: {
+      totalComponents: 4,
+      componentIds: ["TestApp81", "Child1", "LeafChild1", "SubChild1"],
+      children: {
+        TestApp51: ["SubChild1"],
+        SubChild1: ["Child1"],
+        Child1: ["LeafChild1"],
       },
     },
   },

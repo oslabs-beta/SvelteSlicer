@@ -12,10 +12,12 @@ const context = new TestAppContext();
 describe.each(testData)("$name", (testApp) => {
   const expected = testApp.data;
   let dataStore; // can't be assigned until router instance is created and stored in the context
+  let appWindow;
 
   beforeAll(async () => {
     await context.testSetUp(testApp.app);
     dataStore = context.router.dataStore; // reassign after set up to bring data from router instance into "describe" scope
+    appWindow = context.appWindow;
     return;
   });
 
@@ -48,6 +50,27 @@ describe.each(testData)("$name", (testApp) => {
       expect(components.length).toBe(totalComponents);
       expect(components).toEqual(expect.arrayContaining(componentIds));
       expect(instance).toBeInstanceOf(SvelteComponent);
+    });
+  });
+
+  describe("AddEventListenerEvents", () => {
+    it("Correctly updates snapshot label based on user event", () => {
+      const buttonList = appWindow.document.querySelectorAll("button");
+      const inputList = appWindow.document.querySelectorAll("input");
+      expect(dataStore.snapshotLabel).toMatch("Initial Load");
+      buttonList.forEach((button) => {
+        button.click();
+        expect(dataStore.snapshotLabel).toMatch(
+          "LeafChild - click -> clickHandler"
+        );
+      });
+      inputList.forEach((input) => {
+        const inputEvent = new Event("input");
+        input.dispatchEvent(inputEvent);
+        expect(dataStore.snapshotLabel).toMatch(
+          "LeafChild - input -> inputHandler"
+        );
+      });
     });
   });
 });

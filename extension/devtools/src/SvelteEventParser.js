@@ -49,4 +49,22 @@ export default class SvelteEventParser {
     const instanceNumber = (this.componentCounts[tagName] || 0) + 1;
     return instanceNumber;
   }
+
+  processAppEvent(node, event, handler) {
+    const component = this.getComponentTagName(node);
+    const handlerName = handler.name;
+    const label = component + " - " + event + " -> " + handlerName;
+    this.dataStore.setLabel(label);
+  }
+
+  getComponentTagName(node) {
+    const fileName = node.__svelte_meta.loc.file;
+    // if this is a Windows based file naming, ie. \ instead of /
+    if (fileName.indexOf("/") === -1) {
+      return fileName.slice(fileName.lastIndexOf("\\\\") + 1, -7);
+    }
+
+    // else Mac/Linux based file naming, use / as separator
+    return fileName.slice(fileName.lastIndexOf("/") + 1, -7);
+  }
 }
