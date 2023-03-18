@@ -10,5 +10,6 @@ import Router from "../../extension/devtools/src/Router.js";
  * Instantiates a Router object and returns it.
  */
 export function init() {
-  return new Router();
+  const router = new Router();
+  return router.getDataStore();
 }

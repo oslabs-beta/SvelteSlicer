@@ -12,7 +12,7 @@ export default class TestAppContext {
    */
   constructor() {
     this.appWindow = null;
-    this.router = null;
+    this.dataStore = null;
     this.registrator = GlobalRegistrator;
   }
 
@@ -22,7 +22,7 @@ export default class TestAppContext {
     this.appWindow = window;
 
     // create the router instance and store it
-    this.router = init();
+    this.dataStore = init();
 
     // create the app instance and store it
     this.app = new appInstance({ target: document.body });
